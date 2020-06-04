@@ -1,6 +1,11 @@
-import React from 'react';
-import SplashScreen from './screens/splashScreen';
+import * as React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import SplashScreen from './screens/SplashScreen';
 import LoginScreen from './screens/loginScreen';
+import {AuthContext, IotlGlobals} from './api/context';
+import CreateAccountScreen from './screens/createAccountScreen';
 
 import {
   SafeAreaView,
@@ -21,13 +26,34 @@ import {
 
 const App: () => React$Node = () => {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [auth, setAuth] = React.useState(true);
+  const [auth, setAuth] = React.useState(false);
+  const [userToken, setUserToken] = React.useState(IotlGlobals.providerToken);
+
+  const Tab = createBottomTabNavigator();
+  const AuthStack = createStackNavigator();
 
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
       console.log('app.js----');
     }, 500);
+  }, []);
+
+  const authContext = React.useMemo(() => {
+    return {
+      signIn: () => {
+        setIsLoading(false);
+        setUserToken('nusdsdll');
+      },
+      signUp: () => {
+        setIsLoading(false);
+        setUserToken('nusdsdll');
+      },
+      signOut: () => {
+        setIsLoading(false);
+        setUserToken(null);
+      },
+    };
   }, []);
 
   if (isLoading) {
@@ -42,6 +68,52 @@ const App: () => React$Node = () => {
           <Text>asd</Text>
         </View>
       </>
+    );
+  } else {
+    return (
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer>
+          {userToken ? (
+            <Tab.Navigator>
+              <Tab.Screen
+                name="Home"
+                component={HomeStackScreen}
+                options={{title: 'Home', headerTitleAlign: 'center'}}
+              />
+              <Tab.Screen
+                name="Search"
+                component={SearchStackScreen}
+                options={{title: 'Search'}}
+              />
+              <Tab.Screen
+                name="Settings"
+                component={SettingsStackScreen}
+                options={{title: 'Settings'}}
+              />
+            </Tab.Navigator>
+          ) : (
+            <AuthStack.Navigator
+              screenOptions={{
+                headerShown: false,
+              }}>
+              <AuthStack.Screen
+                name="SignIn"
+                component={LoginScreen}
+                options={{
+                  title: 'Sign In',
+                  animationEnabled: false,
+                }}
+                initialParams={{asd: 'qwewqe'}}
+              />
+              <AuthStack.Screen
+                name="CreateAccount"
+                component={CreateAccountScreen}
+                options={{title: 'Create Account'}}
+              />
+            </AuthStack.Navigator>
+          )}
+        </NavigationContainer>
+      </AuthContext.Provider>
     );
   }
 };
