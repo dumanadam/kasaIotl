@@ -7,40 +7,39 @@ import {
   View,
   ScrollView,
   KeyboardAvoidingView,
+  ImageBackground,
 } from 'react-native';
 import LoginForm from './LoginForm';
 
 export default class Login extends Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Image
-          source={require('../assets/images/bg.jpg')}
-          style={styles.headBackground}
-        />
-        <View>
-          <KeyboardAvoidingView behavior={'position'}>
-            <View style={styles.logo}>
-              <Image
-                source={require('../assets/images/iotl.gif')}
-                style={styles.imgLogo}
-              />
-            </View>
-
-            <ScrollView>
+      <ImageBackground
+        source={require('../assets/images/bg.gif')}
+        style={styles.backgroundImage}>
+        <View style={styles.container}>
+          <KeyboardAvoidingView behavior={'padding'}>
+            <View style={styles.logo} />
+            <View style={styles.BoxArea}>
               <View style={styles.loginArea}>
+                <Image
+                  source={require('../assets/images/bulb.gif')}
+                  style={styles.imgLogo}
+                />
+                <Text style={styles.loginAreaTitle}>NIT3002</Text>
                 <LoginForm />
               </View>
-            </ScrollView>
-            <View style={styles.signUpArea}>
-              <TouchableOpacity>
-                <Text style={styles.suText}>Create an account</Text>
-                <Text style={styles.suText}>Lan control</Text>
-              </TouchableOpacity>
+
+              <View style={styles.signUpArea}>
+                <TouchableOpacity>
+                  <Text style={styles.suText}>Create an account</Text>
+                  <Text style={styles.suText}>Lan control</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </KeyboardAvoidingView>
         </View>
-      </View>
+      </ImageBackground>
     );
   }
 }
@@ -48,62 +47,62 @@ export default class Login extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5FCFF',
-    paddingVertical: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: 300,
-    width: '100%',
+  backgroundImage: {
+    flex: 1,
+
+    resizeMode: 'cover',
   },
   imgLogo: {
-    height: 50,
-    width: 50,
+    height: 100,
+    width: 100,
+    marginRight: 10,
   },
-  logo: {
-    alignItems: 'center',
-  },
+  logo: {alignItems: 'center', justifyContent: 'center'},
   logoDesc: {
     textAlign: 'center',
     color: '#f2f2f2',
   },
-  loginArea: {
-    marginHorizontal: 40,
-    marginVertical: 40,
-    backgroundColor: '#fff',
+  BoxArea: {
+    backgroundColor: '#F68F00',
     padding: 20,
     borderRadius: 5,
-    //shadow css leri ios için geçerli elevation android için geçerli
-    shadowColor: 'black',
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    elevation: 4,
+    elevation: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loginArea: {
+    backgroundColor: '#F68F00',
+    padding: 20,
+    borderRadius: 5,
+    elevation: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loginAreaTitle: {
     fontWeight: 'bold',
     fontSize: 20,
     textAlign: 'center',
+    marginBottom: 5,
   },
   signUpArea: {
     alignItems: 'center',
+    margin: 15,
+    backgroundColor: '#F68F00',
+    padding: 20,
+    borderRadius: 5,
+    elevation: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   suDescription: {
-    color: '#999',
+    color: '#DBE2E5',
+    alignSelf: 'center',
   },
   suText: {
-    color: '#666',
+    color: '#DBE2E5',
+    alignSelf: 'center',
   },
 });
-
-
-.GaryAmDesign-1-hex { color: #050F14; }
-.GaryAmDesign-2-hex { color: #DBE2E5; }
-.GaryAmDesign-3-hex { color: #F68F00; }
-.GaryAmDesign-4-hex { color: #154159; }
-.GaryAmDesign-5-hex { color: #1A516A; }

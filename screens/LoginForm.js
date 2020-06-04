@@ -1,19 +1,20 @@
 import React, {Component} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import Input from '../components/Input';
+import MyTextInput from '../components/MyTextInput';
 import LoginButton from '../components/LoginButton';
 
 export default class LoginForm extends Component {
   render() {
     return (
       <View>
-        <Input
+        <MyTextInput
+          keyboardType="email-address"
           autoCapitalize="none"
           placeholder="User Name"
           returnKeyType={'next'}
           onSubmitEditing={() => this.passwordInput.focus()}
         />
-        <Input
+        <MyTextInput
           secureTextEntry={true}
           placeholder="Password"
           inputRef={input => (this.passwordInput = input)}
@@ -21,7 +22,7 @@ export default class LoginForm extends Component {
         />
         <LoginButton
           color={'#F68F00'}
-          backgroundColor={'#1A516A'}
+          backgroundColor={'#DBE2E5'}
           text={'Login'}
         />
       </View>
