@@ -1,16 +1,17 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
-export default class LoginButton extends Component {
-  render() {
-    const {color, backgroundColor} = this.props;
-    return (
-      <TouchableOpacity style={[styles.button, {backgroundColor}]}>
-        <Text style={{color}}>{this.props.text}</Text>
-      </TouchableOpacity>
-    );
-  }
-}
+
+const LoginButton = props => {
+  const {color, backgroundColor} = props;
+  return (
+    <TouchableOpacity style={[styles.button, {backgroundColor}]}>
+      <Text style={{color}}>{props.text}</Text>
+    </TouchableOpacity>
+  );
+};
+
+export default LoginButton;
 
 LoginButton.propTypes = {
   text: PropTypes.string.isRequired,

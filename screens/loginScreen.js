@@ -1,54 +1,74 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {
   Image,
   TouchableOpacity,
   StyleSheet,
   Text,
   View,
-  ScrollView,
   KeyboardAvoidingView,
   ImageBackground,
 } from 'react-native';
 import LoginForm from './LoginForm';
+import {IotlStrings} from '../api/context';
 
-export default class Login extends Component {
-  render() {
-    return (
-      <ImageBackground
-        source={require('../assets/images/bg.gif')}
-        style={styles.backgroundImage}>
-        <View style={styles.container}>
-          <KeyboardAvoidingView behavior={'padding'}>
-            <View style={styles.logo} />
-            <View style={styles.BoxArea}>
-              <View style={styles.loginArea}>
-                <Image
-                  source={require('../assets/images/bulb.gif')}
-                  style={styles.imgLogo}
-                />
-                <Text style={styles.loginAreaTitle}>NIT3002</Text>
-                <LoginForm />
+const LoginScreen = ({navigation}) => {
+  return (
+    <ImageBackground
+      source={require('../assets/images/bg.gif')}
+      style={styles.backgroundImage}>
+      <View style={styles.container}>
+        <KeyboardAvoidingView behavior={'padding'}>
+          <View style={styles.loginArea}>
+            <Image
+              source={require('../assets/images/bulb.gif')}
+              style={styles.imgLogo}
+            />
+            <Text style={styles.loginAreaTitle}>{IotlStrings.loginTitle}</Text>
+            <LoginForm />
+          </View>
+          <View style={styles.bottomContainerH}>
+            <View style={styles.accountContainer}>
+              <View style={styles.createAccountButton}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('CreateAccountScreen')}>
+                  <Text style={styles.createAccountButton}>
+                    {IotlStrings.createAccountButton}
+                  </Text>
+                </TouchableOpacity>
               </View>
-
-              <View style={styles.signUpArea}>
+              <View style={styles.resetPWButtonText}>
                 <TouchableOpacity>
-                  <Text style={styles.suText}>Create an account</Text>
-                  <Text style={styles.suText}>Lan control</Text>
+                  <Text style={styles.resetPWButtonText}>
+                    {' '}
+                    {IotlStrings.resetPWButton}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingView>
-        </View>
-      </ImageBackground>
-    );
-  }
-}
+
+            <View style={styles.lanControlButton}>
+              <TouchableOpacity>
+                <Text style={styles.lanControlButton}>
+                  {' '}
+                  {IotlStrings.lanControlButton}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </ImageBackground>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  BoxArea: {
+    flex: 1,
   },
   backgroundImage: {
     flex: 1,
@@ -65,13 +85,62 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#f2f2f2',
   },
-  BoxArea: {
+  bottomContainerH: {
+    flex: 0,
+    flexDirection: 'row',
     backgroundColor: '#F68F00',
-    padding: 20,
+    padding: 10,
+    borderRadius: 5,
+    elevation: 14,
+
+    margin: 10,
+  },
+  bottomContainerV: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: '#F68F00',
+    padding: 10,
+    borderRadius: 5,
+    elevation: 14,
+
+    margin: 10,
+  },
+  accountContainer: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+
+  LanContainer: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+
+  createAccountButton: {
+    backgroundColor: '#F68F00',
+    padding: 10,
     borderRadius: 5,
     elevation: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    margin: 3,
+  },
+  lanControlButton: {
+    backgroundColor: '#F68F00',
+    padding: 10,
+    borderRadius: 5,
+    elevation: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 10,
+  },
+  resetPWButtonText: {
+    backgroundColor: '#F68F00',
+    padding: 10,
+    borderRadius: 5,
+    elevation: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 10,
   },
   loginArea: {
     backgroundColor: '#F68F00',
@@ -97,12 +166,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  suDescription: {
+  createAccountButton: {
     color: '#DBE2E5',
-    alignSelf: 'center',
+    borderWidth: 1,
+    margin: 3,
   },
-  suText: {
+  lanControlButton: {
     color: '#DBE2E5',
-    alignSelf: 'center',
+    borderWidth: 1,
+    margin: 3,
+  },
+  resetPWButtonText: {
+    color: '#DBE2E5',
+    borderWidth: 0,
+    margin: 3,
   },
 });
+
+export default LoginScreen;

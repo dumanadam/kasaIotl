@@ -1,37 +1,43 @@
-import React, {Component} from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import React, {useRef} from 'react';
+import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 import MyTextInput from '../components/MyTextInput';
-import LoginButton from '../components/LoginButton';
+import {IotlStrings, IotlGlobals, AuthContext} from '../api/context';
 
-export default class LoginForm extends Component {
-  render() {
-    return (
-      <View>
-        <MyTextInput
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholder="User Name"
-          returnKeyType={'next'}
-          onSubmitEditing={() => this.passwordInput.focus()}
-        />
-        <MyTextInput
-          secureTextEntry={true}
-          placeholder="Password"
-          inputRef={input => (this.passwordInput = input)}
-          returnKeyType={'go'}
-        />
-        <LoginButton
-          color={'#F68F00'}
-          backgroundColor={'#DBE2E5'}
-          text={'Login'}
-        />
-      </View>
-    );
-  }
-}
+const LoginForm = () => {
+  const passwordInput = useRef(null);
+  const {signIn} = React.useContext(AuthContext);
+
+  const checkAuth = () => {
+    IotlGlobals.authToken = 'asd';
+  };
+
+  return (
+    <View>
+      <MyTextInput
+        keyboardType="email-address"
+        autoCapitalize="none"
+        placeholder="User Name"
+      />
+      <MyTextInput secureTextEntry={true} placeholder="Password" />
+
+      <TouchableOpacity style={styles.button} onPress={() => signIn()}>
+        <Text style={styles.buttonText}>{IotlStrings.loginTextButton}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  loginFormTitle: {
-    marginBottom: 20,
+  button: {
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderRadius: 3,
+    alignItems: 'center',
+    backgroundColor: '#DBE2E5',
+  },
+  buttonText: {
+    color: '#F68F00',
   },
 });
+
+export default LoginForm;

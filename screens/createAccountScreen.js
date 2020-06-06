@@ -8,7 +8,7 @@ const CreateAccountScreen = ({navigation}) => {
       <Button
         title="goto gogls"
         onPress={() => {
-          navigation.push('SignIn');
+          navigation.push('LoginScreen');
         }}
       />
     </View>
