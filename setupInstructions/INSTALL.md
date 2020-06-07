@@ -11,6 +11,9 @@ Windows 10
 choco install -y nodejs.install python2 jdk8
 npm install @react-navigation/native
 npm install react-native-reanimated react-native-gesture-handler react-native-screens react-native-safe-area-context @react-native-community/masked-view
+npm install --save tplink-cloud-api
+npm install --save @react-native-community/async-storage
+npm i react-native-elements --save
 npx react-native run-android
 ```
 
