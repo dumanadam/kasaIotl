@@ -13,7 +13,7 @@ IotlGlobals = {
 IotlStrings = {
   loginTextButton: 'Login',
   loginTitle: 'NIT3002',
-  createAccountButton: 'Create    account',
+  createAccountButton: 'Create account',
   lanControlButton: 'Lan control',
   resetPWButton: 'Reset Password',
 };

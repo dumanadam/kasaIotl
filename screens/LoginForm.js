@@ -4,6 +4,7 @@ import MyTextInput from '../components/MyTextInput';
 import {IotlStrings, IotlGlobals, AuthContext} from '../api/context';
 import {Secrets} from '../assets/Secrets';
 import AsyncStorage from '@react-native-community/async-storage';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginForm = props => {
   const [IsWarningShown, setIsWarningShown] = React.useState(false);
@@ -61,6 +62,7 @@ const LoginForm = props => {
         placeholder={userName ? userName : 'Usesdsdr Name'}
         onChangeText={text => setUserName(text)}
         setUserName={setUserName}
+        leftIcon={<Icon name="account-outline" size={25} color="#DBE2E5" />}
         {...props}
       />
       <MyTextInput
@@ -68,6 +70,7 @@ const LoginForm = props => {
         placeholder="Password"
         setUserPass={setUserPass}
         onChangeText={text => setUserPass(text)}
+        leftIcon={<Icon name="lock-outline" size={25} color="#DBE2E5" />}
         {...props}
       />
 
@@ -84,7 +87,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 3,
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 0.3,
     borderColor: '#DBE2E5',
   },
   buttonText: {

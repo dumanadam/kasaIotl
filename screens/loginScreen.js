@@ -7,6 +7,7 @@ import {
   View,
   KeyboardAvoidingView,
   ImageBackground,
+  StatusBar,
 } from 'react-native';
 import LoginForm from './LoginForm';
 import {IotlStrings} from '../api/context';
@@ -19,6 +20,11 @@ const LoginScreen = ({navigation}) => {
       source={require('../assets/images/bg.gif')}
       style={styles.backgroundImage}>
       <View style={styles.container}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={'transparent'}
+          translucent={true}
+        />
         <KeyboardAvoidingView behavior={'padding'}>
           <View style={styles.topContainer}>
             <Image
@@ -56,19 +62,6 @@ const LoginScreen = ({navigation}) => {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
-            <View style={styles.textButtonContainer}>
-              <Icon
-                name="lan-connect"
-                color="white"
-                style={styles.buttonIcon}
-              />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('LanControlScreen')}>
-                <Text style={styles.lanControlButton}>
-                  {IotlStrings.lanControlButton}
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -108,7 +101,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 20,
     borderRadius: 5,
-    elevation: 2,
+
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -117,7 +110,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
 
-    elevation: 2,
     width: 260,
     marginTop: 10,
     alignItems: 'center',
@@ -126,13 +118,13 @@ const styles = StyleSheet.create({
   },
   accountContainer: {
     flex: 1,
-    flexDirection: 'column',
+    flexDirection: 'row',
   },
   textButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 7,
-    marginHorizontal: 10,
+    marginVertical: 2,
+    marginLeft: 5,
   },
   createAccountButton: {
     color: '#DBE2E5',
@@ -178,7 +170,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginBottom: 5,
-    width: 240,
+
+    color: '#DBE2E5',
   },
   signUpArea: {
     alignItems: 'center',

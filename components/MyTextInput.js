@@ -1,15 +1,16 @@
 import React, {Component, useState} from 'react';
 import {StyleSheet, View, Text, TextInput} from 'react-native';
 import {Input} from 'react-native-elements';
-import {Icon} from 'react-native-elements';
+
 const MyTextInput = props => {
   const {
-    value,
-
+    leftIcon,
+    keyboardType,
+    secureTextEntry,
     placeholder,
     onChangeText,
   } = props;
-
+  console.log(`props ${props}`);
   return (
     <View>
       {/*       <TextInput
@@ -19,22 +20,27 @@ const MyTextInput = props => {
         onChangeText={onChangeText}
         {...props}
       /> */}
-      <Input placeholder="BASIC INPUT" inputStyle={styles.input} />
+      <Input
+        leftIcon={leftIcon}
+        placeholder={placeholder}
+        inputStyle={styles.input}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        secureTextEntry={secureTextEntry}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   input: {
-    height: 40,
     padding: 10,
 
-    color: '#999999',
-    marginBottom: 8,
-    fontSize: 14,
+    color: '#F68F00',
+
+    fontSize: 15,
     fontWeight: '600',
     width: '100%',
-    color: 'black',
   },
 });
 
