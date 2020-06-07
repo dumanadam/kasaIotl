@@ -11,6 +11,7 @@ import PresetStack from './stacks/PresetStack';
 import AdjustStack from './stacks/AdjustStack';
 import TimerStack from './stacks/TimerStack';
 import SettingsStack from './stacks/SettingsStack';
+import LanControlScreen from './screens/LanControlScreen';
 
 import {
   SafeAreaView,
@@ -101,13 +102,21 @@ const App: () => React$Node = () => {
               }}
               initialParams={{asd: 'qwewqe'}}
             />
-            {
-              <AuthStack.Screen
-                name="CreateAccountScreen"
-                component={CreateAccountScreen}
-                options={{title: 'Create Account'}}
-              />
-            }
+
+            <AuthStack.Screen
+              name="CreateAccountScreen"
+              component={CreateAccountScreen}
+              options={{title: 'Create Account'}}
+            />
+            <AuthStack.Screen
+              name="LanControlScreen"
+              component={LanControlScreen}
+              options={{
+                title: 'Lan Control',
+                animationEnabled: true,
+              }}
+              initialParams={{asd: 'qwewqe'}}
+            />
           </AuthStack.Navigator>
         )}
       </NavigationContainer>

@@ -1,26 +1,77 @@
-import React, {useRef} from 'react';
+import React from 'react';
 import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 import MyTextInput from '../components/MyTextInput';
 import {IotlStrings, IotlGlobals, AuthContext} from '../api/context';
+import {Secrets} from '../assets/Secrets';
+import AsyncStorage from '@react-native-community/async-storage';
 
-const LoginForm = () => {
-  const passwordInput = useRef(null);
+const LoginForm = props => {
+  const [IsWarningShown, setIsWarningShown] = React.useState(false);
+  const [userName, setLUserName] = React.useState(Secrets.authUserName);
+  const [userPass, setLUserPass] = React.useState(Secrets.authPassword);
+  const [isSpinner, setisSpinner] = React.useState(false);
   const {signIn} = React.useContext(AuthContext);
 
+  console.log('sdsds', props);
+
+  const storeData = async (key, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      // saving error
+      console.log('async storage error', e);
+    }
+  };
+
+  const getData = async key => {
+    try {
+      const value = await AsyncStorage.getItem(key);
+      if (value !== null) {
+        console.log('thekey???', value);
+      }
+    } catch (e) {
+      console.log('key error ', e);
+    }
+  };
+
   const checkAuth = () => {
-    IotlGlobals.authToken = 'asd';
+    /*  storeData(authUserName, Secrets.authUserName);
+    getData(authUserName);
+ */
+    console.log(`username:: ${userName} pass:${userPass}`);
+    signIn();
+  };
+
+  const setUserName = name => {
+    Secrets.authUserName = name;
+
+    console.log('nam234', Secrets.authUserName);
+  };
+  const setUserPass = pass => {
+    Secrets.authPassword = pass;
+
+    console.log('rem pass', Secrets.authPassword);
   };
 
   return (
-    <View>
+    <View style={{width: '100%'}}>
       <MyTextInput
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholder="User Name"
+        placeholder={userName ? userName : 'Usesdsdr Name'}
+        onChangeText={text => setUserName(text)}
+        setUserName={setUserName}
+        {...props}
       />
-      <MyTextInput secureTextEntry={true} placeholder="Password" />
+      <MyTextInput
+        secureTextEntry={true}
+        placeholder="Password"
+        setUserPass={setUserPass}
+        onChangeText={text => setUserPass(text)}
+        {...props}
+      />
 
-      <TouchableOpacity style={styles.button} onPress={() => signIn()}>
+      <TouchableOpacity style={styles.button} onPress={() => checkAuth()}>
         <Text style={styles.buttonText}>{IotlStrings.loginTextButton}</Text>
       </TouchableOpacity>
     </View>
@@ -33,10 +84,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 3,
     alignItems: 'center',
-    backgroundColor: '#DBE2E5',
+    borderWidth: 2,
+    borderColor: '#DBE2E5',
   },
   buttonText: {
-    color: '#F68F00',
+    color: 'white',
   },
 });
 

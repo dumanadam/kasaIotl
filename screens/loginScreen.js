@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import LoginForm from './LoginForm';
 import {IotlStrings} from '../api/context';
+import {Button} from 'react-native-elements';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = ({navigation}) => {
   return (
@@ -18,7 +20,7 @@ const LoginScreen = ({navigation}) => {
       style={styles.backgroundImage}>
       <View style={styles.container}>
         <KeyboardAvoidingView behavior={'padding'}>
-          <View style={styles.loginArea}>
+          <View style={styles.topContainer}>
             <Image
               source={require('../assets/images/bulb.gif')}
               style={styles.imgLogo}
@@ -26,9 +28,14 @@ const LoginScreen = ({navigation}) => {
             <Text style={styles.loginAreaTitle}>{IotlStrings.loginTitle}</Text>
             <LoginForm />
           </View>
-          <View style={styles.bottomContainerH}>
+          <View style={styles.bottomContainer}>
             <View style={styles.accountContainer}>
-              <View style={styles.createAccountButton}>
+              <View style={styles.textButtonContainer}>
+                <Icon
+                  name="account-plus"
+                  color="white"
+                  style={styles.buttonIcon}
+                />
                 <TouchableOpacity
                   onPress={() => navigation.navigate('CreateAccountScreen')}>
                   <Text style={styles.createAccountButton}>
@@ -36,20 +43,29 @@ const LoginScreen = ({navigation}) => {
                   </Text>
                 </TouchableOpacity>
               </View>
-              <View style={styles.resetPWButtonText}>
-                <TouchableOpacity>
+              <View style={styles.textButtonContainer}>
+                <Icon
+                  name="lock-reset"
+                  color="white"
+                  style={styles.buttonIcon}
+                />
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ResetPasswordScreen')}>
                   <Text style={styles.resetPWButtonText}>
-                    {' '}
                     {IotlStrings.resetPWButton}
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-
-            <View style={styles.lanControlButton}>
-              <TouchableOpacity>
+            <View style={styles.textButtonContainer}>
+              <Icon
+                name="lan-connect"
+                color="white"
+                style={styles.buttonIcon}
+              />
+              <TouchableOpacity
+                onPress={() => navigation.navigate('LanControlScreen')}>
                 <Text style={styles.lanControlButton}>
-                  {' '}
                   {IotlStrings.lanControlButton}
                 </Text>
               </TouchableOpacity>
@@ -62,6 +78,9 @@ const LoginScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  botButton: {
+    backgroundColor: 'transparent',
+  },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -85,29 +104,51 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#f2f2f2',
   },
-  bottomContainerH: {
+  topContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    borderRadius: 5,
+    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomContainer: {
     flex: 0,
     flexDirection: 'row',
-    backgroundColor: '#F68F00',
     padding: 10,
-    borderRadius: 5,
-    elevation: 14,
 
-    margin: 10,
-  },
-  bottomContainerV: {
-    flex: 1,
-    flexDirection: 'column',
-    backgroundColor: '#F68F00',
-    padding: 10,
-    borderRadius: 5,
-    elevation: 14,
-
-    margin: 10,
+    elevation: 2,
+    width: 260,
+    marginTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
   accountContainer: {
     flex: 1,
     flexDirection: 'column',
+  },
+  textButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 7,
+    marginHorizontal: 10,
+  },
+  createAccountButton: {
+    color: '#DBE2E5',
+    flexDirection: 'row',
+  },
+  buttonIcon: {
+    color: '#DBE2E5',
+    justifyContent: 'center',
+    alignContent: 'center',
+    marginRight: 3,
+  },
+  bottomContainerV: {
+    flex: 1,
+    flexDirection: 'column',
+
+    padding: 10,
   },
 
   LanContainer: {
@@ -115,26 +156,15 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
 
-  createAccountButton: {
-    backgroundColor: '#F68F00',
-    padding: 10,
-    borderRadius: 5,
-    elevation: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 3,
-  },
   lanControlButton: {
-    backgroundColor: '#F68F00',
     padding: 10,
-    borderRadius: 5,
-    elevation: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'transparent',
+
     margin: 10,
+    width: 5,
+    flex: 1,
   },
   resetPWButtonText: {
-    backgroundColor: '#F68F00',
     padding: 10,
     borderRadius: 5,
     elevation: 14,
@@ -142,38 +172,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     margin: 10,
   },
-  loginArea: {
-    backgroundColor: '#F68F00',
-    padding: 20,
-    borderRadius: 5,
-    elevation: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   loginAreaTitle: {
     fontWeight: 'bold',
     fontSize: 20,
     textAlign: 'center',
     marginBottom: 5,
+    width: 240,
   },
   signUpArea: {
     alignItems: 'center',
     margin: 15,
-    backgroundColor: '#F68F00',
+
     padding: 20,
     borderRadius: 5,
     elevation: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  createAccountButton: {
-    color: '#DBE2E5',
-    borderWidth: 1,
-    margin: 3,
-  },
+
   lanControlButton: {
     color: '#DBE2E5',
-    borderWidth: 1,
+
     margin: 3,
   },
   resetPWButtonText: {

@@ -14,6 +14,7 @@ npm install react-native-reanimated react-native-gesture-handler react-native-sc
 npm install --save tplink-cloud-api
 npm install --save @react-native-community/async-storage
 npm i react-native-elements --save
+npm i --save react-native-vector-icons
 npx react-native run-android
 ```
 

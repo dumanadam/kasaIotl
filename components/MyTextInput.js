@@ -1,18 +1,25 @@
 import React, {Component, useState} from 'react';
 import {StyleSheet, View, Text, TextInput} from 'react-native';
-
+import {Input} from 'react-native-elements';
+import {Icon} from 'react-native-elements';
 const MyTextInput = props => {
-  const [textInput, setTextInput] = React.useState('');
+  const {
+    value,
+
+    placeholder,
+    onChangeText,
+  } = props;
+
   return (
     <View>
-      <TextInput
-        {...props}
+      {/*       <TextInput
+        placeholder={placeholder}
         placeholderTextColor="#ddd"
         style={styles.input}
-        value={textInput}
-        onChangeText={text => setTextInput(text)}
-        ref={props.inputRef}
-      />
+        onChangeText={onChangeText}
+        {...props}
+      /> */}
+      <Input placeholder="BASIC INPUT" inputStyle={styles.input} />
     </View>
   );
 };
@@ -21,14 +28,12 @@ const styles = StyleSheet.create({
   input: {
     height: 40,
     padding: 10,
-    borderWidth: 2,
-    borderRadius: 4,
-    borderColor: '#f1f1f1',
+
     color: '#999999',
     marginBottom: 8,
     fontSize: 14,
     fontWeight: '600',
-    width: 150,
+    width: '100%',
     color: 'black',
   },
 });
