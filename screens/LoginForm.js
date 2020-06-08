@@ -1,54 +1,50 @@
 import React from 'react';
-import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {View, StyleSheet, Switch, Text} from 'react-native';
 import MyTextInput from '../components/MyTextInput';
-import {IotlStrings, IotlGlobals, AuthContext} from '../api/context';
+import {IotlStrings, Colours, AuthContext, IotlGlobals} from '../api/context';
 import {Secrets} from '../assets/Secrets';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Button, CheckBox} from 'react-native-elements';
 
 const LoginForm = props => {
-  const [IsWarningShown, setIsWarningShown] = React.useState(false);
-  const [userName, setLUserName] = React.useState(Secrets.authUserName);
-  const [userPass, setLUserPass] = React.useState(Secrets.authPassword);
-  const [isSpinner, setisSpinner] = React.useState(false);
+  const [userName, setUserName] = React.useState(Secrets.authUserName);
+  const [userNameError, setUserNameError] = React.useState('');
+
+  const [userPass, setUserPass] = React.useState(Secrets.authPassword);
+  const [userPassError, setUserPassError] = React.useState('');
+  const [isloading, setisloading] = React.useState(false);
+
   const {signIn} = React.useContext(AuthContext);
 
   console.log('sdsds', props);
 
-  const storeData = async (key, value) => {
-    try {
-      await AsyncStorage.setItem(key, value);
-    } catch (e) {
-      // saving error
-      console.log('async storage error', e);
-    }
-  };
-
-  const getData = async key => {
-    try {
-      const value = await AsyncStorage.getItem(key);
-      if (value !== null) {
-        console.log('thekey???', value);
-      }
-    } catch (e) {
-      console.log('key error ', e);
-    }
+  var loginButtonProps = {
+    title: IotlStrings.loginTextButton,
+    type: 'outline',
+    buttonStyle: styles.button,
+    onPress: () => checkAuth(),
+    loading: isloading,
   };
 
   const checkAuth = () => {
     /*  storeData(authUserName, Secrets.authUserName);
     getData(authUserName);
+        
  */
-    console.log(`username:: ${userName} pass:${userPass}`);
-    signIn();
+    setisloading(true);
+    setTimeout(() => {
+      console.log(`username:: ${userName} pass:${userPass}`);
+      signIn();
+    }, 150);
   };
 
-  const setUserName = name => {
+  const setPUserName = name => {
     Secrets.authUserName = name;
 
     console.log('nam234', Secrets.authUserName);
   };
-  const setUserPass = pass => {
+  const setPUserPass = pass => {
     Secrets.authPassword = pass;
 
     console.log('rem pass', Secrets.authPassword);
@@ -59,39 +55,43 @@ const LoginForm = props => {
       <MyTextInput
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholder={userName ? userName : 'Usesdsdr Name'}
-        onChangeText={text => setUserName(text)}
-        setUserName={setUserName}
+        placeholder={userName ? userName : 'User Name'}
+        onChangeText={text => setPUserName(text)}
+        setUserName={setPUserName}
         leftIcon={<Icon name="account-outline" size={25} color="#DBE2E5" />}
-        {...props}
-      />
-      <MyTextInput
-        secureTextEntry={true}
-        placeholder="Password"
-        setUserPass={setUserPass}
-        onChangeText={text => setUserPass(text)}
-        leftIcon={<Icon name="lock-outline" size={25} color="#DBE2E5" />}
+        errorStyle={{color: 'red'}}
+        errorMessage={userNameError}
         {...props}
       />
 
-      <TouchableOpacity style={styles.button} onPress={() => checkAuth()}>
-        <Text style={styles.buttonText}>{IotlStrings.loginTextButton}</Text>
-      </TouchableOpacity>
+      <MyTextInput
+        secureTextEntry={true}
+        placeholder="Password"
+        setUserPass={setPUserPass}
+        onChangeText={text => setPUserPass(text)}
+        leftIcon={<Icon name="lock-outline" size={25} color="#DBE2E5" />}
+        errorStyle={{color: 'red'}}
+        errorMessage={userPassError}
+        {...props}
+      />
+
+      <Button {...loginButtonProps} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    borderRadius: 3,
-    alignItems: 'center',
     borderWidth: 0.3,
     borderColor: '#DBE2E5',
+    marginBottom: 30,
+    marginTop: 15,
   },
-  buttonText: {
-    color: 'white',
+  optionsButton: {
+    borderWidth: 0.3,
+    borderColor: '#DBE2E5',
+    marginBottom: 30,
+    marginTop: 15,
   },
 });
 

@@ -9,6 +9,8 @@ const MyTextInput = props => {
     secureTextEntry,
     placeholder,
     onChangeText,
+    errorStyle,
+    errorMessage,
   } = props;
   console.log(`props ${props}`);
   return (
@@ -27,6 +29,8 @@ const MyTextInput = props => {
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         secureTextEntry={secureTextEntry}
+        errorStyle={errorStyle}
+        errorMessage={errorMessage}
       />
     </View>
   );

@@ -10,11 +10,64 @@ import {
   StatusBar,
 } from 'react-native';
 import LoginForm from './LoginForm';
-import {IotlStrings} from '../api/context';
-import {Button} from 'react-native-elements';
+import AsyncStorage from '@react-native-community/async-storage';
+import {Button, CheckBox} from 'react-native-elements';
+import {IotlStrings, Colours, AuthContext, IotlGlobals} from '../api/context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = ({navigation}) => {
+  const [isOptions, setisOptions] = React.useState(false);
+  const [isRemember, setIsRemember] = React.useState(true);
+  const [isReset, setisReset] = React.useState(false);
+  const [optionsColour, setOptionsColour] = React.useState(Colours.myYellow);
+  const [optionsChevron, setOptionsChevron] = React.useState('chevron-up');
+
+  const optionsClicked = () => {
+    setisOptions(!isOptions);
+    isOptions
+      ? setOptionsChevron('chevron-up')
+      : setOptionsChevron('chevron-down');
+  };
+
+  React.useEffect(() => {
+    setTimeout(() => {}, 500);
+  }, []);
+
+  var optionsProps = {
+    title: IotlStrings.loginOptionsTextButton,
+    type: 'clear',
+    buttonStyle: styles.optionsbutton,
+    onPress: () => optionsClicked(),
+    titleStyle: styles.optionsText,
+    icon: <Icon name={optionsChevron} size={15} color={optionsColour} />,
+  };
+
+  const storeAsyncData = async (key, value) => {
+    try {
+      console.log(`entering ${key} and ${key}`);
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      // saving error
+      console.log('async storage error', e);
+    }
+  };
+
+  const getAsyncData = async key => {
+    try {
+      const value = await AsyncStorage.getItem(key);
+      if (value !== null) {
+        console.log('thekey???', value);
+      }
+    } catch (e) {
+      console.log('key error ', e);
+    }
+  };
+
+  storeAsyncData('testkey', 'testdata');
+  var aaa = getAsyncData('testkey');
+
+  console.log(`reterevied ${JSON.stringify(aaa)}`);
+
   return (
     <ImageBackground
       source={require('../assets/images/bg.gif')}
@@ -34,8 +87,27 @@ const LoginScreen = ({navigation}) => {
             <Text style={styles.loginAreaTitle}>{IotlStrings.loginTitle}</Text>
             <LoginForm />
           </View>
-          <View style={styles.bottomContainer}>
-            <View style={styles.accountContainer}>
+        </KeyboardAvoidingView>
+      </View>
+      <Button {...optionsProps} />
+      <View style={styles.bottomContainer}>
+        {isOptions ? (
+          <View style={styles.optionsContainer}>
+            <View style={styles.firstLineContainer}>
+              <CheckBox
+                title="Rememeber"
+                checked={isRemember}
+                iconType="material-community"
+                checkedIcon="checkbox-marked-circle-outline"
+                uncheckedIcon="checkbox-blank-circle-outline"
+                size={15}
+                checkedColor="red"
+                onPress={() => rememberPushed}
+                containerStyle={styles.check}
+                textStyle={styles.checkText}
+              />
+            </View>
+            <View style={styles.secondLineContainer}>
               <View style={styles.textButtonContainer}>
                 <Icon
                   name="account-plus"
@@ -44,11 +116,12 @@ const LoginScreen = ({navigation}) => {
                 />
                 <TouchableOpacity
                   onPress={() => navigation.navigate('CreateAccountScreen')}>
-                  <Text style={styles.createAccountButton}>
+                  <Text style={styles.createAccountText}>
                     {IotlStrings.createAccountButton}
                   </Text>
                 </TouchableOpacity>
               </View>
+
               <View style={styles.textButtonContainer}>
                 <Icon
                   name="lock-reset"
@@ -63,28 +136,60 @@ const LoginScreen = ({navigation}) => {
                 </TouchableOpacity>
               </View>
             </View>
+            <View style={styles.thirdLineContainer}>
+              <View style={styles.textButtonContainer}>
+                <Icon
+                  name="account-plus"
+                  color="white"
+                  style={styles.buttonIcon}
+                />
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('CreateAccountScreen')}>
+                  <Text style={styles.defaultsText}>
+                    {IotlStrings.defaultsButton}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        </KeyboardAvoidingView>
+        ) : (
+          <React.Fragment />
+        )}
       </View>
     </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  check: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },
+  checkText: {
+    color: Colours.myWhite,
+    flexDirection: 'row',
+    marginLeft: 5,
+    marginRight: 20,
+    fontSize: 12,
+    fontWeight: 'normal',
+  },
+  optionsContainer: {
+    flexDirection: 'column',
+  },
+  optionsText: {
+    color: '#F68F00',
+    fontSize: 10,
+  },
   botButton: {
     backgroundColor: 'transparent',
   },
   container: {
-    flex: 1,
+    flex: 0,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  BoxArea: {
-    flex: 1,
+    marginTop: 150,
   },
   backgroundImage: {
     flex: 1,
-
     resizeMode: 'cover',
   },
   imgLogo: {
@@ -99,43 +204,53 @@ const styles = StyleSheet.create({
   },
   topContainer: {
     paddingHorizontal: 10,
-    paddingVertical: 20,
+
     borderRadius: 5,
 
     alignItems: 'center',
     justifyContent: 'center',
   },
   bottomContainer: {
-    flex: 0,
     flexDirection: 'row',
-    padding: 10,
 
-    width: 260,
-    marginTop: 10,
-    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  firstLineContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  secondLineContainer: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  thirdLineContainer: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignSelf: 'center',
   },
-  accountContainer: {
-    flex: 1,
-    flexDirection: 'row',
-  },
   textButtonContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
-    marginLeft: 5,
+    flexDirection: 'row',
   },
-  createAccountButton: {
+  createAccountText: {
     color: '#DBE2E5',
     flexDirection: 'row',
+    marginLeft: 5,
+    marginRight: 20,
   },
   buttonIcon: {
     color: '#DBE2E5',
     justifyContent: 'center',
     alignContent: 'center',
-    marginRight: 3,
+    marginRight: 5,
   },
+  seperatorIcon: {
+    color: '#DBE2E5',
+    justifyContent: 'center',
+    alignContent: 'center',
+    marginHorizontal: 8,
+  },
+
   bottomContainerV: {
     flex: 1,
     flexDirection: 'column',
@@ -157,12 +272,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   resetPWButtonText: {
-    padding: 10,
-    borderRadius: 5,
-    elevation: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    margin: 10,
+  },
+  defaultsText: {
+    color: Colours.myWhite,
   },
 
   loginAreaTitle: {
@@ -170,7 +284,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginBottom: 5,
-
+    width: 260,
     color: '#DBE2E5',
   },
   signUpArea: {
