@@ -12,7 +12,7 @@ const MyTextInput = props => {
     errorStyle,
     errorMessage,
   } = props;
-  console.log(`props ${props}`);
+
   return (
     <View>
       {/*       <TextInput

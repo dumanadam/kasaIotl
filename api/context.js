@@ -19,6 +19,10 @@ IotlStrings = {
   resetPWButton: 'Forgot Password',
   loginOptionsTextButton: 'Options',
   defaultsButton: 'Reset to defauls',
+  rememberText: 'Remember Me',
+  defmoUserText: 'Use demo user',
+  passwordPlaceholder: 'Password',
+  demoPasswordPlaceholder: 'Demo Password Set',
 };
 
 Colours = {

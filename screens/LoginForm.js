@@ -14,7 +14,10 @@ const LoginForm = props => {
   const [userPass, setUserPass] = React.useState(Secrets.authPassword);
   const [userPassError, setUserPassError] = React.useState('');
   const [isloading, setisloading] = React.useState(false);
-
+  const [isRemember, setIsRemember] = React.useState(false);
+  const [isReset, setisReset] = React.useState(false);
+  const [isOptions, setisOptions] = React.useState(true);
+  const [optionsColour, setOptionsColour] = React.useState(Colours.myYellow);
   const {signIn} = React.useContext(AuthContext);
 
   console.log('sdsds', props);
@@ -25,6 +28,39 @@ const LoginForm = props => {
     buttonStyle: styles.button,
     onPress: () => checkAuth(),
     loading: isloading,
+  };
+
+  var settingsProps = {
+    title: IotlStrings.loginOptionsTextButton,
+    type: 'clear',
+    buttonStyle: styles.optionsbutton,
+    onPress: () => checkAuth(),
+    titleStyle: styles.optionsText,
+    icon: <Icon name="chevron-down" size={15} color={optionsColour} />,
+  };
+
+  const storeData = async (key, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      // saving error
+      console.log('async storage error', e);
+    }
+  };
+
+  const checkToggle = value => {
+    value == 'remember' ? setIsRemember(!isRemember) : setisReset(!isReset);
+  };
+
+  const getData = async key => {
+    try {
+      const value = await AsyncStorage.getItem(key);
+      if (value !== null) {
+        console.log('thekey???', value);
+      }
+    } catch (e) {
+      console.log('key error ', e);
+    }
   };
 
   const checkAuth = () => {
@@ -76,11 +112,49 @@ const LoginForm = props => {
       />
 
       <Button {...loginButtonProps} />
+      <Button {...settingsProps} />
+      {isOptions ? (
+        <View style={styles.optionsContainer}>
+          <CheckBox
+            title="Rememeber"
+            checked={isRemember}
+            iconType="material-community"
+            checkedIcon="checkbox-marked-circle-outline"
+            uncheckedIcon="checkbox-blank-circle-outline"
+            size={15}
+            checkedColor="red"
+            onPress={() => checkToggle('remember')}
+            containerStyle={styles.check}
+            textStyle={styles.checkText}
+          />
+          <CheckBox
+            title="Reset"
+            checked={isReset}
+            iconType="material-community"
+            checkedIcon="checkbox-marked-circle-outline"
+            uncheckedIcon="checkbox-blank-circle-outline"
+            size={15}
+            checkedColor="red"
+            onPress={() => checkToggle('reset')}
+            containerStyle={styles.check}
+            textStyle={styles.checkText}
+          />
+        </View>
+      ) : (
+        <Text>false</Text>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  check: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },
+  checkText: {
+    color: '#154159',
+  },
   button: {
     borderWidth: 0.3,
     borderColor: '#DBE2E5',
@@ -92,6 +166,15 @@ const styles = StyleSheet.create({
     borderColor: '#DBE2E5',
     marginBottom: 30,
     marginTop: 15,
+  },
+  optionsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    marginBottom: 30,
+  },
+  optionsText: {
+    color: '#F68F00',
+    fontSize: 10,
   },
 });
 

@@ -11,35 +11,82 @@ import {
 } from 'react-native';
 import LoginForm from './LoginForm';
 import AsyncStorage from '@react-native-community/async-storage';
-import {Button, CheckBox} from 'react-native-elements';
+import {Button, CheckBox, Input} from 'react-native-elements';
+import MyTextInput from '../components/MyTextInput';
 import {IotlStrings, Colours, AuthContext, IotlGlobals} from '../api/context';
+import {Secrets} from '../assets/Secrets';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = ({navigation}) => {
   const [isOptions, setisOptions] = React.useState(false);
   const [isRemember, setIsRemember] = React.useState(true);
-  const [isReset, setisReset] = React.useState(false);
+  const [isDemoUser, setIsDemoUser] = React.useState(false);
+  const [isDemoUserChecked, setIsDemoUserChecked] = React.useState(false);
+
   const [optionsColour, setOptionsColour] = React.useState(Colours.myYellow);
   const [optionsChevron, setOptionsChevron] = React.useState('chevron-up');
+  const [userName, setUserName] = React.useState(Secrets.defaultUsername);
+  const [userNameError, setUserNameError] = React.useState('');
+  const [isloading, setisloading] = React.useState(false);
+  const [userPassword, setUserPass] = React.useState(
+    IotlStrings.passwordPlaceholder,
+  );
+  const [userPassError, setUserPassError] = React.useState('');
 
   const optionsClicked = () => {
     setisOptions(!isOptions);
     isOptions
       ? setOptionsChevron('chevron-up')
       : setOptionsChevron('chevron-down');
+    isOptions
+      ? setOptionsColour(Colours.myYellow)
+      : setOptionsColour(Colours.myWhite);
+  };
+
+  const checkDemoUserClicked = () => {
+    console.log('asdasdad', isDemoUser);
+    setIsDemoUser(!isDemoUser);
+    console.log('sdfgvsdfgsdf', isDemoUser);
+
+    setTimeout(() => {}, 500);
+  };
+
+  const rememberClicked = () => {
+    setIsRemember(!isRemember);
+    console.log(`demo ${isDemoUser} check${isDemoUserChecked}`);
   };
 
   React.useEffect(() => {
-    setTimeout(() => {}, 500);
-  }, []);
+    if (isRemember) {
+      if (userName == Secrets.defaultUsername) checkAsyncData('kasaUserName');
+      console.log('kasaUserName ok >');
+    }
 
-  var optionsProps = {
-    title: IotlStrings.loginOptionsTextButton,
-    type: 'clear',
-    buttonStyle: styles.optionsbutton,
-    onPress: () => optionsClicked(),
-    titleStyle: styles.optionsText,
-    icon: <Icon name={optionsChevron} size={15} color={optionsColour} />,
+    setTimeout(() => {}, 500);
+  }, [isDemoUser]);
+
+  var loginButtonProps = {
+    title: IotlStrings.loginTextButton,
+    type: 'outline',
+    buttonStyle: styles.button,
+    onPress: () => checkAuth(),
+    loading: isloading,
+  };
+
+  const checkAsyncData = async key => {
+    try {
+      const value = await AsyncStorage.getItem(key);
+
+      if (value !== null) {
+        console.log('kasaUserName ok >', value);
+        setUserName(value);
+      } else {
+        setUserNameError('async error');
+      }
+    } catch (e) {
+      console.log('kasaUserName error ', e);
+      setUserName('error');
+    }
   };
 
   const storeAsyncData = async (key, value) => {
@@ -56,17 +103,26 @@ const LoginScreen = ({navigation}) => {
     try {
       const value = await AsyncStorage.getItem(key);
       if (value !== null) {
-        console.log('thekey???', value);
+        console.log('thevalue???', value);
+        return value;
       }
     } catch (e) {
       console.log('key error ', e);
+      return 'error';
     }
   };
 
-  storeAsyncData('testkey', 'testdata');
-  var aaa = getAsyncData('testkey');
+  const setPUserName = name => {
+    Secrets.kasaUserName = name;
+    setUserName(name);
 
-  console.log(`reterevied ${JSON.stringify(aaa)}`);
+    console.log('nam234', userName);
+  };
+  const setPUserPass = pass => {
+    Secrets.authPassword = pass;
+
+    console.log('rem pass', Secrets.authPassword);
+  };
 
   return (
     <ImageBackground
@@ -85,82 +141,164 @@ const LoginScreen = ({navigation}) => {
               style={styles.imgLogo}
             />
             <Text style={styles.loginAreaTitle}>{IotlStrings.loginTitle}</Text>
-            <LoginForm />
+            <View style={{width: '100%'}}>
+              <Input
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder={isDemoUser ? Secrets.demoUserName : 'asdasd'}
+                placeholderTextColor={
+                  isDemoUser ? Colours.myWhite : Colours.myDrkBlue
+                }
+                onChangeText={text => setPUserName(text)}
+                inputStyle={isDemoUser ? styles.inputDemo : styles.input}
+                leftIcon={
+                  <Icon
+                    name="account-outline"
+                    size={25}
+                    color={Colours.myWhite}
+                  />
+                }
+                errorStyle={{color: Colours.myYellow}}
+                errorMessage={userNameError}
+              />
+              <Input
+                secureTextEntry={true}
+                placeholder={
+                  isDemoUser
+                    ? IotlStrings.demoPasswordPlaceholder
+                    : userPassword
+                }
+                placeholderTextColor={
+                  isDemoUser ? Colours.myWhite : Colours.myDrkBlue
+                }
+                inputStyle={isDemoUser ? styles.inputDemo : styles.input}
+                onChangeText={text => setPUserPass(text)}
+                leftIcon={
+                  <Icon name="lock-outline" size={25} color={Colours.myWhite} />
+                }
+                errorStyle={{color: Colours.myYellow}}
+                errorMessage={userPassError}
+              />
+
+              <Button {...loginButtonProps} />
+            </View>
           </View>
         </KeyboardAvoidingView>
       </View>
-      <Button {...optionsProps} />
-      <View style={styles.bottomContainer}>
-        {isOptions ? (
-          <View style={styles.optionsContainer}>
-            <View style={styles.firstLineContainer}>
-              <CheckBox
-                title="Rememeber"
-                checked={isRemember}
-                iconType="material-community"
-                checkedIcon="checkbox-marked-circle-outline"
-                uncheckedIcon="checkbox-blank-circle-outline"
-                size={15}
-                checkedColor="red"
-                onPress={() => rememberPushed}
-                containerStyle={styles.check}
-                textStyle={styles.checkText}
-              />
-            </View>
-            <View style={styles.secondLineContainer}>
-              <View style={styles.textButtonContainer}>
-                <Icon
-                  name="account-plus"
-                  color="white"
-                  style={styles.buttonIcon}
-                />
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('CreateAccountScreen')}>
-                  <Text style={styles.createAccountText}>
-                    {IotlStrings.createAccountButton}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+      <KeyboardAvoidingView behavior={'padding'}>
+        <View style={styles.optionsButtonContainer}>
+          <TouchableOpacity
+            style={styles.optionsRowContainer}
+            onPress={() => optionsClicked()}>
+            <Icon name={optionsChevron} size={15} color={optionsColour} />
+            <Text style={styles.optionsText}>
+              {IotlStrings.loginOptionsTextButton}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-              <View style={styles.textButtonContainer}>
-                <Icon
-                  name="lock-reset"
-                  color="white"
-                  style={styles.buttonIcon}
+        <View style={styles.bottomContainer}>
+          {isOptions ? (
+            <View style={styles.optionsContainer}>
+              <View style={styles.firstLineContainer}>
+                <CheckBox
+                  title={IotlStrings.rememberText}
+                  checked={isRemember}
+                  iconType="material-community"
+                  checkedIcon="checkbox-marked-circle-outline"
+                  uncheckedIcon="checkbox-blank-circle-outline"
+                  size={15}
+                  checkedColor={Colours.myYellow}
+                  onPress={() => rememberClicked()}
+                  containerStyle={styles.check}
+                  textStyle={styles.checkText}
                 />
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('ResetPasswordScreen')}>
-                  <Text style={styles.resetPWButtonText}>
-                    {IotlStrings.resetPWButton}
-                  </Text>
-                </TouchableOpacity>
+                <CheckBox
+                  title={IotlStrings.defmoUserText}
+                  checked={isDemoUser}
+                  iconType="material-community"
+                  checkedIcon="checkbox-marked-circle-outline"
+                  uncheckedIcon="checkbox-blank-circle-outline"
+                  size={15}
+                  checkedColor={Colours.myYellow}
+                  onPress={() => checkDemoUserClicked()}
+                  containerStyle={styles.check}
+                  textStyle={styles.checkText}
+                />
+              </View>
+              <View style={styles.secondLineContainer}>
+                <View style={styles.textButtonContainer}>
+                  <Icon
+                    name="account-plus"
+                    color="white"
+                    style={styles.buttonIcon}
+                  />
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('CreateAccountScreen')}>
+                    <Text style={styles.createAccountText}>
+                      {IotlStrings.createAccountButton}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.textButtonContainer}>
+                  <Icon
+                    name="lock-reset"
+                    color="white"
+                    style={styles.buttonIcon}
+                  />
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('ResetPasswordScreen')}>
+                    <Text style={styles.resetPWButtonText}>
+                      {IotlStrings.resetPWButton}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.thirdLineContainer}>
+                <View style={styles.textButtonContainer}>
+                  <Icon
+                    name="account-plus"
+                    color="white"
+                    style={styles.buttonIcon}
+                  />
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('CreateAccountScreen')}>
+                    <Text style={styles.defaultsText}>
+                      {IotlStrings.defaultsButton}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-            <View style={styles.thirdLineContainer}>
-              <View style={styles.textButtonContainer}>
-                <Icon
-                  name="account-plus"
-                  color="white"
-                  style={styles.buttonIcon}
-                />
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('CreateAccountScreen')}>
-                  <Text style={styles.defaultsText}>
-                    {IotlStrings.defaultsButton}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        ) : (
-          <React.Fragment />
-        )}
-      </View>
+          ) : (
+            <React.Fragment />
+          )}
+        </View>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  input: {
+    padding: 10,
+
+    color: Colours.myYellow,
+
+    fontSize: 15,
+    fontWeight: '600',
+    width: '100%',
+  },
+  inputDemo: {
+    padding: 10,
+
+    color: Colours.myWhite,
+
+    fontSize: 15,
+    fontWeight: '600',
+    width: '100%',
+  },
   check: {
     backgroundColor: 'transparent',
     borderWidth: 0,
@@ -177,12 +315,10 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   optionsText: {
-    color: '#F68F00',
+    color: Colours.myYellow,
     fontSize: 10,
   },
-  botButton: {
-    backgroundColor: 'transparent',
-  },
+
   container: {
     flex: 0,
     alignItems: 'center',
@@ -198,9 +334,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   logo: {alignItems: 'center', justifyContent: 'center'},
-  logoDesc: {
-    textAlign: 'center',
-    color: '#f2f2f2',
+  optionsButton: {
+    backgroundColor: 'transparent',
+
+    marginBottom: 30,
+    marginTop: 15,
   },
   topContainer: {
     paddingHorizontal: 10,
@@ -217,50 +355,43 @@ const styles = StyleSheet.create({
   },
   firstLineContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
   },
   secondLineContainer: {
     flexDirection: 'row',
     marginBottom: 15,
+    justifyContent: 'center',
   },
   thirdLineContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignSelf: 'center',
   },
+  optionsButtonContainer: {
+    marginTop: 25,
+    marginBottom: 15,
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  optionsRowContainer: {
+    justifyContent: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
   textButtonContainer: {
     alignItems: 'center',
     flexDirection: 'row',
   },
   createAccountText: {
-    color: '#DBE2E5',
+    color: Colours.myWhite,
     flexDirection: 'row',
     marginLeft: 5,
     marginRight: 20,
   },
   buttonIcon: {
-    color: '#DBE2E5',
+    color: Colours.myWhite,
     justifyContent: 'center',
     alignContent: 'center',
     marginRight: 5,
-  },
-  seperatorIcon: {
-    color: '#DBE2E5',
-    justifyContent: 'center',
-    alignContent: 'center',
-    marginHorizontal: 8,
-  },
-
-  bottomContainerV: {
-    flex: 1,
-    flexDirection: 'column',
-
-    padding: 10,
-  },
-
-  LanContainer: {
-    flex: 1,
-    flexDirection: 'column',
   },
 
   lanControlButton: {
@@ -285,26 +416,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 5,
     width: 260,
-    color: '#DBE2E5',
-  },
-  signUpArea: {
-    alignItems: 'center',
-    margin: 15,
-
-    padding: 20,
-    borderRadius: 5,
-    elevation: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    color: Colours.myWhite,
   },
 
   lanControlButton: {
-    color: '#DBE2E5',
+    color: Colours.myWhite,
 
     margin: 3,
   },
   resetPWButtonText: {
-    color: '#DBE2E5',
+    color: Colours.myWhite,
     borderWidth: 0,
     margin: 3,
   },
