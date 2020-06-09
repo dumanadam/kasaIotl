@@ -25,7 +25,16 @@ import {Secrets} from '../assets/Secrets';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = ({navigation}) => {
+  let userDetails = {
+    isEmailValid: true,
+    backgroundImage: '../assets/images/light.gif',
+  };
+
   const {signIn} = React.useContext(AuthContext);
+  const [userObj, setUserObj] = React.useState({
+    isEmailValid: true,
+    backgroundImage: '../assets/images/light.gif',
+  });
   const [showbg, setshowbg] = React.useState(true);
   const [refreshScreen, setrefreshScreen] = React.useState(false);
   const [isOptions, setisOptions] = React.useState(false);
@@ -37,14 +46,18 @@ const LoginScreen = ({navigation}) => {
   const [optionsColour, setOptionsColour] = React.useState(Colours.myYellow);
   const [optionsChevron, setOptionsChevron] = React.useState('chevron-up');
   const [userName, setUserName] = React.useState(Secrets.defaultUsername);
+  const [userPassword, setUserPassword] = React.useState(
+    IotlStrings.userPassPlaceholder,
+  );
   const [userNamePlaceholder, setUserNamePlaceholder] = React.useState(
     IotlStrings.userNamePlaceholder,
   );
-
-  const [isloading, setIsloading] = React.useState(false);
-  const [userPassword, setUserPass] = React.useState(
+  const [userPassPlaceholder, setUserPassPlaceholder] = React.useState(
     IotlStrings.userPassPlaceholder,
   );
+
+  const [isloading, setIsloading] = React.useState(false);
+
   const [userNameError, setUserNameError] = React.useState('');
   const [userPassError, setUserPassError] = React.useState('');
 
@@ -58,14 +71,26 @@ const LoginScreen = ({navigation}) => {
 
   React.useEffect(() => {
     setTimeout(() => {}, 500);
-  }, [refreshScreen]);
+  }, [userObj.isEmailValid]);
 
   const checkAuth = () => {
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
+    getAllKeys();
+
+    if (isDemoUser) {
+      console.log(`user:>${userName}`);
+      console.log(`pass:>${userPassword}`);
+      getAllKeys();
+      return;
+    }
+
     if (
       userName == IotlStrings.userNamePlaceholder ||
       userPassword == IotlStrings.userPassPlaceholder
     ) {
+      console.log(`placeholder`);
+      console.log(`user:>${userName}`);
+      console.log(`pass:>${userPassword}`);
       setUserNameError(Errors.usernameDefaultError);
       setUserPassError(Errors.userPassDefaultError);
       setTimeout(() => {
@@ -74,14 +99,30 @@ const LoginScreen = ({navigation}) => {
       }, 1500);
       return;
     }
+
     setIsloading(!isloading);
     console.log(`user:>${userName}`);
     console.log(`pass:>${userPassword}`);
     signIn();
   };
 
+  const getAllKeys = async () => {
+    let keys = [];
+    try {
+      keys = await AsyncStorage.getAllKeys();
+    } catch (e) {
+      // read key error
+    }
+
+    console.log(`keys>>  ${keys}`);
+    // example console.log result:
+    // ['@MyApp_user', '@MyApp_key']
+  };
+
   const optionsClicked = () => {
     setisOptions(!isOptions);
+
+    setUserObj({...userObj, isEmailValid: !userObj.isEmailValid});
     isOptions
       ? setOptionsChevron('chevron-up')
       : setOptionsChevron('chevron-down');
@@ -96,6 +137,8 @@ const LoginScreen = ({navigation}) => {
       : setUserNamePlaceholder(Secrets.demoUserName);
     setIsDemoUser(!isDemoUser);
     setIsInputEditable(!isInputEditable);
+    setUserName(Secrets.demoUserName);
+    setUserPassword(Secrets.demoPassword);
   };
 
   const rememberClicked = () => {
@@ -159,20 +202,33 @@ const LoginScreen = ({navigation}) => {
   };
 
   const setPUserName = name => {
-    Secrets.kasaUserName = name;
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     setUserName(name);
+
+    re.test(name)
+      ? setUserObj({isEmailValid: true})
+      : setUserObj({isEmailValid: false});
 
     console.log('nam234', userName);
   };
-  const setPUserPass = pass => {
-    Secrets.authPassword = pass;
 
-    console.log('rem pass', Secrets.authPassword);
+  const setPUserPass = pass => {
+    setUserPassword(pass);
+    console.log('rem pass', pass);
   };
 
   return (
     <ImageBackground
-      source={require('../assets/images/bg.gif')}
+      source={
+        userObj.isEmailValid
+          ? require('../assets/images/light_lc.jpg')
+          : require('../assets/images/light_dc.jpg')
+      }
+      /*       source={() =>
+        userObj.isEmailValid
+          ? require('../assets/images/light.gif')
+          : require('../assets/images/iotl.gif')
+      } */
       style={styles.backgroundImage}>
       <View style={styles.container}>
         <StatusBar
@@ -213,11 +269,7 @@ const LoginScreen = ({navigation}) => {
               <Input
                 secureTextEntry={true}
                 editable={isInputEditable}
-                placeholder={
-                  isDemoUser
-                    ? IotlStrings.demoPasswordPlaceholder
-                    : userPassword
-                }
+                placeholder={userPassPlaceholder}
                 placeholderTextColor={
                   isDemoUser ? Colours.myWhite : Colours.myDrkBlue
                 }
