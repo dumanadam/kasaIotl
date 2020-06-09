@@ -3,6 +3,7 @@ import React from 'react';
 export let IotlGlobals = React.createContext();
 export let IotlStrings = React.createContext();
 export let Colours = React.createContext();
+export let Errors = React.createContext();
 export const AuthContext = React.createContext();
 
 IotlGlobals = {
@@ -13,7 +14,7 @@ IotlGlobals = {
 
 IotlStrings = {
   loginTextButton: 'Login',
-  loginTitle: 'NIT3002',
+  loginTitle: 'NEF3002',
   createAccountButton: 'Create account',
   lanControlButton: 'Lan control',
   resetPWButton: 'Forgot Password',
@@ -21,7 +22,8 @@ IotlStrings = {
   defaultsButton: 'Reset to defauls',
   rememberText: 'Remember Me',
   defmoUserText: 'Use demo user',
-  passwordPlaceholder: 'Password',
+  userNamePlaceholder: 'Username',
+  userPassPlaceholder: 'Password',
   demoPasswordPlaceholder: 'Demo Password Set',
 };
 
@@ -31,4 +33,9 @@ Colours = {
   myYellow: '#F68F00',
   myDrkBlue: '#154159',
   myLgtBlue: '#1A516A',
+};
+
+Errors = {
+  usernameDefaultError: 'Please enter a Username',
+  userPassDefaultError: 'Please enter a Password',
 };

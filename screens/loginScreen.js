@@ -8,30 +8,77 @@ import {
   KeyboardAvoidingView,
   ImageBackground,
   StatusBar,
+  Vibration,
 } from 'react-native';
 import LoginForm from './LoginForm';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Button, CheckBox, Input} from 'react-native-elements';
 import MyTextInput from '../components/MyTextInput';
-import {IotlStrings, Colours, AuthContext, IotlGlobals} from '../api/context';
+import {
+  IotlStrings,
+  Colours,
+  AuthContext,
+  Errors,
+  IotlGlobals,
+} from '../api/context';
 import {Secrets} from '../assets/Secrets';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = ({navigation}) => {
+  const {signIn} = React.useContext(AuthContext);
+  const [showbg, setshowbg] = React.useState(true);
+  const [refreshScreen, setrefreshScreen] = React.useState(false);
   const [isOptions, setisOptions] = React.useState(false);
+  const [isInputEditable, setIsInputEditable] = React.useState(true);
   const [isRemember, setIsRemember] = React.useState(true);
   const [isDemoUser, setIsDemoUser] = React.useState(false);
   const [isDemoUserChecked, setIsDemoUserChecked] = React.useState(false);
-
+  const [isUserNameFocused, setIsUserNameFocused] = React.useState(false);
   const [optionsColour, setOptionsColour] = React.useState(Colours.myYellow);
   const [optionsChevron, setOptionsChevron] = React.useState('chevron-up');
   const [userName, setUserName] = React.useState(Secrets.defaultUsername);
-  const [userNameError, setUserNameError] = React.useState('');
-  const [isloading, setisloading] = React.useState(false);
-  const [userPassword, setUserPass] = React.useState(
-    IotlStrings.passwordPlaceholder,
+  const [userNamePlaceholder, setUserNamePlaceholder] = React.useState(
+    IotlStrings.userNamePlaceholder,
   );
+
+  const [isloading, setIsloading] = React.useState(false);
+  const [userPassword, setUserPass] = React.useState(
+    IotlStrings.userPassPlaceholder,
+  );
+  const [userNameError, setUserNameError] = React.useState('');
   const [userPassError, setUserPassError] = React.useState('');
+
+  let loginButtonProps = {
+    title: IotlStrings.loginTextButton,
+    type: 'outline',
+    buttonStyle: styles.button,
+    onPress: () => checkAuth(),
+    loading: isloading,
+  };
+
+  React.useEffect(() => {
+    setTimeout(() => {}, 500);
+  }, [refreshScreen]);
+
+  const checkAuth = () => {
+    Vibration.vibrate([50, 50, 50, 50, 50, 50]);
+    if (
+      userName == IotlStrings.userNamePlaceholder ||
+      userPassword == IotlStrings.userPassPlaceholder
+    ) {
+      setUserNameError(Errors.usernameDefaultError);
+      setUserPassError(Errors.userPassDefaultError);
+      setTimeout(() => {
+        setUserNameError('');
+        setUserPassError('');
+      }, 1500);
+      return;
+    }
+    setIsloading(!isloading);
+    console.log(`user:>${userName}`);
+    console.log(`pass:>${userPassword}`);
+    signIn();
+  };
 
   const optionsClicked = () => {
     setisOptions(!isOptions);
@@ -44,11 +91,11 @@ const LoginScreen = ({navigation}) => {
   };
 
   const checkDemoUserClicked = () => {
-    console.log('asdasdad', isDemoUser);
+    isDemoUser
+      ? setUserNamePlaceholder(IotlStrings.userNamePlaceholder)
+      : setUserNamePlaceholder(Secrets.demoUserName);
     setIsDemoUser(!isDemoUser);
-    console.log('sdfgvsdfgsdf', isDemoUser);
-
-    setTimeout(() => {}, 500);
+    setIsInputEditable(!isInputEditable);
   };
 
   const rememberClicked = () => {
@@ -56,21 +103,20 @@ const LoginScreen = ({navigation}) => {
     console.log(`demo ${isDemoUser} check${isDemoUserChecked}`);
   };
 
-  React.useEffect(() => {
-    if (isRemember) {
-      if (userName == Secrets.defaultUsername) checkAsyncData('kasaUserName');
-      console.log('kasaUserName ok >');
-    }
+  const UserNameFocused = () => {
+    setrefreshScreen(!refreshScreen);
+    if (isDemoUser) setIsDemoUser(!isDemoUser);
+    if (errorMessage !== '') setUserNameError('null');
+    setUserNamePlaceholder(IotlStrings.userNamePlaceholder);
+    console.log(`isdemofocused${isDemoUser}`);
+    setshowbg(false);
+  };
 
-    setTimeout(() => {}, 500);
-  }, [isDemoUser]);
-
-  var loginButtonProps = {
-    title: IotlStrings.loginTextButton,
-    type: 'outline',
-    buttonStyle: styles.button,
-    onPress: () => checkAuth(),
-    loading: isloading,
+  const UserNameBlur = () => {
+    if (isDemoUser) setIsDemoUser(!isDemoUser);
+    setUserNamePlaceholder(IotlStrings.userNamePlaceholder);
+    console.log(`isdemofocused${isDemoUser}`);
+    setshowbg(false);
   };
 
   const checkAsyncData = async key => {
@@ -145,12 +191,15 @@ const LoginScreen = ({navigation}) => {
               <Input
                 keyboardType="email-address"
                 autoCapitalize="none"
-                placeholder={isDemoUser ? Secrets.demoUserName : 'asdasd'}
+                placeholder={userNamePlaceholder}
                 placeholderTextColor={
                   isDemoUser ? Colours.myWhite : Colours.myDrkBlue
                 }
                 onChangeText={text => setPUserName(text)}
                 inputStyle={isDemoUser ? styles.inputDemo : styles.input}
+                onFocus={() => UserNameFocused()}
+                onFocus={() => UserNameBlur()}
+                editable={isInputEditable}
                 leftIcon={
                   <Icon
                     name="account-outline"
@@ -163,6 +212,7 @@ const LoginScreen = ({navigation}) => {
               />
               <Input
                 secureTextEntry={true}
+                editable={isInputEditable}
                 placeholder={
                   isDemoUser
                     ? IotlStrings.demoPasswordPlaceholder

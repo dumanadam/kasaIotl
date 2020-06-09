@@ -11,7 +11,7 @@ const SplashScreen = ({navigation}) => {
         backgroundColor: 'black',
       }}>
       <Image
-        source={require('../assets/iotl.gif')}
+        source={require('../assets/images/iotl.gif')}
         style={{flex: 1, width: 250, height: 250, resizeMode: 'contain'}}
       />
     </View>
