@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {isValidElement} from 'react';
 import {
   Image,
   TouchableOpacity,
@@ -23,6 +23,7 @@ import {
 } from '../api/context';
 import {Secrets} from '../assets/Secrets';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const LoginScreen = ({navigation}) => {
   let userDetails = {
@@ -33,28 +34,26 @@ const LoginScreen = ({navigation}) => {
   const {signIn} = React.useContext(AuthContext);
   const [userObj, setUserObj] = React.useState({
     isEmailValid: true,
+    isDemoUser: false,
     backgroundImage: '../assets/images/light.gif',
+    userName: Secrets.defaultUsername,
+    userPassword: IotlStrings.userPassPlaceholder,
+    userNamePlaceholder: IotlStrings.userNamePlaceholder,
+    userPassPlaceholder: IotlStrings.userPassPlaceholder,
+    isInputEditable: true,
+    nameIconColour: Colours.myWhite,
+    passIconColour: Colours.myWhite,
   });
   const [showbg, setshowbg] = React.useState(true);
   const [refreshScreen, setrefreshScreen] = React.useState(false);
   const [isOptions, setisOptions] = React.useState(false);
-  const [isInputEditable, setIsInputEditable] = React.useState(true);
+
   const [isRemember, setIsRemember] = React.useState(true);
   const [isDemoUser, setIsDemoUser] = React.useState(false);
   const [isDemoUserChecked, setIsDemoUserChecked] = React.useState(false);
   const [isUserNameFocused, setIsUserNameFocused] = React.useState(false);
   const [optionsColour, setOptionsColour] = React.useState(Colours.myYellow);
   const [optionsChevron, setOptionsChevron] = React.useState('chevron-up');
-  const [userName, setUserName] = React.useState(Secrets.defaultUsername);
-  const [userPassword, setUserPassword] = React.useState(
-    IotlStrings.userPassPlaceholder,
-  );
-  const [userNamePlaceholder, setUserNamePlaceholder] = React.useState(
-    IotlStrings.userNamePlaceholder,
-  );
-  const [userPassPlaceholder, setUserPassPlaceholder] = React.useState(
-    IotlStrings.userPassPlaceholder,
-  );
 
   const [isloading, setIsloading] = React.useState(false);
 
@@ -70,27 +69,28 @@ const LoginScreen = ({navigation}) => {
   };
 
   React.useEffect(() => {
+    console.log('isdemo >  ', userObj.isDemoUser);
     setTimeout(() => {}, 500);
-  }, [userObj.isEmailValid]);
+  }, [userObj.userName, userObj.isDemoUser]);
 
   const checkAuth = () => {
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
     getAllKeys();
 
     if (isDemoUser) {
-      console.log(`user:>${userName}`);
-      console.log(`pass:>${userPassword}`);
+      console.log(`user:>${userObj.userName}`);
+      console.log(`pass:>${userObj.userPassword}`);
       getAllKeys();
       return;
     }
 
     if (
-      userName == IotlStrings.userNamePlaceholder ||
-      userPassword == IotlStrings.userPassPlaceholder
+      userObj.userName == IotlStrings.userNamePlaceholder ||
+      userObj.userPassword == IotlStrings.userPassPlaceholder
     ) {
       console.log(`placeholder`);
-      console.log(`user:>${userName}`);
-      console.log(`pass:>${userPassword}`);
+      console.log(`user:>${userObj.userName}`);
+      console.log(`pass:>${userObj.userPassword}`);
       setUserNameError(Errors.usernameDefaultError);
       setUserPassError(Errors.userPassDefaultError);
       setTimeout(() => {
@@ -101,8 +101,8 @@ const LoginScreen = ({navigation}) => {
     }
 
     setIsloading(!isloading);
-    console.log(`user:>${userName}`);
-    console.log(`pass:>${userPassword}`);
+    console.log(`user:>${userObj.userName}`);
+    console.log(`pass:>${userObj.userPassword}`);
     signIn();
   };
 
@@ -115,8 +115,6 @@ const LoginScreen = ({navigation}) => {
     }
 
     console.log(`keys>>  ${keys}`);
-    // example console.log result:
-    // ['@MyApp_user', '@MyApp_key']
   };
 
   const optionsClicked = () => {
@@ -132,33 +130,55 @@ const LoginScreen = ({navigation}) => {
   };
 
   const checkDemoUserClicked = () => {
-    isDemoUser
-      ? setUserNamePlaceholder(IotlStrings.userNamePlaceholder)
-      : setUserNamePlaceholder(Secrets.demoUserName);
-    setIsDemoUser(!isDemoUser);
-    setIsInputEditable(!isInputEditable);
-    setUserName(Secrets.demoUserName);
-    setUserPassword(Secrets.demoPassword);
+    !userObj.isDemoUser
+      ? setUserObj({
+          ...userObj,
+          userNamePlaceholder: Secrets.demoUserName,
+          userPassPlaceholder: IotlStrings.demoPasswordPlaceholder,
+          isDemoUser: !userObj.isDemoUser,
+          isInputEditable: !userObj.isInputEditable,
+          userName: Secrets.demoUserName,
+          userPassword: Secrets.demoPassword,
+          nameIconColour: Colours.myYellow,
+        })
+      : setUserObj({
+          ...userObj,
+          isDemoUser: !userObj.isDemoUser,
+          userNamePlaceholder: IotlStrings.userNamePlaceholder,
+          userPassPlaceholder: IotlStrings.userPassPlaceholder,
+          nameIconColour: Colours.myWhite,
+        });
+
+    console.log(`isdemo ? >> ${userObj.isDemoUser}`);
+    console.log(`place? >> ${userObj.userNamePlaceholder}`);
+    console.log(`pass? >> ${userObj.userPassPlaceholder}`);
   };
 
   const rememberClicked = () => {
     setIsRemember(!isRemember);
-    console.log(`demo ${isDemoUser} check${isDemoUserChecked}`);
+    console.log(`demo ${userObj.isDemoUser} check${isDemoUserChecked}`);
   };
 
   const UserNameFocused = () => {
     setrefreshScreen(!refreshScreen);
-    if (isDemoUser) setIsDemoUser(!isDemoUser);
+    if (userObj.isDemoUser)
+      setUserObj({...userObj, isDemoUser: !userObj.isDemoUser});
     if (errorMessage !== '') setUserNameError('null');
-    setUserNamePlaceholder(IotlStrings.userNamePlaceholder);
-    console.log(`isdemofocused${isDemoUser}`);
+    setUserObj({
+      ...userObj,
+      userNamePlaceholder: IotlStrings.userNamePlaceholder,
+    });
+    console.log(`isdemofocused${userObj.isDemoUser}`);
     setshowbg(false);
   };
 
   const UserNameBlur = () => {
-    if (isDemoUser) setIsDemoUser(!isDemoUser);
-    setUserNamePlaceholder(IotlStrings.userNamePlaceholder);
-    console.log(`isdemofocused${isDemoUser}`);
+    if (userObj.isDemoUser) setIsDemoUser(!userObj.isDemoUser);
+    setUserObj({
+      ...userObj,
+      userNamePlaceholder: IotlStrings.userNamePlaceholder,
+    });
+    console.log(`isdemofocused${userObj.isDemoUser}`);
     setshowbg(false);
   };
 
@@ -201,20 +221,51 @@ const LoginScreen = ({navigation}) => {
     }
   };
 
+  function validateEmail(email) {
+    return regexp.test(email);
+  }
+
   const setPUserName = name => {
-    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    setUserName(name);
+    const regexp = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-    re.test(name)
-      ? setUserObj({isEmailValid: true})
-      : setUserObj({isEmailValid: false});
+    console.log('nam234', userObj.userName);
+    console.log('isemailcvalid', regexp.test(name));
 
-    console.log('nam234', userName);
+    regexp.test(name)
+      ? setUserObj({
+          ...userObj,
+          nameIconColour: Colours.myGreenConf,
+          userName: name,
+        })
+      : setUserObj({
+          ...userObj,
+          nameIconColour: Colours.myRedConf,
+          userName: name,
+        });
+    if (name == '')
+      setUserObj({
+        ...userObj,
+        nameIconColour: Colours.myWhite,
+      });
+    //setUserObj({...userObj, isEmailValid: validateEmail(name)});
   };
 
   const setPUserPass = pass => {
-    setUserPassword(pass);
-    console.log('rem pass', pass);
+    var regexp = /^[a-zA-Z0-9!@#$%^&*]{6,16}$/;
+    console.log('pass valid', regexp.test(pass));
+    if (pass.length >= 6 && regexp.test(pass)) {
+      setUserObj({
+        ...userObj,
+        passIconColour: Colours.myGreenConf,
+        userPassword: pass,
+      });
+    } else {
+      setUserObj({
+        ...userObj,
+        passIconColour: Colours.myRedConf,
+        userPassword: pass,
+      });
+    }
   };
 
   return (
@@ -230,13 +281,14 @@ const LoginScreen = ({navigation}) => {
           : require('../assets/images/iotl.gif')
       } */
       style={styles.backgroundImage}>
-      <View style={styles.container}>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor={'transparent'}
-          translucent={true}
-        />
-        <KeyboardAvoidingView behavior={'padding'}>
+      <KeyboardAwareScrollView>
+        <View style={styles.container}>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={'transparent'}
+            translucent={true}
+          />
+
           <View style={styles.topContainer}>
             <Image
               source={require('../assets/images/bulb.gif')}
@@ -247,20 +299,22 @@ const LoginScreen = ({navigation}) => {
               <Input
                 keyboardType="email-address"
                 autoCapitalize="none"
-                placeholder={userNamePlaceholder}
+                placeholder={userObj.userNamePlaceholder}
                 placeholderTextColor={
-                  isDemoUser ? Colours.myWhite : Colours.myDrkBlue
+                  userObj.isDemoUser ? Colours.myWhite : Colours.myDrkBlue
                 }
                 onChangeText={text => setPUserName(text)}
-                inputStyle={isDemoUser ? styles.inputDemo : styles.input}
-                onFocus={() => UserNameFocused()}
-                onFocus={() => UserNameBlur()}
-                editable={isInputEditable}
+                inputStyle={
+                  userObj.isDemoUser ? styles.inputDemo : styles.input
+                }
+                /*        onFocus={() => UserNameFocused()}
+                onBlur={() => UserNameBlur()} */
+                editable={userObj.isInputEditable}
                 leftIcon={
                   <Icon
                     name="account-outline"
                     size={25}
-                    color={Colours.myWhite}
+                    color={userObj.nameIconColour}
                   />
                 }
                 errorStyle={{color: Colours.myYellow}}
@@ -268,15 +322,21 @@ const LoginScreen = ({navigation}) => {
               />
               <Input
                 secureTextEntry={true}
-                editable={isInputEditable}
-                placeholder={userPassPlaceholder}
+                editable={userObj.isInputEditable}
+                placeholder={userObj.userPassPlaceholder}
                 placeholderTextColor={
-                  isDemoUser ? Colours.myWhite : Colours.myDrkBlue
+                  userObj.isDemoUser ? Colours.myWhite : Colours.myDrkBlue
                 }
-                inputStyle={isDemoUser ? styles.inputDemo : styles.input}
+                inputStyle={
+                  userObj.isDemoUser ? styles.inputDemo : styles.input
+                }
                 onChangeText={text => setPUserPass(text)}
                 leftIcon={
-                  <Icon name="lock-outline" size={25} color={Colours.myWhite} />
+                  <Icon
+                    name="lock-outline"
+                    size={25}
+                    color={userObj.passIconColour}
+                  />
                 }
                 errorStyle={{color: Colours.myYellow}}
                 errorMessage={userPassError}
@@ -285,9 +345,8 @@ const LoginScreen = ({navigation}) => {
               <Button {...loginButtonProps} />
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </View>
-      <KeyboardAvoidingView behavior={'padding'}>
+        </View>
+
         <View style={styles.optionsButtonContainer}>
           <TouchableOpacity
             style={styles.optionsRowContainer}
@@ -317,7 +376,7 @@ const LoginScreen = ({navigation}) => {
                 />
                 <CheckBox
                   title={IotlStrings.defmoUserText}
-                  checked={isDemoUser}
+                  checked={userObj.isDemoUser}
                   iconType="material-community"
                   checkedIcon="checkbox-marked-circle-outline"
                   uncheckedIcon="checkbox-blank-circle-outline"
@@ -377,7 +436,7 @@ const LoginScreen = ({navigation}) => {
             <React.Fragment />
           )}
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </ImageBackground>
   );
 };
@@ -449,6 +508,7 @@ const styles = StyleSheet.create({
 
     alignItems: 'center',
     justifyContent: 'center',
+    width: 220,
   },
   bottomContainer: {
     flexDirection: 'row',
@@ -517,7 +577,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginBottom: 5,
-    width: 260,
+
     color: Colours.myWhite,
   },
 

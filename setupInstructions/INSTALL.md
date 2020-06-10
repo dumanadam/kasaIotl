@@ -15,6 +15,7 @@ npm install --save tplink-cloud-api
 npm install --save @react-native-community/async-storage
 npm i react-native-elements --save
 npm i --save react-native-vector-icons
+npm i react-native-keyboard-aware-scroll-view --save
 npx react-native run-android
 ```
 

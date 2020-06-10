@@ -33,6 +33,8 @@ Colours = {
   myYellow: '#F68F00',
   myDrkBlue: '#154159',
   myLgtBlue: '#1A516A',
+  myGreenConf: '#16F049',
+  myRedConf: '#FF221F',
 };
 
 Errors = {
