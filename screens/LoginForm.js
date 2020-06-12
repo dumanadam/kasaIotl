@@ -2,7 +2,7 @@ import React from 'react';
 import {View, StyleSheet, Switch, Text} from 'react-native';
 import MyTextInput from '../components/MyTextInput';
 import {IotlStrings, Colours, AuthContext, IotlGlobals} from '../api/context';
-import {Secrets} from '../assets/Secrets';
+import {Secrets} from '../api/Secrets';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Button, CheckBox} from 'react-native-elements';

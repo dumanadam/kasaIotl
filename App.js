@@ -23,45 +23,43 @@ import {
 } from 'react-native';
 
 const App: () => React$Node = () => {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [userToken, setUserToken] = React.useState(IotlGlobals.authToken);
+  const [userObj, setUserObj] = React.useState({
+    userToken: IotlGlobals.authToken,
+    isloading: true,
+  });
 
   const TabStack = createBottomTabNavigator();
   const AuthStack = createStackNavigator();
 
   React.useEffect(() => {
     setTimeout(() => {
-      setIsLoading(false);
+      setUserObj({...userObj, isloading: false, userToken: null});
       console.log('app.js----');
-      setUserToken(null);
     }, 500);
   }, []);
 
   const authContext = React.useMemo(() => {
     return {
       signIn: () => {
-        setIsLoading(false);
-        setUserToken('nusdsdll');
+        setUserObj({...userObj, isloading: false, userToken: 'asdas'});
       },
       signUp: () => {
-        setIsLoading(false);
-        setUserToken('nusdsdll');
+        setUserObj({...userObj, isloading: false, userToken: 'asdas'});
       },
       signOut: () => {
-        setIsLoading(false);
-        setUserToken(null);
+        setUserObj({...userObj, isloading: false, userToken: null});
       },
     };
   }, []);
 
-  if (isLoading) {
+  if (userObj.isloading) {
     return <SplashScreen />;
   }
 
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        {userToken ? (
+        {userObj.userToken ? (
           <TabStack.Navigator
             initialRouteName="Adjust"
             tabBarOptions={{
