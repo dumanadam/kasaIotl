@@ -19,6 +19,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const LoginScreen = ({navigation}) => {
+  const {login} = require('tplink-cloud-api');
   const {signIn} = React.useContext(AuthContext);
   const [userObj, setUserObj] = React.useState({
     isEmailValid: true,
@@ -47,14 +48,62 @@ const LoginScreen = ({navigation}) => {
     setTimeout(() => {}, 500);
   }, [userObj.userName, userObj.isDemoUser]);
 
+  async function tplinkLogin(userType) {
+    let tplinkUser = '';
+    let tplinkPass = '';
+    let tplinkUUID = '';
+    let tplinkToken = '';
+    let tplinkDeviceList;
+
+    // log in to cloud, return a connected tplink object
+    if (userType == 'demoUser') {
+      tplinkUser = Secrets.demoUserName;
+      tplinkPass = Secrets.demoPassword;
+      tplinkUUID = Secrets.demoUUID;
+    }
+    const tplink = await login(tplinkUser, tplinkPass, tplinkUUID).catch(e => {
+      console.log('error', e);
+      setUserObj({...userObj, errorMessage: 'User Credentials Error - TPLINK'});
+      return;
+    });
+    //console.log('current auth token is', tplink.getToken());
+    tplinkToken = tplink.getToken();
+    console.log('current auth token is', tplinkToken);
+
+    // get a list of raw json objects (must be invoked before .get* works)
+    tplinkDeviceList = await tplink.getDeviceList();
+    console.log('tplinkDeviceList', tplinkDeviceList);
+
+    // find a device by alias:
+    //let myPlug = tplink.getHS100('My Smart Plug');
+    // or find by deviceId:
+    // let myPlug = tplink.getHS100("558185B7EC793602FB8802A0F002BA80CB96F401");
+    //console.log('myPlug:', myPlug);
+
+    //let response = await myPlug.powerOn();
+    //console.log("response=" + response );
+
+    /*  let response = await myPlug.toggle();
+    console.log('response=' + response);
+
+    response = await myPlug.getSysInfo();
+    console.log('relay_state=' + response.relay_state);
+
+    console.log(await myPlug.getRelayState()); */
+  }
+
   const checkAuth = () => {
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
-    getAllKeys();
+
+    if (checkPlaceholder()) {
+      return;
+    }
 
     if (userObj.isDemoUser) {
       console.log(`user:>${userObj.userName}`);
       console.log(`pass:>${userObj.userPassword}`);
-      getAllKeys();
+      tplinkLogin('demoUser');
+      signIn();
       return;
     }
 
@@ -76,22 +125,31 @@ const LoginScreen = ({navigation}) => {
       }, 1500);
       return;
     }
-    setUserObj({...userObj, isloading: !userObj.isloading});
 
     console.log(`user:>${userObj.userName}`);
     console.log(`pass:>${userObj.userPassword}`);
     signIn();
   };
 
-  const getAllKeys = async () => {
-    let keys = [];
-    try {
-      keys = await AsyncStorage.getAllKeys();
-    } catch (e) {
-      // read key error
+  const checkPlaceholder = () => {
+    if (
+      userObj.userName == IotlStrings.userNamePlaceholder ||
+      userObj.userPassword == IotlStrings.userPassPlaceholder
+    ) {
+      console.log(`placeholder`);
+      console.log(`user:>${userObj.userName}`);
+      console.log(`pass:>${userObj.userPassword}`);
+      setUserObj({
+        ...userObj,
+        userNameError: Errors.usernameDefaultError,
+        userPassError: Errors.userPassDefaultError,
+      });
+      setTimeout(() => {
+        setUserObj({...userObj, userNameError: '', userPassError: ''});
+        return true;
+      }, 1500);
     }
-
-    console.log(`keys>>  ${keys}`);
+    return false;
   };
 
   const optionsClicked = () => {
@@ -113,28 +171,36 @@ const LoginScreen = ({navigation}) => {
   };
 
   const checkDemoUserClicked = () => {
-    !userObj.isDemoUser
-      ? setUserObj({
-          ...userObj,
-          userNamePlaceholder: Secrets.demoUserName,
-          userPassPlaceholder: IotlStrings.demoPasswordPlaceholder,
-          isDemoUser: !userObj.isDemoUser,
-          isInputEditable: !userObj.isInputEditable,
-          userName: Secrets.demoUserName,
-          userPassword: Secrets.demoPassword,
-          nameIconColour: Colours.myYellow,
-        })
-      : setUserObj({
-          ...userObj,
-          isDemoUser: !userObj.isDemoUser,
-          userNamePlaceholder: IotlStrings.userNamePlaceholder,
-          userPassPlaceholder: IotlStrings.userPassPlaceholder,
-          nameIconColour: Colours.myWhite,
-        });
+    let demoUserReturnColor;
+    demoUserReturnColor =
+      !userObj.isDemoUser == '' ? Colours.myWhite : Colours.myRedConf;
+    if (!userObj.isDemoUser) {
+      setUserObj({
+        ...userObj,
+        userNamePlaceholder: Secrets.demoUserName,
+        userPassPlaceholder: IotlStrings.demoPasswordPlaceholder,
+        isDemoUser: !userObj.isDemoUser,
+        isInputEditable: !userObj.isInputEditable,
+        userName: Secrets.demoUserName,
+        userPassword: Secrets.demoPassword,
+        nameIconColour: Colours.myYellow,
+        passIconColour: Colours.myYellow,
+      });
+    } else {
+      setUserObj({
+        ...userObj,
+        isDemoUser: !userObj.isDemoUser,
+        userNamePlaceholder: IotlStrings.userNamePlaceholder,
+        userPassPlaceholder: IotlStrings.userPassPlaceholder,
+        nameIconColour: demoUserReturnColor,
+        passIconColour: Colours.myWhite,
+        isInputEditable: !userObj.isInputEditable,
+      });
 
-    console.log(`isdemo ? >> ${userObj.isDemoUser}`);
-    console.log(`place? >> ${userObj.userNamePlaceholder}`);
-    console.log(`pass? >> ${userObj.userPassPlaceholder}`);
+      console.log(`isdemo ? >> ${userObj.isDemoUser}`);
+      console.log(`place? >> ${userObj.userNamePlaceholder}`);
+      console.log(`pass? >> ${userObj.userPassPlaceholder}`);
+    }
   };
 
   const rememberClicked = () => {
@@ -150,21 +216,26 @@ const LoginScreen = ({navigation}) => {
       const value = await AsyncStorage.getItem(key);
 
       if (value !== null) {
-        console.log('kasaUserName ok >', value);
-        setUserName(value);
+        console.log(`Async Key check >> ${value}`);
       } else {
-        setUserObj({...userObj, userNameError: 'async error'});
+        setUserObj({...userObj, userNameError: 'asdync key empty'});
+
+        return false;
       }
     } catch (e) {
-      console.log('kasaUserName error ', e);
-      setUserName('error');
+      console.log('Async error logged', e);
+      setUserObj({...userObj, userNameError: 'async error error'});
     }
   };
 
   const storeAsyncData = async (key, value) => {
     try {
-      console.log(`entering ${key} and ${key}`);
-      await AsyncStorage.setItem(key, value);
+      console.log(`entering ${key} and ${JSON.stringify(value)}`);
+      const asuncConfirm = await AsyncStorage.setItem(
+        key,
+        JSON.stringify(value),
+      );
+      if (asuncConfirm != null) console.log('asunconfirm', asuncConfirm);
     } catch (e) {
       // saving error
       console.log('async storage error', e);
@@ -172,11 +243,14 @@ const LoginScreen = ({navigation}) => {
   };
 
   const getAsyncData = async key => {
+    console.log('lue???', key);
     try {
       const value = await AsyncStorage.getItem(key);
       if (value !== null) {
         console.log('thevalue???', value);
-        return value;
+      } else {
+        console.log('key failure');
+        return false;
       }
     } catch (e) {
       console.log('key error ', e);
@@ -188,30 +262,30 @@ const LoginScreen = ({navigation}) => {
     const regexp = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     console.log('nam234', userObj.userName);
-    console.log('isemailcvalid', regexp.test(name));
 
-    regexp.test(name)
-      ? setUserObj({
-          ...userObj,
-          nameIconColour: Colours.myGreenConf,
-          userName: name,
-        })
-      : setUserObj({
-          ...userObj,
-          nameIconColour: Colours.myRedConf,
-          userName: name,
-        });
+    if (regexp.test(name)) {
+      setUserObj({
+        ...userObj,
+        nameIconColour: Colours.myGreenConf,
+        userName: name,
+      });
+    } else {
+      setUserObj({
+        ...userObj,
+        nameIconColour: Colours.myRedConf,
+        userName: name,
+      });
+    }
     if (name == '')
       setUserObj({
         ...userObj,
         nameIconColour: Colours.myWhite,
       });
-    //setUserObj({...userObj, isEmailValid: validateEmail(name)});
   };
 
   const setPUserPass = pass => {
     var regexp = /^[a-zA-Z0-9!@#$%^&*]{6,16}$/;
-    console.log('pass valid', regexp.test(pass));
+
     if (pass.length >= 6 && regexp.test(pass)) {
       setUserObj({
         ...userObj,
@@ -260,15 +334,17 @@ const LoginScreen = ({navigation}) => {
                 autoCapitalize="none"
                 placeholder={userObj.userNamePlaceholder}
                 placeholderTextColor={
-                  userObj.isDemoUser ? Colours.myWhite : Colours.myDrkBlue
+                  userObj.isDemoUser ? Colours.myYellow : Colours.myDrkBlue
                 }
+                disabledInputStyle={styles.disabledInput}
                 onChangeText={text => setPUserName(text)}
+                disabled={!userObj.isInputEditable}
                 inputStyle={
                   userObj.isDemoUser ? styles.inputDemo : styles.input
                 }
                 /*        onFocus={() => UserNameFocused()}
                 onBlur={() => UserNameBlur()} */
-                editable={userObj.isInputEditable}
+
                 leftIcon={
                   <Icon
                     name="account-outline"
@@ -281,10 +357,11 @@ const LoginScreen = ({navigation}) => {
               />
               <Input
                 secureTextEntry={true}
-                editable={userObj.isInputEditable}
+                disabledInputStyle={styles.disabledInput}
+                disabled={!userObj.isInputEditable}
                 placeholder={userObj.userPassPlaceholder}
                 placeholderTextColor={
-                  userObj.isDemoUser ? Colours.myWhite : Colours.myDrkBlue
+                  userObj.isDemoUser ? Colours.myYellow : Colours.myDrkBlue
                 }
                 inputStyle={
                   userObj.isDemoUser ? styles.inputDemo : styles.input
@@ -411,6 +488,12 @@ const LoginScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  disabledInput: {
+    padding: 10,
+    color: Colours.myYellow,
+    fontSize: 13,
+    fontWeight: '600',
+  },
   input: {
     padding: 10,
 
@@ -477,7 +560,7 @@ const styles = StyleSheet.create({
 
     alignItems: 'center',
     justifyContent: 'center',
-    width: 220,
+    width: 240,
   },
   bottomContainer: {
     flexDirection: 'row',
