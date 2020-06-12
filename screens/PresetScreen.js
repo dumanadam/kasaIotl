@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Text, View, StyleSheet, Button} from 'react-native';
 import {IotlStrings, IotlGlobals, AuthContext} from '../api/context';
 import AsyncStorage from '@react-native-community/async-storage';
-import {Secrets} from '../assets/Secrets';
+import {Secrets} from '../api/Secrets';
 
 const {login} = require('tplink-cloud-api');
 const TPLINK_USER = Secrets.authUserName;
