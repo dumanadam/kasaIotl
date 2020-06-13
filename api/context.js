@@ -6,7 +6,7 @@ export let Colours = React.createContext();
 export let Errors = React.createContext();
 export const AuthContext = React.createContext();
 
-IotlGlobals = {
+authObj = {
   authToken: false,
   authUserName: null,
   authPassword: null,
