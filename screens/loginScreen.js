@@ -17,11 +17,16 @@ import {IotlStrings, Colours, AuthContext, Errors} from '../api/context';
 import {Secrets} from '../api/Secrets';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {cos} from 'react-native-reanimated';
-import {StoreAsyncData, GetAsyncData} from '../api/KasaAuthContext';
+import {cos, Value} from 'react-native-reanimated';
+import {
+  storeAsyncData,
+  getAsyncData,
+  tplinkLogin,
+} from '../api/KasaAuthFunctions';
 
 const LoginScreen = ({navigation}) => {
   const {login} = require('tplink-cloud-api');
+  let returnObj;
   const {
     signIn,
     signUp,
@@ -75,15 +80,16 @@ const LoginScreen = ({navigation}) => {
     }
   }, [userObj.authObj]);
 
-  const saveAuthObjGlobally = sentUserObj => {
-    setUserObj({
-      ...userObj,
-      sentUserObj,
-    });
-    updateAuthObjTruth(userObj.authObj);
+  React.useEffect(() => {
+    console.log('return obj in useeddd', JSON.stringify(returnObj));
+  }, [returnObj]);
 
-    GetAsyncData('userObj');
-  };
+  React.useEffect(() => {
+    setTimeout(() => {
+      setUserObj({...userObj, userNameError: '', userPassError: ''});
+      return true;
+    }, 1500);
+  }, [userObj.userNameError]);
 
   const checkAuth = () => {
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
@@ -93,15 +99,25 @@ const LoginScreen = ({navigation}) => {
     }
 
     if (userObj.isDemoUser) {
-      //tplinkLogin('demoUser');
+      tplinkLogin('demo', userObj).then(value => {
+        console.log('return obj in login', value);
+        returnObj = value;
+      });
+      /*         .catch(e => {
+          console.log(' Loginscreen error', e);
+          setUserObj({
+            ...userObj,
+            userNameError: Errors.tpLinkUserError,
+          });
 
-      //  saveUserObjGlobally('authObj', userObj);
+          return 'Login Error';
+        }); */
 
-      setUserObj({
+      /*  setUserObj({
         ...userObj,
         saveUserObj: !userObj.saveUserObj,
         authObj: {...userObj.authObj, isLoggedIn: true, showSplash: false},
-      });
+      }); */
 
       return;
     }
@@ -123,10 +139,6 @@ const LoginScreen = ({navigation}) => {
         userNameError: Errors.usernameDefaultError,
         userPassError: Errors.userPassDefaultError,
       });
-      setTimeout(() => {
-        setUserObj({...userObj, userNameError: '', userPassError: ''});
-        return true;
-      }, 1500);
     }
 
     return false;
