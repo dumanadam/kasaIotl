@@ -12,7 +12,7 @@ import AdjustStack from './stacks/AdjustStack';
 import TimerStack from './stacks/TimerStack';
 import SettingsStack from './stacks/SettingsStack';
 import LanControlScreen from './screens/LanControlScreen';
-import {StoreAsyncData, GetAsyncData} from './api/KasaAuthContext';
+import {storeAsyncData, getAsyncData} from './api/KasaAuthFunctions';
 
 import {
   SafeAreaView,
@@ -37,8 +37,8 @@ const App: () => React$Node = () => {
   const AuthStack = createStackNavigator();
 
   React.useEffect(() => {
-    // StoreAsyncData('userObj', userObj);
-    GetAsyncData('userObj').then(data => {
+    // storeAsyncData('userObj', userObj);
+    getAsyncData('userObj').then(data => {
       console.log('DATA APP useffect ++++++', data);
       console.log('userObj APP useffect ++++++', userObj);
       data.isLoggedIn
@@ -73,7 +73,7 @@ const App: () => React$Node = () => {
 
   React.useEffect(() => {
     if (userObj.saveUserObj) {
-      StoreAsyncData('userObj', userObj.authObj);
+      storeAsyncData('userObj', userObj.authObj);
       setUserObj({
         ...userObj,
         saveUserObj: !userObj.saveUserObj,
