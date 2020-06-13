@@ -50,7 +50,6 @@ const LoginScreen = ({navigation}) => {
     isloading: false,
     userNameError: '',
     userPassError: '',
-    saveUserObj: false,
     authObj: {
       authName: '',
       authPass: '',
