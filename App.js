@@ -37,28 +37,43 @@ const App: () => React$Node = () => {
   const AuthStack = createStackNavigator();
 
   React.useEffect(() => {
+    // StoreAsyncData('userObj', userObj);
     GetAsyncData('userObj').then(data => {
-      return data.isLoggedIn;
-    })
-      ? setTimeout(() => {
-          setUserObj({
-            ...userObj,
-            authObj: {...userObj.authObj, showSplash: false, isLoggedIn: true},
-          });
-        }, 500)
-      : setTimeout(() => {
-          setUserObj({
-            ...userObj,
-            authObj: {...userObj.authObj, showSplash: true},
-          });
+      console.log('DATA APP useffect ++++++', data);
+      console.log('userObj APP useffect ++++++', userObj);
+      data.isLoggedIn
+        ? setTimeout(() => {
+            console.log('APP useffect true', userObj);
+            setUserObj({
+              ...userObj,
+              saveUserObj: true,
+              authObj: {
+                ...userObj.authObj,
+                showSplash: false,
+                isLoggedIn: true,
+              },
+            });
+          }, 500)
+        : setTimeout(() => {
+            console.log('APP useffect false', userObj);
+            setUserObj({
+              ...userObj,
+              saveUserObj: true,
+              authObj: {
+                ...userObj.authObj,
+                showSplash: false,
+                isLoggedIn: false,
+              },
+            });
 
-          console.log('app.js----', userObj);
-        }, 500);
+            console.log('app.js----', userObj);
+          }, 500);
+    });
   }, []);
 
   React.useEffect(() => {
     if (userObj.saveUserObj) {
-      StoreAsyncData('userobj', userObj);
+      StoreAsyncData('userObj', userObj.authObj);
       setUserObj({
         ...userObj,
         saveUserObj: !userObj.saveUserObj,
@@ -68,10 +83,11 @@ const App: () => React$Node = () => {
   }, [userObj.authObj]);
 
   const updateAuthObj = sentAuthObj => {
+    console.log('sentAuthObj updateAuthObjTruth ', sentAuthObj);
     setUserObj({
       ...userObj,
       saveUserObj: !userObj.saveUserObj,
-      authObj: {...sentAuthObj},
+      authObj: {...userObj.authObj, ...sentAuthObj},
     });
     console.log('out updateAuthObjTruth ', userObj);
   };

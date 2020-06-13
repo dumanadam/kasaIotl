@@ -71,7 +71,6 @@ const LoginForm = props => {
     setisloading(true);
     setTimeout(() => {
       console.log(`username:: ${userName} pass:${userPass}`);
-      signIn();
     }, 150);
   };
 
