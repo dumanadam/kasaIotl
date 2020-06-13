@@ -40,4 +40,5 @@ Colours = {
 Errors = {
   usernameDefaultError: 'Please enter a Username',
   userPassDefaultError: 'Please enter a Password',
+  tpLinkUserError: 'Please check your Tp-Link Login details ',
 };
