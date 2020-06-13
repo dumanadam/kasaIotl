@@ -34,6 +34,5 @@ Secrets = {
     keyError: false,
     isLoading: false,
     authStyle: 'demo',
-    showSplash: true,
   },
 };

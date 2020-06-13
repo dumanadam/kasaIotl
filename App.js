@@ -12,6 +12,7 @@ import AdjustStack from './stacks/AdjustStack';
 import TimerStack from './stacks/TimerStack';
 import SettingsStack from './stacks/SettingsStack';
 import LanControlScreen from './screens/LanControlScreen';
+import {StoreAsyncData, GetAsyncData} from './api/KasaAuthContext';
 
 import {
   SafeAreaView,
@@ -21,14 +22,14 @@ import {
   Text,
   StatusBar,
 } from 'react-native';
+import {Secrets} from './api/Secrets';
 
 const App: () => React$Node = () => {
   const [userObj, setUserObj] = React.useState({
-    userToken: IotlGlobals.authToken,
-    isloading: true,
-    showSplash: true,
+    saveUserObj: false,
     authObj: {
-      isLoggedin: false,
+      isLoggedIn: false,
+      showSplash: true,
     },
   });
 
@@ -36,64 +37,103 @@ const App: () => React$Node = () => {
   const AuthStack = createStackNavigator();
 
   React.useEffect(() => {
-    setTimeout(() => {
-      setUserObj({...userObj, showSplash: false});
-      console.log('app.js----');
-    }, 500);
+    GetAsyncData('userObj').then(data => {
+      return data.isLoggedIn;
+    })
+      ? setTimeout(() => {
+          setUserObj({
+            ...userObj,
+            authObj: {...userObj.authObj, showSplash: false, isLoggedIn: true},
+          });
+        }, 500)
+      : setTimeout(() => {
+          setUserObj({
+            ...userObj,
+            authObj: {...userObj.authObj, showSplash: true},
+          });
+
+          console.log('app.js----', userObj);
+        }, 500);
   }, []);
 
   React.useEffect(() => {
-    console.log('App useeffect authObj updated', userObj.authObj);
+    if (userObj.saveUserObj) {
+      StoreAsyncData('userobj', userObj);
+      setUserObj({
+        ...userObj,
+        saveUserObj: !userObj.saveUserObj,
+      });
+      console.log('App useeffect authObj updated', userObj.authObj);
+    }
   }, [userObj.authObj]);
 
-  const updasteAuthObj = sentAuthObj => {
+  const updateAuthObj = sentAuthObj => {
     setUserObj({
       ...userObj,
-      authObj: sentAuthObj,
+      saveUserObj: !userObj.saveUserObj,
+      authObj: {...sentAuthObj},
     });
-    console.log('out memo ', authObj);
+    console.log('out updateAuthObjTruth ', userObj);
+  };
+  const updateUserObjTruth = sentUserObject => {
+    setUserObj({
+      ...userObj,
+      ...sentUserObject,
+    });
+    console.log('out updateUserObjTruth ', authObj);
   };
 
+  const updatedAppUserObject = () => {
+    console.log('APP UserObj ', userObj);
+    return userObj;
+  };
   const authContext = React.useMemo(() => {
     return {
       signIn: () => {
+        console.log('sign userob> ', userObj);
         setUserObj({
           ...userObj,
-
-          authObj: {...userObj.authObj, userToken: 'asdas'},
+          authObj: {...userObj.authObj},
         });
       },
       signUp: () => {
         setUserObj({
           ...userObj,
 
-          authObj: {...userObj.authObj, userToken: 'asdas'},
+          authObj: {...userObj.authObj, isLoggedIn: true},
         });
       },
       signOut: () => {
+        console.log('sign userob> ', userObj);
         setUserObj({
           ...userObj,
 
-          authObj: {...userObj.authObj, userToken: ''},
+          authObj: {...userObj.authObj, isLoggedIn: false},
         });
       },
-      updateAuthObj: sentAuthObj => {
-        updasteAuthObj(sentAuthObj);
+      updateUserObj: sentAuthObj => {
+        updateUserObjTruth(sentAuthObj);
+      },
+      updateAuthObjTruth: sentAuthObj => {
+        updateAuthObj(sentAuthObj);
       },
       asyncAuthObj: sentAuthObj => {
         updasteAuthObj(sentAuthObj);
       },
+      getAppUserObj: () => {
+        return updatedAppUserObject();
+      },
     };
   }, []);
 
-  if (userObj.showSplash) {
+  if (userObj.authObj.showSplash) {
     return <SplashScreen />;
   }
 
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        {userObj.authObj.isLoggedIn != null ? (
+        {userObj.authObj.isLoggedIn == true ? (
           <TabStack.Navigator
             initialRouteName="Adjust"
             tabBarOptions={{
