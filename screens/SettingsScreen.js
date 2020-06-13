@@ -11,18 +11,30 @@ const SettingsScreen = ({navigation}) => {
     getAppUserObj,
   } = React.useContext(AuthContext);
 
-  var userObj = getAppUserObj();
+  var userObdj = {};
+  userObdj = {...getAppUserObj()};
+  if (userObdj.authObj != null) {
+    console.log('settings', userObdj);
+    userObdj.authObj = {...userObdj.authObj, showSplash: false};
+
+    /*     userObdj = {
+      ...userObdj,
+      authObj: {
+        ...userObdj.authObj,
+        isLoggedIn: false,
+        showSplash: false,
+      },
+    }; */
+  }
+
+  console.log('settings screen setting userObdj', userObdj.authObj);
   return (
     <View>
       <Text>Settings Screen</Text>
       <Button
         title="Logout"
         onPress={() => {
-          updateAuthObjTruth({
-            ...userObj,
-            saveUserObj: !userObj.saveUserObj,
-            authObj: {...userObj.authObj, isLoggedIn: true, showSplash: false},
-          });
+          updateAuthObjTruth(userObdj.authObj);
         }}
       />
     </View>
