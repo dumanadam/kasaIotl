@@ -17,10 +17,18 @@ import {IotlStrings, Colours, AuthContext, Errors} from '../api/context';
 import {Secrets} from '../api/Secrets';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {cos} from 'react-native-reanimated';
+import {StoreAsyncData, GetAsyncData} from '../api/KasaAuthContext';
 
 const LoginScreen = ({navigation}) => {
   const {login} = require('tplink-cloud-api');
-  const {signIn, updateAuthObj, asyncAuthObj} = React.useContext(AuthContext);
+  const {
+    signIn,
+    signUp,
+    signOut,
+    updateAuthObjTruth,
+    getAppUserObj,
+  } = React.useContext(AuthContext);
   const [userObj, setUserObj] = React.useState({
     isEmailValid: true,
     isDemoUser: false,
@@ -37,85 +45,46 @@ const LoginScreen = ({navigation}) => {
     isRemember: true,
     isDemoUserChecked: false,
     optionsColour: Colours.myYellow,
+    saveUserObj: false,
     optionsChevron: 'chevron-up',
     isloading: false,
     userNameError: '',
     userPassError: '',
-    authObj: {},
+    saveUserObj: false,
+    authObj: {
+      authName: '',
+      authPass: '',
+      authToken: '',
+      authUUID: '',
+      authDeviceList: {},
+      isLoggedIn: false,
+      showSplash: false,
+    },
   });
 
   React.useEffect(() => {
-    userObj.authObj.isLoggedIn
-      ? console.log('login authObj useffec    >  ', userObj.authObj)
-      : false;
-    userObj.authObj.isLoggedIn
-      ? console.log('authObj updated and sent >  ', userObj)
-      : false;
-    userObj.authObj.isLoggedIn ? updateAuthObj(userObj) : false;
-  }, [userObj.authObj]);
-
-  async function tplinkLogin(sentUserObj) {
-    let tplinkUser = '';
-    let tplinkPass = '';
-    let tplinkUUID = '';
-    let tplinkToken = '';
-    let tplinkDeviceList;
-
-    // log in to cloud, return a connected tplink object
-    if (userObj.authObj.authStyle == 'demo') {
-      tplinkUser = Secrets.demoUserName;
-      tplinkPass = Secrets.demoPassword;
-      tplinkUUID = Secrets.demoUUID;
-    }
-    const tplink = await login(tplinkUser, tplinkPass, tplinkUUID).catch(e => {
-      console.log('error', e);
+    if (userObj.saveUserObj) {
+      updateAuthObjTruth(userObj.authObj);
       setUserObj({
         ...userObj,
-        userNameError: 'User Credentials Error - TPLINK',
-        userPassError: "'User Credentials Error - TPLINK'",
+        saveUserObj: !userObj.saveUserObj,
       });
+      console.log(
+        'Login authobj updated - sent to app screen',
+        userObj.authObj,
+      );
+    }
+  }, [userObj.authObj]);
 
-      return;
-    });
-    //console.log('current auth token is', tplink.getToken());
-    tplinkToken = tplink.getToken();
-    console.log('current auth token is', tplinkToken);
-
-    // get a list of raw json objects (must be invoked before .get* works)
-    tplinkDeviceList = await tplink.getDeviceList();
-    console.log('tplinkDeviceList', tplinkDeviceList);
+  const saveAuthObjGlobally = sentUserObj => {
     setUserObj({
       ...userObj,
-      authObj: {
-        ...userObj.userAuth,
-        authName: tplinkUser,
-        authPass: tplinkPass,
-        authToken: tplinkToken,
-        authUUID: tplinkUUID,
-        authDeviceList: tplinkDeviceList,
-        isLoggedIn: true,
-      },
+      sentUserObj,
     });
+    updateAuthObjTruth(userObj.authObj);
 
-    storeAsyncData('userObj', userObj);
-
-    // find a device by alias:
-    //let myPlug = tplink.getHS100('My Smart Plug');
-    // or find by deviceId:
-    // let myPlug = tplink.getHS100("558185B7EC793602FB8802A0F002BA80CB96F401");
-    //console.log('myPlug:', myPlug);
-
-    //let response = await myPlug.powerOn();
-    //console.log("response=" + response );
-
-    /*  let response = await myPlug.toggle();
-    console.log('response=' + response);
-
-    response = await myPlug.getSysInfo();
-    console.log('relay_state=' + response.relay_state);
-
-    console.log(await myPlug.getRelayState()); */
-  }
+    GetAsyncData('userObj');
+  };
 
   const checkAuth = () => {
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
@@ -125,35 +94,21 @@ const LoginScreen = ({navigation}) => {
     }
 
     if (userObj.isDemoUser) {
-      console.log(`user:>${userObj.userName}`);
-      console.log(`pass:>${userObj.userPassword}`);
       //tplinkLogin('demoUser');
 
-      return;
-    }
+      //  saveUserObjGlobally('authObj', userObj);
 
-    if (
-      userObj.userName == IotlStrings.userNamePlaceholder ||
-      userObj.userPassword == IotlStrings.userPassPlaceholder
-    ) {
-      console.log(`placeholder`);
-      console.log(`user:>${userObj.userName}`);
-      console.log(`pass:>${userObj.userPassword}`);
       setUserObj({
         ...userObj,
-        userNameError: Errors.usernameDefaultError,
-        userPassError: Errors.userPassDefaultError,
+        saveUserObj: !userObj.saveUserObj,
+        authObj: {...userObj.authObj, isLoggedIn: true, showSplash: false},
       });
 
-      setTimeout(() => {
-        setUserObj({...userObj, userNameError: '', userPassError: ''});
-      }, 1500);
       return;
     }
 
     console.log(`user:>${userObj.userName}`);
     console.log(`pass:>${userObj.userPassword}`);
-    signIn();
   };
 
   const checkPlaceholder = () => {
@@ -174,6 +129,7 @@ const LoginScreen = ({navigation}) => {
         return true;
       }, 1500);
     }
+
     return false;
   };
 
@@ -236,53 +192,6 @@ const LoginScreen = ({navigation}) => {
     console.log(`demo ${userObj.isDemoUser} check${userObj.isDemoUserChecked}`);
   };
 
-  const checkAsyncData = async key => {
-    try {
-      const value = await AsyncStorage.getItem(key);
-
-      if (value !== null) {
-        console.log(`Async Key check >> ${value}`);
-      } else {
-        setUserObj({...userObj, userNameError: 'asdync key empty'});
-
-        return false;
-      }
-    } catch (e) {
-      console.log('Async error logged', e);
-      setUserObj({...userObj, userNameError: 'async error error'});
-    }
-  };
-
-  const storeAsyncData = async (key, value) => {
-    try {
-      console.log(`entering ${key} and ${JSON.stringify(value)}`);
-      const asuncConfirm = await AsyncStorage.setItem(
-        key,
-        JSON.stringify(value),
-      );
-      if (asuncConfirm != null) console.log('asunconfirm', asuncConfirm);
-    } catch (e) {
-      // saving error
-      console.log('async storage error', e);
-    }
-  };
-
-  const getAsyncData = async key => {
-    console.log('lue???', key);
-    try {
-      const value = await AsyncStorage.getItem(key);
-      if (value !== null) {
-        console.log('thevalue???', value);
-      } else {
-        console.log('key failure');
-        return false;
-      }
-    } catch (e) {
-      console.log('key error ', e);
-      return 'error';
-    }
-  };
-
   const setPUserName = name => {
     const regexp = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -325,9 +234,6 @@ const LoginScreen = ({navigation}) => {
       });
     }
   };
-  React.useEffect(() => {
-    console.log('login authObj useffec    >  ', userObj.authObj);
-  }, [userObj.authObj.authStyle]);
 
   const test = () => {
     setUserObj({
