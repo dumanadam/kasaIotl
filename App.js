@@ -26,6 +26,10 @@ const App: () => React$Node = () => {
   const [userObj, setUserObj] = React.useState({
     userToken: IotlGlobals.authToken,
     isloading: true,
+    showSplash: true,
+    authObj: {
+      isLoggedin: false,
+    },
   });
 
   const TabStack = createBottomTabNavigator();
@@ -33,33 +37,63 @@ const App: () => React$Node = () => {
 
   React.useEffect(() => {
     setTimeout(() => {
-      setUserObj({...userObj, isloading: false, userToken: null});
+      setUserObj({...userObj, showSplash: false});
       console.log('app.js----');
     }, 500);
   }, []);
 
+  React.useEffect(() => {
+    console.log('App useeffect authObj updated', userObj.authObj);
+  }, [userObj.authObj]);
+
+  const updasteAuthObj = sentAuthObj => {
+    setUserObj({
+      ...userObj,
+      authObj: sentAuthObj,
+    });
+    console.log('out memo ', authObj);
+  };
+
   const authContext = React.useMemo(() => {
     return {
       signIn: () => {
-        setUserObj({...userObj, isloading: false, userToken: 'asdas'});
+        setUserObj({
+          ...userObj,
+
+          authObj: {...userObj.authObj, userToken: 'asdas'},
+        });
       },
       signUp: () => {
-        setUserObj({...userObj, isloading: false, userToken: 'asdas'});
+        setUserObj({
+          ...userObj,
+
+          authObj: {...userObj.authObj, userToken: 'asdas'},
+        });
       },
       signOut: () => {
-        setUserObj({...userObj, isloading: false, userToken: null});
+        setUserObj({
+          ...userObj,
+
+          authObj: {...userObj.authObj, userToken: ''},
+        });
+      },
+      updateAuthObj: sentAuthObj => {
+        updasteAuthObj(sentAuthObj);
+      },
+      asyncAuthObj: sentAuthObj => {
+        updasteAuthObj(sentAuthObj);
       },
     };
   }, []);
 
-  if (userObj.isloading) {
+  if (userObj.showSplash) {
     return <SplashScreen />;
   }
 
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        {userObj.userToken ? (
+        {userObj.authObj.isLoggedIn != null ? (
           <TabStack.Navigator
             initialRouteName="Adjust"
             tabBarOptions={{

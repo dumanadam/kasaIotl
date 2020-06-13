@@ -12,33 +12,28 @@ export let Secrets = React.createContext();
 }; */
 
 Secrets = {
-  defaultUsername: 'Username',
-
-  kasaUUID: '561e606e-a6e6-4402-a5f7-2d3e8e7e5e6f',
-  kasaUserName: '',
-  kasaUserPass: '',
-  kasaToken: '',
-  kasaDeviceList: {},
-
-  customUserName: null,
-  customPassword: null,
+  customUUID: '561e606e-a6e6-4402-a5f7-2d3e8e7e5e6f',
+  customUserName: '',
+  customUserPass: '',
+  customToken: '',
+  customDeviceList: {},
 
   demoUUID: 'e1776657-d638-4211-9dc9-471820b7c6fb',
   demoUserName: 'kasademo@talha.me',
   demoPassword: 'nit3002ts',
-  demoToken: null,
-  demoDeviceList: null,
+  demoToken: '',
+  demoDeviceList: {},
 
   authDetails: {
-    userName: '',
-    userPass: '',
-    userToken: '',
-    userUUID: '',
-    userDeviceList: '',
+    authName: '',
+    authPass: '',
+    authToken: '',
+    authUUID: '',
+    authDeviceList: {},
     isLoggedIn: false,
     keyError: false,
-    isLoading: true,
-    authStyle: 'custom',
+    isLoading: false,
+    authStyle: 'demo',
     showSplash: true,
   },
 };

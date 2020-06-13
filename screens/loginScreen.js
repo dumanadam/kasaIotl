@@ -20,7 +20,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const LoginScreen = ({navigation}) => {
   const {login} = require('tplink-cloud-api');
-  const {signIn} = React.useContext(AuthContext);
+  const {signIn, updateAuthObj, asyncAuthObj} = React.useContext(AuthContext);
   const [userObj, setUserObj] = React.useState({
     isEmailValid: true,
     isDemoUser: false,
@@ -41,14 +41,20 @@ const LoginScreen = ({navigation}) => {
     isloading: false,
     userNameError: '',
     userPassError: '',
+    authObj: {},
   });
 
   React.useEffect(() => {
-    console.log('isdemo >  ', userObj.isDemoUser);
-    setTimeout(() => {}, 500);
-  }, [userObj.userName, userObj.isDemoUser]);
+    userObj.authObj.isLoggedIn
+      ? console.log('login authObj useffec    >  ', userObj.authObj)
+      : false;
+    userObj.authObj.isLoggedIn
+      ? console.log('authObj updated and sent >  ', userObj)
+      : false;
+    userObj.authObj.isLoggedIn ? updateAuthObj(userObj) : false;
+  }, [userObj.authObj]);
 
-  async function tplinkLogin(userType) {
+  async function tplinkLogin(sentUserObj) {
     let tplinkUser = '';
     let tplinkPass = '';
     let tplinkUUID = '';
@@ -56,14 +62,19 @@ const LoginScreen = ({navigation}) => {
     let tplinkDeviceList;
 
     // log in to cloud, return a connected tplink object
-    if (userType == 'demoUser') {
+    if (userObj.authObj.authStyle == 'demo') {
       tplinkUser = Secrets.demoUserName;
       tplinkPass = Secrets.demoPassword;
       tplinkUUID = Secrets.demoUUID;
     }
     const tplink = await login(tplinkUser, tplinkPass, tplinkUUID).catch(e => {
       console.log('error', e);
-      setUserObj({...userObj, errorMessage: 'User Credentials Error - TPLINK'});
+      setUserObj({
+        ...userObj,
+        userNameError: 'User Credentials Error - TPLINK',
+        userPassError: "'User Credentials Error - TPLINK'",
+      });
+
       return;
     });
     //console.log('current auth token is', tplink.getToken());
@@ -73,6 +84,20 @@ const LoginScreen = ({navigation}) => {
     // get a list of raw json objects (must be invoked before .get* works)
     tplinkDeviceList = await tplink.getDeviceList();
     console.log('tplinkDeviceList', tplinkDeviceList);
+    setUserObj({
+      ...userObj,
+      authObj: {
+        ...userObj.userAuth,
+        authName: tplinkUser,
+        authPass: tplinkPass,
+        authToken: tplinkToken,
+        authUUID: tplinkUUID,
+        authDeviceList: tplinkDeviceList,
+        isLoggedIn: true,
+      },
+    });
+
+    storeAsyncData('userObj', userObj);
 
     // find a device by alias:
     //let myPlug = tplink.getHS100('My Smart Plug');
@@ -102,8 +127,8 @@ const LoginScreen = ({navigation}) => {
     if (userObj.isDemoUser) {
       console.log(`user:>${userObj.userName}`);
       console.log(`pass:>${userObj.userPassword}`);
-      tplinkLogin('demoUser');
-      signIn();
+      //tplinkLogin('demoUser');
+
       return;
     }
 
@@ -300,7 +325,24 @@ const LoginScreen = ({navigation}) => {
       });
     }
   };
+  React.useEffect(() => {
+    console.log('login authObj useffec    >  ', userObj.authObj);
+  }, [userObj.authObj.authStyle]);
 
+  const test = () => {
+    setUserObj({
+      ...userObj,
+      authObj: {
+        ...userObj.authObj,
+        authStyle: 'demo',
+
+        demoUserName: 'kasademo@talha.me',
+        demoPassword: 'nit3002ts',
+        demoToken: '',
+        demoDeviceList: {},
+      },
+    });
+  };
   return (
     <ImageBackground
       source={
@@ -383,6 +425,13 @@ const LoginScreen = ({navigation}) => {
                 type="outline"
                 buttonStyle={styles.button}
                 onPress={() => checkAuth()}
+                loading={userObj.isloading}
+              />
+              <Button
+                title="test"
+                type="outline"
+                buttonStyle={styles.button}
+                onPress={() => test()}
                 loading={userObj.isloading}
               />
             </View>
