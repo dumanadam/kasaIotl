@@ -1,16 +1,15 @@
 import React from 'react';
 
-export let IotlGlobals = React.createContext();
+export const IotlGlobals = React.createContext({
+  in1IotlGlobals: false,
+  in2IotlGlobals: null,
+  in3IotlGlobals: null,
+  testFunc: value => !value,
+});
 export let IotlStrings = React.createContext();
 export let Colours = React.createContext();
 export let Errors = React.createContext();
 export const AuthContext = React.createContext();
-
-authObj = {
-  authToken: false,
-  authUserName: null,
-  authPassword: null,
-};
 
 IotlStrings = {
   loginTextButton: 'Login',

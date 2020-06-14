@@ -73,7 +73,7 @@ async function tplinkLogin(sentLoginUser, sentUserObj) {
 
   // get a list of raw json objects (must be invoked before .get* works)
   tplinkDeviceList = await tplink.getDeviceList();
-  console.log('tplinkDeviceList', tplinkDeviceList);
+  //console.log('tplinkDeviceList', tplinkDeviceList);
 
   sentUserObj = {
     ...sentUserObj,
@@ -88,7 +88,6 @@ async function tplinkLogin(sentLoginUser, sentUserObj) {
       isLoggedIn: true,
     },
   };
-  console.log('tplinkDeviceList', tplinkDeviceList);
 
   return sentUserObj;
 

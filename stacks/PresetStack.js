@@ -7,8 +7,6 @@ const PresetStack = props => {
   const PresetStack = createStackNavigator();
   const [acount, setacount] = useState(0);
 
-  console.log('preset stack acount', acount);
-
   return (
     <PresetStack.Navigator
       screenOptions={{...props.route.params.headerStyle}}
