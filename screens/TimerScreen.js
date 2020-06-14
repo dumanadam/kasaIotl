@@ -7,6 +7,8 @@ import {
 } from 'react-native';
 import {Header, Slider, Button, Text} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Secrets} from '../api/Secrets';
+import {IotlGlobals} from '../api/context';
 
 const TimerScreen = ({navigation}) => {
   const [userObj, setUserObj] = React.useState({
@@ -41,6 +43,27 @@ const TimerScreen = ({navigation}) => {
     navigation.setOptions({title: 'Updated!'});
   };
 
+  const asd = React.useContext(IotlGlobals);
+
+  const setGlobeSettings = async () => {
+    /*  let setGlobeSettingsResult = await tplink
+      .getLB130('Kitchen LB130')
+      .setState(1, 90, 150, 80); */
+
+    console.log('the result ', asd);
+  };
+
+  React.useEffect(() => {
+    // storeAsyncData('userObj', userObj);
+    console.log('Timer screen secret iotlglobals ', asd);
+  }, [asd]);
+
+  React.useEffect(() => {
+    // storeAsyncData('userObj', userObj);
+    console.log('auth updated timer', Secrets.customUUID);
+    console.log('auth updated timer asd ', asd);
+  }, [asd]);
+
   return (
     <View style={styles.backgroundContainer}>
       <ImageBackground
@@ -69,6 +92,9 @@ const TimerScreen = ({navigation}) => {
           <Text>Timer Screen</Text>
           <Button title="asdd" onPress={update} />
           <TouchableOpacity
+            onPress={() => {
+              setGlobeSettings();
+            }}
             style={{
               borderWidth: 1,
               borderColor: 'rgba(0,0,0,0.2)',

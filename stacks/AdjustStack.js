@@ -4,7 +4,7 @@ import AdjustScreen from '../screens/AdjustScreen';
 
 const AdjustStack = props => {
   const AdjustStack = createStackNavigator();
-  console.log('adjust stack', props);
+  // console.log('adjust stack', props);
   return (
     <AdjustStack.Navigator
       screenOptions={{headerStyle: {backgroundColor: 'papayawhip'}}}>

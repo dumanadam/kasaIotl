@@ -1,8 +1,7 @@
 import React from 'react';
-import {TouchableHighlightBase} from 'react-native';
 
 export let Secrets = React.createContext();
-
+export const testContext = React.createContext();
 /* Secrets = {
   authUUID: 'e1776657-d638-4211-9dc9-471820b7c6fb',
   authToken: null,

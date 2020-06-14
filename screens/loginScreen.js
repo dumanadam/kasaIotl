@@ -67,6 +67,7 @@ const LoginScreen = ({navigation}) => {
   });
 
   React.useEffect(() => {
+    console.log('-------enter LOGIN--------');
     if (userObj.saveUserObj) {
       updateAuthObjTruth(userObj.authObj);
       setUserObj({
@@ -78,6 +79,7 @@ const LoginScreen = ({navigation}) => {
         userObj.authObj,
       );
     }
+    console.log('-------exit LOGIN--------');
   }, [userObj.authObj]);
 
   React.useEffect(() => {
