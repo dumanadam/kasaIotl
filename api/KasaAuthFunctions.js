@@ -77,6 +77,7 @@ async function tplinkLogin(sentLoginUser, sentUserObj) {
 
   sentUserObj = {
     ...sentUserObj,
+    saveUserObj: true,
     authObj: {
       ...sentUserObj.authObj,
       authName: tplinkUser,

@@ -102,6 +102,7 @@ const LoginScreen = ({navigation}) => {
       tplinkLogin('demo', userObj).then(value => {
         console.log('return obj in login', value);
         returnObj = value;
+        setUserObj({...userObj, ...value});
       });
       /*         .catch(e => {
           console.log(' Loginscreen error', e);
