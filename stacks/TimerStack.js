@@ -5,7 +5,10 @@ import TimerScreen from '../screens/TimerScreen';
 const TimerStack = props => {
   const TimerStack = createStackNavigator();
   return (
-    <TimerStack.Navigator>
+    <TimerStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
       <TimerStack.Screen name="Timer" component={TimerScreen} />
     </TimerStack.Navigator>
   );

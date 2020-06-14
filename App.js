@@ -13,6 +13,7 @@ import TimerStack from './stacks/TimerStack';
 import SettingsStack from './stacks/SettingsStack';
 import LanControlScreen from './screens/LanControlScreen';
 import {storeAsyncData, getAsyncData} from './api/KasaAuthFunctions';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import {
   SafeAreaView,
@@ -33,8 +34,19 @@ const App: () => React$Node = () => {
     },
   });
 
+  const TabContainerStack = createStackNavigator();
   const TabStack = createBottomTabNavigator();
   const AuthStack = createStackNavigator();
+
+  const headerStyle = {
+    headerStyle: {
+      headerStyle: {
+        backgroundColor: 'blue',
+      },
+      headerTintColor: '#455221',
+      headerTransparent: true,
+    },
+  };
 
   React.useEffect(() => {
     // storeAsyncData('userObj', userObj);
@@ -151,27 +163,57 @@ const App: () => React$Node = () => {
       <NavigationContainer>
         {userObj.authObj.isLoggedIn == true ? (
           <TabStack.Navigator
-            initialRouteName="Adjust"
+            screenOptions={({route}) => ({
+              tabBarIcon: ({focused, color, size}) => {
+                let iconName;
+
+                if (route.name === 'AdjustStack') {
+                  iconName = focused
+                    ? 'arrow-down-bold-circle-outline'
+                    : 'arrow-right-bold-outline';
+                } else if (route.name === 'Settings') {
+                  iconName = focused ? 'information' : 'information-variant';
+                }
+
+                // You can return any component that you like here!
+                return <Icon name={iconName} size={size} color={color} />;
+              },
+            })}
+            initialParams={{title: 'assssdasd'}}
+            initialRouteName="AdjustStack"
             tabBarOptions={{
-              activeTintColor: '#e91e63',
+              activeTintColor: 'white',
+              inactiveTintColor: '#154159',
+              activeBackgroundColor: 'transparent',
+              headerTintColor: 'red',
+              inactiveBackgroundColor: 'transparent',
+              style: {
+                backgroundColor: 'transparent',
+                borderTopWidth: 0,
+                position: 'absolute',
+              },
+              labelStyle: {
+                fontWeight: '700',
+              },
             }}>
             <TabStack.Screen
-              name="Preset"
+              name="PresetStack"
               component={PresetStack}
-              options={{title: 'Presets', headerTitleAlign: 'center'}}
+              initialParams={{...headerStyle}}
             />
             <TabStack.Screen
-              name="Adjust"
+              name="AdjustStack"
               component={AdjustStack}
-              options={{title: 'Adjust'}}
+              initialParams={{title: 'asdasd'}}
+              options={{title: 'Preaaasets', headerTitleAlign: 'center'}}
             />
             <TabStack.Screen
-              name="Timer"
+              name="TimerStack"
               component={TimerStack}
               options={{title: 'Timer'}}
             />
             <TabStack.Screen
-              name="Settings"
+              name="SettingsStack"
               component={SettingsStack}
               options={{title: 'Settings'}}
             />
