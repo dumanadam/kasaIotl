@@ -6,7 +6,6 @@ import {Secrets} from '../api/Secrets';
 import {useState} from 'react';
 
 const PresetScreen = route => {
-  console.log('presetscreen ', route);
   const [count, setcount] = useState(0);
 
   const update = () => {
