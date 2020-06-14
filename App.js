@@ -99,7 +99,8 @@ const App: () => React$Node = () => {
     setUserObj({
       ...userObj,
       saveUserObj: !userObj.saveUserObj,
-      authObj: {...userObj.authObj, ...sentAuthObj},
+
+      ...sentAuthObj,
     });
     console.log('out updateAuthObjTruth ', userObj);
   };
@@ -152,7 +153,7 @@ const App: () => React$Node = () => {
         return updatedAppUserObject();
       },
     };
-  }, []);
+  }, [userObj.authObj]);
 
   if (userObj.authObj.showSplash) {
     return <SplashScreen />;

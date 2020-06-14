@@ -65,6 +65,18 @@ const LoginScreen = ({navigation}) => {
       showSplash: false,
     },
   });
+  const [authObj, setAuthObj] = React.useState(getAppUserObj());
+
+  React.useEffect(() => {
+    var appUserObj = getAppUserObj();
+
+    console.log('APP userobj in Login screen', appUserObj);
+    appUserObj = {
+      ...appUserObj,
+      authObj: {...appUserObj.authobj, isLoggedIn: true},
+    };
+    updateAuthObjTruth(appUserObj);
+  }, []);
 
   React.useEffect(() => {
     console.log('-------enter LOGIN--------');
@@ -104,7 +116,16 @@ const LoginScreen = ({navigation}) => {
       tplinkLogin('demo', userObj).then(value => {
         console.log('return obj in login', value);
         returnObj = value;
-        setUserObj({...userObj, ...value});
+        setUserObj({
+          ...userObj,
+          saveUserObj: true,
+          authObj: {
+            ...userObj.authObj,
+            ...value,
+
+            page: 'Login checkauth',
+          },
+        });
       });
       /*         .catch(e => {
           console.log(' Loginscreen error', e);
