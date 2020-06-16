@@ -9,25 +9,29 @@ import {Header, Slider, Button, Text} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Secrets} from '../api/Secrets';
 import {IotlGlobals} from '../api/context';
+import {AuthContext} from '../api/context';
 
 const TimerScreen = ({navigation}) => {
   const [userObj, setUserObj] = React.useState({
-    isEmailValid: true,
-    isDemoUser: false,
-    backgroundImage: '../assets/images/light.gif',
+    timerScreen: {
+      isEmailValid: true,
+      isDemoUser: false,
+      backgroundImage: '../assets/images/light.gif',
 
-    isInputEditable: true,
+      isInputEditable: true,
 
-    showbg: true,
-    isOptions: false,
-    isRemember: true,
-    isDemoUserChecked: false,
+      showbg: true,
+      isOptions: false,
+      isRemember: true,
+      isDemoUserChecked: false,
 
-    saveUserObj: false,
-    optionsChevron: 'chevron-up',
-    isloading: false,
-    userNameError: '',
-    userPassError: '',
+      saveUserObj: false,
+      optionsChevron: 'chevron-up',
+      isloading: false,
+      userNameError: '',
+      userPassError: '',
+    },
+
     authObj: {
       authName: '',
       authPass: '',
@@ -38,31 +42,76 @@ const TimerScreen = ({navigation}) => {
       showSplash: false,
     },
   });
+
+  const {
+    signIn,
+    signUp,
+    signOut,
+    updateAuthObjTruth,
+    getAppUserObj,
+  } = React.useContext(AuthContext);
   const [value, setcount] = React.useState(0);
+  const [authObj, setAuthObj] = React.useState(
+    getAppUserObj('from timer start'),
+  );
+
   const update = navigation => {
     navigation.setOptions({title: 'Updated!'});
   };
 
   const asd = React.useContext(IotlGlobals);
 
+  React.useEffect(() => {
+    var appUserObj = getAppUserObj('from timer usefeect');
+    console.log('Timer screen authObj from App', authObj);
+    console.log('Timer screen userobj from app', appUserObj);
+    console.log('device lit', JSON.stringify(appUserObj.authDeviceList));
+    setUserObj({
+      ...userObj,
+
+      authObj: {
+        ...userObj.authObj,
+        ...appUserObj.authObj,
+        page: 'timerscreen',
+      },
+    });
+  }, []);
+
   const setGlobeSettings = async () => {
     /*  let setGlobeSettingsResult = await tplink
       .getLB130('Kitchen LB130')
       .setState(1, 90, 150, 80); */
 
-    console.log('the result ', asd);
+    console.log('the result ', authObj);
+    console.log('the result ', userObj);
+    updateAuthObjTruth({
+      ...authObj,
+      saveUserObj: true,
+      authObj: {
+        ...authObj.authObj,
+        isLoggedIn: false,
+        page: 'settings',
+      },
+    });
   };
 
   React.useEffect(() => {
-    // storeAsyncData('userObj', userObj);
-    console.log('Timer screen secret iotlglobals ', asd);
-  }, [asd]);
+    console.log('timer useeffe userobj ', userObj);
+    console.log('timer useeffe userobj ', authObj);
+  }, [userObj]);
 
   React.useEffect(() => {
-    // storeAsyncData('userObj', userObj);
     console.log('auth updated timer', Secrets.customUUID);
     console.log('auth updated timer asd ', asd);
   }, [asd]);
+
+  const lightoff = async () => {
+    /*  let setGlobeSettingsResult = await tplink
+      .getLB130('Kitchen LB130')
+      .setState(1, 90, 150, 80); */
+    var success = await tplink.getHS100('My Smart Plug').toggle();
+    console.log(`the result ${success}`);
+  };
 
   return (
     <View style={styles.backgroundContainer}>
@@ -106,6 +155,23 @@ const TimerScreen = ({navigation}) => {
               borderRadius: 50,
             }}>
             <Icon name={'chevron-right'} size={30} color="#01a699" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              lightoff();
+            }}
+            style={{
+              borderWidth: 1,
+              borderColor: 'rgba(0,0,0,0.2)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 100,
+              height: 100,
+              backgroundColor: '#fff',
+              borderRadius: 50,
+            }}>
+            <Icon name={'lightbulb-on-outline'} size={30} color="red" />
           </TouchableOpacity>
           <View
             style={{flex: 1, alignItems: 'stretch', justifyContent: 'center'}}>

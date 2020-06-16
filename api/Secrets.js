@@ -11,6 +11,9 @@ export const testContext = React.createContext();
 }; */
 
 Secrets = {
+  authObjKey: 'a4',
+  userObjKey: 'u4',
+
   customUUID: '561e606e-a6e6-4402-a5f7-2d3e8e7e5e6f',
   customUserName: '',
   customUserPass: '',
@@ -23,7 +26,7 @@ Secrets = {
   demoToken: '',
   demoDeviceList: {},
 
-  authDetails: {
+  authObj: {
     authName: '',
     authPass: '',
     authToken: '',
@@ -33,5 +36,6 @@ Secrets = {
     keyError: false,
     isLoading: false,
     authStyle: 'demo',
+    saveAuthObj: false,
   },
 };

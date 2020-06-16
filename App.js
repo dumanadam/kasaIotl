@@ -26,12 +26,19 @@ import {
 import {Secrets} from './api/Secrets';
 
 const App: () => React$Node = () => {
-  const [userObj, setUserObj] = React.useState({
-    saveUserObj: false,
-    authObj: {
-      isLoggedIn: false,
-      showSplash: true,
-    },
+  const [userObj, setUserObj] = React.useState(Secrets.authObj);
+
+  const [authObj, setAuthObj] = React.useState({
+    authName: '',
+    authPass: '',
+    authToken: '',
+    authUUID: '',
+    authDeviceList: {},
+    isLoggedIn: false,
+    keyError: false,
+    isLoading: true,
+    authStyle: 'demo',
+    saveAuthObj: false,
   });
 
   const TabContainerStack = createStackNavigator();
@@ -49,73 +56,99 @@ const App: () => React$Node = () => {
   };
 
   React.useEffect(() => {
-    // storeAsyncData('userObj', userObj);
-    getAsyncData('userObj').then(data => {
-      console.log('DATA APP useffect ++++++', data);
-      console.log('userObj APP useffect ++++++', userObj);
-      data.isLoggedIn
-        ? setTimeout(() => {
-            console.log('APP useffect true', userObj);
-            setUserObj({
-              ...userObj,
-              saveUserObj: true,
-              authObj: {
-                ...userObj.authObj,
-                showSplash: false,
-                isLoggedIn: true,
-              },
-            });
-          }, 500)
-        : setTimeout(() => {
-            console.log('APP useffect false', userObj);
-            setUserObj({
-              ...userObj,
-              saveUserObj: true,
-              authObj: {
-                ...userObj.authObj,
-                showSplash: false,
-                isLoggedIn: false,
-              },
-            });
-
-            console.log('app.js----', userObj);
-          }, 500);
-    });
+    getAsyncDatad();
   }, []);
+
+  const getAsyncDatad = async () => {
+    console.log('entered');
+    let returnedAsyncUserData = await getAsyncData(Secrets.userObjKey);
+    let returnedAsyncAuthData = await getAsyncData(Secrets.authObjKey);
+
+    returnedAsyncAuthData.isLoggedIn
+      ? setTimeout(() => {
+          console.log(
+            'APP KEYCHECK TRUE',
+            JSON.stringify({
+              ...returnedAsyncAuthData,
+              showSplash: false,
+              isLoggedIn: true,
+            }),
+          );
+          setUserObj({
+            ...returnedAsyncUserData,
+          });
+          setAuthObj({
+            ...returnedAsyncAuthData,
+            showSplash: false,
+            isLoggedIn: true,
+          });
+        }, 500)
+      : setTimeout(() => {
+          console.log('APP KEYCHECK FALSE ');
+        }, 100);
+  };
+
+  React.useEffect(() => {
+    if (authObj.saveAuthObj) {
+      setAuthObj({
+        ...authObj,
+        saveAuthObj: false,
+      });
+      storeAsyncData(Secrets.authObjKey, authObj);
+
+      console.log('App useeffect SAVING auth', JSON.stringify(authObj));
+    }
+  }, [authObj.saveAuthObj]);
 
   React.useEffect(() => {
     if (userObj.saveUserObj) {
-      storeAsyncData('userObj', userObj.authObj);
-      setUserObj({
-        ...userObj,
-        saveUserObj: !userObj.saveUserObj,
-      });
-      console.log('App useeffect authObj updated', userObj.authObj);
+      storeAsyncData(Secrets.userObjKey, userObj);
+      console.log('App useeffect SAVING USER', JSON.stringify(userObj));
     }
-  }, [userObj.authObj]);
+  }, [userObj]);
 
   const updateAuthObj = sentAuthObj => {
-    console.log('sentAuthObj updateAuthObjTruth ', sentAuthObj);
-    setUserObj({
-      ...userObj,
-      saveUserObj: !userObj.saveUserObj,
-
+    setAuthObj({
       ...sentAuthObj,
+      saveAuthObj: !authObj.saveAuthObj,
     });
-    console.log('out updateAuthObjTruth ', userObj);
+    console.log(
+      'updating APP AUTH obj ',
+      JSON.stringify({
+        ...sentAuthObj,
+        saveAuthObj: !authObj.saveAuthObj,
+      }),
+    );
   };
-  const updateUserObjTruth = sentUserObject => {
+  const updateUserObj = sentUserObject => {
+    console.log('sentuserobj USER TRUTH');
     setUserObj({
-      ...userObj,
       ...sentUserObject,
+      saveUserObj: !userObj.saveUserObj,
     });
-    console.log('out updateUserObjTruth ', authObj);
+    console.log(
+      'updating APP USER obj ',
+      JSON.stringify({
+        ...sentUserObject,
+        saveUserObj: !sentUserObj.saveUserObj,
+      }),
+    );
   };
 
-  const updatedAppUserObject = () => {
-    console.log('APP UserObj ', userObj);
+  const updatedAppUserObject = from => {
+    console.log(
+      `Sending UserObj from APP>>>>>  from ${from} ${JSON.stringify(userObj)}`,
+    );
     return userObj;
   };
+
+  const updatedAppAuthObject = from => {
+    console.log(
+      `Sending AUTHOBJ from APP>>>>>  from ${from} ${JSON.stringify(authObj)}`,
+    );
+    return authObj;
+  };
+
   const authContext = React.useMemo(() => {
     return {
       signIn: () => {
@@ -140,29 +173,29 @@ const App: () => React$Node = () => {
           authObj: {...userObj.authObj, isLoggedIn: false},
         });
       },
-      updateUserObj: sentAuthObj => {
-        updateUserObjTruth(sentAuthObj);
+      updateUserObjTruth: sentAuthObj => {
+        updateUserObj(sentAuthObj);
       },
       updateAuthObjTruth: sentAuthObj => {
         updateAuthObj(sentAuthObj);
       },
-      asyncAuthObj: sentAuthObj => {
-        updasteAuthObj(sentAuthObj);
+      getAppUserObj: from => {
+        return updatedAppUserObject(from);
       },
-      getAppUserObj: () => {
-        return updatedAppUserObject();
+      getAppAuthObj: from => {
+        return updatedAppAuthObject(from);
       },
     };
-  }, [userObj.authObj]);
+  }, [authObj]);
 
-  if (userObj.authObj.showSplash) {
+  if (authObj.showSplash) {
     return <SplashScreen />;
   }
 
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        {userObj.authObj.isLoggedIn == true ? (
+        {authObj.isLoggedIn == true ? (
           <TabStack.Navigator
             screenOptions={({route}) => ({
               tabBarIcon: ({focused, color, size}) => {
