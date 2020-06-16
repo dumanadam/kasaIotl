@@ -8,56 +8,44 @@ const SettingsScreen = ({navigation}) => {
     signUp,
     signOut,
     updateAuthObjTruth,
+    updateUserObjTruth,
     getAppUserObj,
+    getAppAuthObj,
   } = React.useContext(AuthContext);
 
-  const [authObj, setUserObj] = React.useState(getAppUserObj());
+  const [userObj, setUserObj] = React.useState({
+    settingsScreen: {},
+    ...getAppUserObj('from settings start'),
+  });
+
+  const [authObj, setAuthObj] = React.useState(getAppAuthObj('from settings'));
 
   React.useEffect(() => {
     console.log('----------Settings ----------');
-    console.log('Settings authObj 1', authObj);
+    console.log('Settings authobj ', JSON.stringify(authObj));
 
-    console.log('Settings useeffect authObj updated', authObj);
-    console.log('Settings authObj 2', authObj);
     console.log('----------Settings Exit ----------');
   }, []);
 
-  React.useEffect(() => {
-    console.log('----------Settings ----------');
-    console.log('Settings authObj 1', authObj);
-
-    console.log('Settings useeffect authObj updated', authObj);
-    console.log('Settings authObj 2', authObj);
-    console.log('----------Settings Exit ----------');
-  }, [authObj]);
-
   const updatepage = () => {
-    setUserObj({...authObj});
+    console.log('update page', JSON.stringify(authObj));
   };
 
   const logOutSequence = () => {
-    console.log('deldeldeldeldeldel', authObj);
-    if (authObj != undefined) {
-      updateAuthObjTruth({
-        ...authObj,
-        saveUserObj: true,
-        authObj: {
-          ...authObj.authObj,
-          isLoggedIn: false,
-          page: 'settings',
-        },
-      });
+    if (authObj == undefined) {
       console.log('authObj underfined');
     } else {
-      console.log('authObj logging ourt sequence', authObj);
+      updateAuthObjTruth({
+        ...authObj,
+        saveAuthObj: true,
+        isLoggedIn: false,
+      });
     }
   };
 
   return (
     <View>
-      <Text style={{fontSize: 30, color: 'red'}}>
-        {JSON.stringify(authObj)}
-      </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>{JSON.stringify(authObj)}</Text>
       <Button
         title="update page"
         onPress={() => {
