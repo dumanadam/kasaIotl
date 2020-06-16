@@ -32,9 +32,14 @@ const LoginScreen = ({navigation}) => {
     signUp,
     signOut,
     updateAuthObjTruth,
+    updateUserObjTruth,
     getAppUserObj,
+    getAppAuthObj,
   } = React.useContext(AuthContext);
   const [userObj, setUserObj] = React.useState({
+    userNameError: '',
+    userPassError: '',
+
     isEmailValid: true,
     isDemoUser: false,
     backgroundImage: '../assets/images/light.gif',
@@ -53,59 +58,46 @@ const LoginScreen = ({navigation}) => {
     saveUserObj: false,
     optionsChevron: 'chevron-up',
     isloading: false,
-    userNameError: '',
-    userPassError: '',
-    authObj: {
-      authName: '',
-      authPass: '',
-      authToken: '',
-      authUUID: '',
-      authDeviceList: {},
-      isLoggedIn: false,
-      showSplash: false,
-    },
   });
-  const [authObj, setAuthObj] = React.useState(getAppUserObj());
 
-  React.useEffect(() => {
-    var appUserObj = getAppUserObj();
-
-    console.log('APP userobj in Login screen', appUserObj);
-    appUserObj = {
-      ...appUserObj,
-      authObj: {...appUserObj.authobj, isLoggedIn: true},
-    };
-    updateAuthObjTruth(appUserObj);
-  }, []);
+  const [authObj, setAuthObj] = React.useState(getAppAuthObj('login screen'));
 
   React.useEffect(() => {
     console.log('-------enter LOGIN--------');
-    if (userObj.saveUserObj) {
-      updateAuthObjTruth(userObj.authObj);
-      setUserObj({
-        ...userObj,
-        saveUserObj: !userObj.saveUserObj,
-      });
-      console.log(
-        'Login authobj updated - sent to app screen',
-        userObj.authObj,
-      );
+    if (authObj.saveAuthObj) {
+      updateAuthObjTruth(authObj);
     }
     console.log('-------exit LOGIN--------');
-  }, [userObj.authObj]);
+  }, [authObj]);
 
   React.useEffect(() => {
-    console.log('return obj in useeddd', JSON.stringify(returnObj));
-  }, [returnObj]);
+    if (userObj.saveAuthObj) {
+      updateUserObjTruth(userObj);
 
-  React.useEffect(() => {
+      console.log(
+        'Login USER  updated - sent to app screen',
+        JSON.stringify({...userObj}),
+      );
+    }
+  }, [userObj]);
+
+  /*   React.useEffect(() => {
+    console.log(
+      'usernameerror updated>>>>',
+      JSON.stringify(userObj.userNameError),
+    );
     setTimeout(() => {
-      setUserObj({...userObj, userNameError: '', userPassError: ''});
-      return true;
-    }, 1500);
-  }, [userObj.userNameError]);
+      setUserObj({
+        ...userObj,
 
-  const checkAuth = () => {
+        userNameError: '',
+        userPassError: '',
+      });
+      return true;
+    }, 50);
+  }, [userObj.userNameError]); */
+
+  const checkAuth = async () => {
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
 
     if (checkPlaceholder()) {
@@ -113,41 +105,48 @@ const LoginScreen = ({navigation}) => {
     }
 
     if (userObj.isDemoUser) {
-      tplinkLogin('demo', userObj).then(value => {
-        console.log('return obj in login', value);
-        returnObj = value;
-        setUserObj({
-          ...userObj,
+      let data = await tplinkLogin('demo', userObj);
+      console.log(
+        'return USER in login from tplink',
+        JSON.stringify({
+          ...data,
           saveUserObj: true,
-          authObj: {
-            ...userObj.authObj,
-            ...value,
+        }),
+      );
+      console.log(
+        'return AUTH in login auth from tplink',
+        JSON.stringify({
+          ...data.authObj,
+          isLoggedIn: true,
 
-            page: 'Login checkauth',
-          },
-        });
+          authStyle: 'demo',
+          saveAuthObj: true,
+        }),
+      );
+      setUserObj({
+        ...data,
+        saveUserObj: true,
       });
+      setAuthObj({
+        ...data.authObj,
+        isLoggedIn: true,
+
+        authStyle: 'demo',
+        saveAuthObj: true,
+      });
+
       /*         .catch(e => {
           console.log(' Loginscreen error', e);
           setUserObj({
             ...userObj,
-            userNameError: Errors.tpLinkUserError,
+           userObj.LoginScreen.userNameError: Errors.tpLinkUserError,
           });
 
           return 'Login Error';
         }); */
 
-      /*  setUserObj({
-        ...userObj,
-        saveUserObj: !userObj.saveUserObj,
-        authObj: {...userObj.authObj, isLoggedIn: true, showSplash: false},
-      }); */
-
       return;
     }
-
-    console.log(`user:>${userObj.userName}`);
-    console.log(`pass:>${userObj.userPassword}`);
   };
 
   const checkPlaceholder = () => {
@@ -160,6 +159,7 @@ const LoginScreen = ({navigation}) => {
       console.log(`pass:>${userObj.userPassword}`);
       setUserObj({
         ...userObj,
+
         userNameError: Errors.usernameDefaultError,
         userPassError: Errors.userPassDefaultError,
       });
@@ -274,7 +274,7 @@ const LoginScreen = ({navigation}) => {
     setUserObj({
       ...userObj,
       authObj: {
-        ...userObj.authObj,
+        ...authObj,
         authStyle: 'demo',
 
         demoUserName: '***REMOVED***',
@@ -325,9 +325,6 @@ const LoginScreen = ({navigation}) => {
                 inputStyle={
                   userObj.isDemoUser ? styles.inputDemo : styles.input
                 }
-                /*        onFocus={() => UserNameFocused()}
-                onBlur={() => UserNameBlur()} */
-
                 leftIcon={
                   <Icon
                     name="account-outline"

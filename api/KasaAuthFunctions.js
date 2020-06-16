@@ -24,19 +24,30 @@ const getAsyncData = async key => {
   try {
     const value = await AsyncStorage.getItem(key);
     if (value !== null) {
-      console.log(`getAsyncData key= ${key} value= ${value}`);
+      console.log(
+        `getAsyncData key= ${key} value= ${JSON.stringify(JSON.parse(value))}`,
+      );
       return JSON.parse(value);
     } else {
-      console.log('getAsyncData  key failure');
-      return false;
+      console.log('getAsyncData  key failure >>', key);
+      return {
+        authName: '',
+        authPass: '',
+        authToken: '',
+        authUUID: '',
+        authDeviceList: {},
+        isLoggedIn: false,
+        showSplash: false,
+        keyError: true,
+      };
     }
   } catch (e) {
     console.log('key error ', e);
-    return 'error';
+    return e;
   }
 };
 
-async function tplinkLogin(sentLoginUser, sentUserObj) {
+async function tplinkLogin(sentLoginUserType, sentAuthObj) {
   const {login} = require('tplink-cloud-api');
 
   let tplinkUser = '';
@@ -46,26 +57,26 @@ async function tplinkLogin(sentLoginUser, sentUserObj) {
   let tplinkDeviceList;
 
   // log in to cloud, return a connected tplink object
-  if (sentLoginUser == 'demo') {
+  if (sentLoginUserType == 'demo') {
     tplinkUser = Secrets.demoUserName;
     tplinkPass = Secrets.demoPassword;
     tplinkUUID = Secrets.demoUUID;
   }
 
-  if (sentLoginUser == 'test') {
+  if (sentLoginUserType == 'test') {
     tplinkUser = 'sdsd';
     tplinkPass = 'asdas';
     tplinkUUID = Secrets.demoUUID;
   }
   const tplink = await login(tplinkUser, tplinkPass, tplinkUUID).catch(e => {
     console.log('error', e);
-    sentUserObj = {
-      ...sentUserObj,
+    sentAuthObj = {
+      ...sentAuthObj,
       userNameError: 'User Credentials Error - TPLINK',
       userPassError: "'User Credentials Error - TPLINK'",
     };
 
-    return sentUserObj;
+    return sentAuthObj;
   });
   //console.log('current auth token is', tplink.getToken());
   tplinkToken = tplink.getToken();
@@ -75,21 +86,21 @@ async function tplinkLogin(sentLoginUser, sentUserObj) {
   tplinkDeviceList = await tplink.getDeviceList();
   //console.log('tplinkDeviceList', tplinkDeviceList);
 
-  sentUserObj = {
-    ...sentUserObj,
-    saveUserObj: true,
+  sentAuthObj = {
+    ...sentAuthObj,
     authObj: {
-      ...sentUserObj.authObj,
+      ...sentAuthObj.authObj,
       authName: tplinkUser,
       authPass: tplinkPass,
       authToken: tplinkToken,
       authUUID: tplinkUUID,
       authDeviceList: tplinkDeviceList,
-      isLoggedIn: true,
     },
   };
 
-  return sentUserObj;
+  console.log('sending auth tplinklogin from kasa', sentAuthObj.authObj);
+
+  return sentAuthObj;
 
   // find a device by alias:
   //let myPlug = tplink.getHS100('My Smart Plug');
