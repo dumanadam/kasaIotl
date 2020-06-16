@@ -59,4 +59,4 @@ buck-out/
 /ios/Pods/
 
 # Secrets File
-/assets/secrets.js
+/api/Secrets.js
