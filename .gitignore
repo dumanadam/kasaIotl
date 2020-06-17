@@ -60,3 +60,6 @@ buck-out/
 
 # Secrets File
 /api/Secrets.js
+/api/kasaApiCalls.js
+/api/kasaClass.js
+/api/kasaKontrol.js

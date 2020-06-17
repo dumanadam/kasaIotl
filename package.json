@@ -9,12 +9,26 @@
     "test": "jest",
     "lint": "eslint ."
   },
+  "keywords": [
+    "color",
+    "picker",
+    "color picker",
+    "wheel",
+    "color wheel",
+    "react",
+    "native",
+    "react-native",
+    "android",
+    "ios"
+  ],
   "dependencies": {
     "@react-native-community/async-storage": "^1.11.0",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-navigation/bottom-tabs": "^5.5.1",
     "@react-navigation/native": "^5.5.0",
     "@react-navigation/stack": "^5.4.1",
+    "colorsys": "^1.0.22",
+    "kasa_control": "^0.1.0",
     "logkitty": ">=0.7.1",
     "react": "16.11.0",
     "react-native": "0.62.2",
