@@ -13,6 +13,7 @@ import {useState} from 'react';
 import KasaControl from '../api/kasaKontrol';
 import {Header, Slider, Button, Text} from 'react-native-elements';
 import {ColorWheel} from '../api/ColorWheel';
+import {color} from 'react-native-reanimated';
 //import {ColorWheel} from 'react-native-color-wheel';
 
 const AdjustScreen = props => {
@@ -27,7 +28,14 @@ const AdjustScreen = props => {
   } = React.useContext(AuthContext);
   const [count, setcount] = useState(0);
   const [show, setshow] = useState(0);
-  const [userObj, setuserObj] = React.useState(getAppAuthObj('preset screen'));
+  const [userObj, setuserObj] = React.useState({
+    backgroundImage: '../assets/images/light.gif',
+    showbg: true,
+    saveUserObj: false,
+    finalColour: {
+      isToKasa: false,
+    },
+  });
 
   React.useEffect(() => {
     console.log('----------Settings ----------');
@@ -41,7 +49,7 @@ const AdjustScreen = props => {
     route.params = {...route.params, asd: count => setcount(count)};
   };
 
-  const tplinkLogin = async (sentLoginUserType, userObj) => {
+  const tplinkLogin = async colour => {
     const {login} = require('tplink-cloud-api');
 
     let tplinkUser = '';
@@ -50,20 +58,41 @@ const AdjustScreen = props => {
     let tplinkToken = '';
     let tplinkDeviceList;
 
-    // log in to cloud, return a connected tplink object
-
     tplinkUser = Secrets.demoUserName;
     tplinkPass = Secrets.demoPassword;
     tplinkUUID = Secrets.demoUUID;
 
-    /* const dogetToken = () => {
-      let _tplinkToken = tplink.getToken();
-      console.log('current auth token is', _tplinkToken);
-    }; */
-
+    // log in to cloud, return a connected tplink object
     const tplink = await login(tplinkUser, tplinkPass, tplinkUUID);
-    setshow(true);
-    // const colour = await tplink.getLB130('kasademots').setState(1, 90, 150, 80);
+    tplinkDeviceList = await tplink.getDeviceList();
+    console.log('tplinkDeviceList', tplinkDeviceList);
+    tplinkToken = tplink.getToken();
+    console.log('current auth token is', tplinkToken);
+    colour.h = Math.ceil(colour.h);
+    colour.s = Math.ceil(colour.s);
+    colour.v = Math.ceil(colour.v);
+
+    let kasaSettings = {
+      hue: colour.h,
+      saturation: colour.s,
+      brightness: colour.b,
+      color_temp: 0,
+    };
+
+    console.log(JSON.stringify(kasaSettings));
+
+    // if (tplink == null) return console.log('no login');
+
+    let myPlug = tplink.getLB130(tplink.deviceList[0].alias);
+    console.log('alias is ', tplink.deviceList[0].alias);
+    let stateresult = await myPlug.setState(
+      1,
+      kasaSettings.brightness,
+      kasaSettings.hue,
+      kasaSettings.saturation,
+    );
+
+    console.log('state result', stateresult);
 
     /* .catch(e => {
       console.log('error', e);
@@ -76,17 +105,15 @@ const AdjustScreen = props => {
       return sentAuthObj;
     }); */
     //console.log('current auth token is', tplink.getToken());
-    tplinkToken = tplink.getToken();
-    console.log('current auth token is', tplinkToken);
-
+    if (false) {
+    }
     // get a list of raw json objects (must be invoked before .get* works)
-    tplinkDeviceList = await tplink.getDeviceList();
-    //console.log('tplinkDeviceList', tplinkDeviceList);
+    if (false) {
+      tplinkDeviceList = await tplink.getDeviceList();
+      console.log('tplinkDeviceList', tplinkDeviceList);
+    }
 
     // find a device by alias:
-    let myPlug = tplink.getLB130(tplink.deviceList[0].alias);
-    console.log('alias is ', tplink.deviceList[0].alias);
-    await myPlug.setState(1, 50, 85, 85);
 
     // or find by deviceId:
     // let myPlug = tplink.getHS100("558185B7EC793602FB8802A0F002BA80CB96F401");
@@ -95,14 +122,14 @@ const AdjustScreen = props => {
     // let response = await myPlug.powerOn();
     // console.log('kasauth myplugpower response =' + JSON.stringify(response)); */
 
-    console.log('tplink return from  kasa imported library >>>>>>', tplink);
-    setuserObj({
+    // console.log('tplink return from  kasa imported library >>>>>>', tplink);
+    /*  setuserObj({
       tplink: tplink,
       dl: tplinkDeviceList,
       token: tplinkToken,
       //MYPLUG: myPlug,
     });
-    return tplink;
+    return tplink; */
 
     // find a device by alias:
     //let myPlug = tplink.getHS100('My Smart Plug');
@@ -159,15 +186,20 @@ const AdjustScreen = props => {
       <View style={{flex: 1}}>
         <ColorWheel
           initialColor="#ee0000"
-          onColorChange={color => console.log({color})}
+          onColorChange={color => console.log(color.h)}
+          onColorChangeComplete={color => tplinkLogin(color)}
           style={{width: Dimensions.get('window').width}}
-          thumbStyle={{height: 150, width: 150, borderRadius: 60}}
-        />
-        <ColorWheel
-          initialColor="#000000"
-          style={{marginLeft: 20, padding: 40, height: 200, width: 200}}
+          thumbStyle={{height: 50, width: 50, borderRadius: 20}}
+          thumbSize={20}
         />
       </View>
+      <Button
+        title="Logout"
+        onPress={() => {
+          tpli();
+        }}
+      />
+      <Text style={{fontSize: 9, color: 'red'}}>{JSON.stringify(count)}</Text>
     </ImageBackground>
   );
 };
