@@ -4,7 +4,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import SplashScreen from './screens/SplashScreen';
-import LoginScreen from './screens/LoginScreen';
+import LoginScreen from './screens/loginScreen';
 import {AuthContext, MyTPContext, IotlStrings} from './api/context';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import PresetStack from './stacks/PresetStack';
@@ -269,8 +269,8 @@ const App: () => React$Node = () => {
               <TabStack.Screen
                 name="AdjustStack"
                 component={AdjustStack}
-                initialParams={{title: 'asdasd'}}
-                options={{title: 'Preaaasets', headerTitleAlign: 'center'}}
+                initialParams={{title: 'Adjust your Light'}}
+                options={{title: 'Adjust', headerTitleAlign: 'center'}}
               />
               <TabStack.Screen
                 name="TimerStack"

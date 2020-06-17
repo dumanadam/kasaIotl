@@ -7,12 +7,15 @@ const AdjustStack = props => {
   // console.log('adjust stack', props);
   return (
     <AdjustStack.Navigator
-      screenOptions={{headerStyle: {backgroundColor: 'papayawhip'}}}>
+      // screenOptions={{headerStyle: {backgroundColor: 'transparent'}}}>
+      screenOptions={{
+        headerShown: false,
+      }}>
       <AdjustStack.Screen
         name={props.route.params.title}
         component={AdjustScreen}
         options={{name: 'Adjust'}}
-        initialParams={{title: 'asdasd', name: 'ERTGERG'}}
+        initialParams={{title: 'asddddasd', name: 'ERTGERG'}}
       />
     </AdjustStack.Navigator>
   );
