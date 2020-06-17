@@ -1,5 +1,9 @@
 import React from 'react';
 
+export const AuthContext = React.createContext();
+
+export const MyTPContext = React.createContext();
+
 export const IotlGlobals = React.createContext({
   in1IotlGlobals: false,
   in2IotlGlobals: null,
@@ -13,7 +17,6 @@ export let Errors = React.createContext({
   userPassDefaultError: 'Please enter a Password',
   tpLinkUserError: 'Please check your Tp-Link Login details ',
 });
-export const AuthContext = React.createContext();
 
 IotlStrings = {
   loginTextButton: 'Login',

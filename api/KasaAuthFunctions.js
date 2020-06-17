@@ -68,7 +68,14 @@ async function tplinkLogin(sentLoginUserType, sentAuthObj) {
     tplinkPass = 'asdas';
     tplinkUUID = Secrets.demoUUID;
   }
-  const tplink = await login(tplinkUser, tplinkPass, tplinkUUID).catch(e => {
+
+  const dogetToken = () => {
+    let _tplinkToken = tplink.getToken();
+    console.log('current auth token is', _tplinkToken);
+  };
+
+  const tplink = await login(tplinkUser, tplinkPass, tplinkUUID);
+  /* .catch(e => {
     console.log('error', e);
     sentAuthObj = {
       ...sentAuthObj,
@@ -77,14 +84,23 @@ async function tplinkLogin(sentLoginUserType, sentAuthObj) {
     };
 
     return sentAuthObj;
-  });
+  }); */
   //console.log('current auth token is', tplink.getToken());
-  tplinkToken = tplink.getToken();
+  /* tplinkToken = tplink.getToken();
   console.log('current auth token is', tplinkToken);
 
   // get a list of raw json objects (must be invoked before .get* works)
   tplinkDeviceList = await tplink.getDeviceList();
   //console.log('tplinkDeviceList', tplinkDeviceList);
+
+  // find a device by alias:
+  let myPlug = tplink.getLB130('kasademots');
+  // or find by deviceId:
+  // let myPlug = tplink.getHS100("558185B7EC793602FB8802A0F002BA80CB96F401");
+  console.log('myPlug:', myPlug);
+
+  let response = await myPlug.powerOn();
+  console.log('kasauth myplugpower response =' + JSON.stringify(response)); */
 
   sentAuthObj = {
     ...sentAuthObj,
@@ -95,10 +111,11 @@ async function tplinkLogin(sentLoginUserType, sentAuthObj) {
       authToken: tplinkToken,
       authUUID: tplinkUUID,
       authDeviceList: tplinkDeviceList,
+      tplinkObj: () => tplink,
     },
   };
 
-  console.log('sending auth tplinklogin from kasa', sentAuthObj.authObj);
+  console.log('tplink return from  kasa imported library >>>>>>', tplink);
 
   return sentAuthObj;
 

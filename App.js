@@ -5,7 +5,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import SplashScreen from './screens/SplashScreen';
 import LoginScreen from './screens/LoginScreen';
-import {AuthContext, IotlGlobals, IotlStrings} from './api/context';
+import {AuthContext, MyTPContext, IotlStrings} from './api/context';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import PresetStack from './stacks/PresetStack';
 import AdjustStack from './stacks/AdjustStack';
@@ -188,103 +188,135 @@ const App: () => React$Node = () => {
     };
   }, [authObj]);
 
+  const AppTPContext = React.useContext(MyTPContext);
+
   if (authObj.showSplash) {
     return <SplashScreen />;
   }
 
+  const testLog = () => {
+    console.log('APP Context console log');
+  };
+
+  const testLogin = async () => {
+    console.log('test async login');
+    return 'success';
+  };
+
+  const tedstnoasync = () => {
+    console.log('test noasync login');
+    let asd = 'test noasync';
+    return asd;
+  };
+
+  const testObject = {
+    testlog: () => {
+      testLog();
+    },
+    testValue: 'app value ',
+    testLogin: () => {
+      testLogin;
+    },
+    testnoasync: () => {
+      tedstnoasync;
+    },
+  };
+
   return (
-    <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
-        {authObj.isLoggedIn == true ? (
-          <TabStack.Navigator
-            screenOptions={({route}) => ({
-              tabBarIcon: ({focused, color, size}) => {
-                let iconName;
+    <MyTPContext.Provider value={testObject}>
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer>
+          {authObj.isLoggedIn == true ? (
+            <TabStack.Navigator
+              screenOptions={({route}) => ({
+                tabBarIcon: ({focused, color, size}) => {
+                  let iconName;
 
-                if (route.name === 'AdjustStack') {
-                  iconName = focused
-                    ? 'arrow-down-bold-circle-outline'
-                    : 'arrow-right-bold-outline';
-                } else if (route.name === 'Settings') {
-                  iconName = focused ? 'information' : 'information-variant';
-                }
+                  if (route.name === 'AdjustStack') {
+                    iconName = focused
+                      ? 'arrow-down-bold-circle-outline'
+                      : 'arrow-right-bold-outline';
+                  } else if (route.name === 'Settings') {
+                    iconName = focused ? 'information' : 'information-variant';
+                  }
 
-                // You can return any component that you like here!
-                return <Icon name={iconName} size={size} color={color} />;
-              },
-            })}
-            initialParams={{title: 'assssdasd'}}
-            initialRouteName="AdjustStack"
-            tabBarOptions={{
-              activeTintColor: 'white',
-              inactiveTintColor: '#154159',
-              activeBackgroundColor: 'transparent',
-              headerTintColor: 'red',
-              inactiveBackgroundColor: 'transparent',
-              style: {
-                backgroundColor: 'transparent',
-                borderTopWidth: 0,
-                position: 'absolute',
-              },
-              labelStyle: {
-                fontWeight: '700',
-              },
-            }}>
-            <TabStack.Screen
-              name="PresetStack"
-              component={PresetStack}
-              initialParams={{...headerStyle}}
-            />
-            <TabStack.Screen
-              name="AdjustStack"
-              component={AdjustStack}
-              initialParams={{title: 'asdasd'}}
-              options={{title: 'Preaaasets', headerTitleAlign: 'center'}}
-            />
-            <TabStack.Screen
-              name="TimerStack"
-              component={TimerStack}
-              options={{title: 'Timer'}}
-            />
-            <TabStack.Screen
-              name="SettingsStack"
-              component={SettingsStack}
-              options={{title: 'Settings'}}
-            />
-          </TabStack.Navigator>
-        ) : (
-          <AuthStack.Navigator
-            screenOptions={{
-              headerShown: false,
-            }}>
-            <AuthStack.Screen
-              name="LoginScreen"
-              component={LoginScreen}
-              options={{
-                title: 'Sign In',
-                animationEnabled: false,
-              }}
-              initialParams={{asd: 'qwewqe'}}
-            />
+                  // You can return any component that you like here!
+                  return <Icon name={iconName} size={size} color={color} />;
+                },
+              })}
+              initialParams={{title: 'assssdasd'}}
+              initialRouteName="AdjustStack"
+              tabBarOptions={{
+                activeTintColor: 'white',
+                inactiveTintColor: '#154159',
+                activeBackgroundColor: 'transparent',
+                headerTintColor: 'red',
+                inactiveBackgroundColor: 'transparent',
+                style: {
+                  backgroundColor: 'transparent',
+                  borderTopWidth: 0,
+                  position: 'absolute',
+                },
+                labelStyle: {
+                  fontWeight: '700',
+                },
+              }}>
+              <TabStack.Screen
+                name="PresetStack"
+                component={PresetStack}
+                initialParams={{...headerStyle}}
+              />
+              <TabStack.Screen
+                name="AdjustStack"
+                component={AdjustStack}
+                initialParams={{title: 'asdasd'}}
+                options={{title: 'Preaaasets', headerTitleAlign: 'center'}}
+              />
+              <TabStack.Screen
+                name="TimerStack"
+                component={TimerStack}
+                options={{title: 'Timer'}}
+              />
+              <TabStack.Screen
+                name="SettingsStack"
+                component={SettingsStack}
+                options={{title: 'Settings'}}
+              />
+            </TabStack.Navigator>
+          ) : (
+            <AuthStack.Navigator
+              screenOptions={{
+                headerShown: false,
+              }}>
+              <AuthStack.Screen
+                name="LoginScreen"
+                component={LoginScreen}
+                options={{
+                  title: 'Sign In',
+                  animationEnabled: false,
+                }}
+                initialParams={{asd: 'qwewqe'}}
+              />
 
-            <AuthStack.Screen
-              name="CreateAccountScreen"
-              component={CreateAccountScreen}
-              options={{title: 'Create Account'}}
-            />
-            <AuthStack.Screen
-              name="LanControlScreen"
-              component={LanControlScreen}
-              options={{
-                title: 'Lan Control',
-                animationEnabled: true,
-              }}
-              initialParams={{asd: 'qwewqe'}}
-            />
-          </AuthStack.Navigator>
-        )}
-      </NavigationContainer>
-    </AuthContext.Provider>
+              <AuthStack.Screen
+                name="CreateAccountScreen"
+                component={CreateAccountScreen}
+                options={{title: 'Create Account'}}
+              />
+              <AuthStack.Screen
+                name="LanControlScreen"
+                component={LanControlScreen}
+                options={{
+                  title: 'Lan Control',
+                  animationEnabled: true,
+                }}
+                initialParams={{asd: 'qwewqe'}}
+              />
+            </AuthStack.Navigator>
+          )}
+        </NavigationContainer>
+      </AuthContext.Provider>
+    </MyTPContext.Provider>
   );
 };
 
