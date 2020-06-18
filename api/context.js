@@ -1,6 +1,11 @@
 import React from 'react';
 
 export const AuthContext = React.createContext();
+export const AlertMessage = React.createContext({
+  title: 'None',
+  mesage: 'None',
+  showError: true,
+});
 
 export const MyTPContext = React.createContext();
 
@@ -31,6 +36,12 @@ IotlStrings = {
   userNamePlaceholder: 'Username',
   userPassPlaceholder: 'Password',
   demoPasswordPlaceholder: 'Demo Password Set',
+  noDevices: 'Add bulb to account',
+  greenDevices: 'Colour Adjustment',
+  noDevicesL: 'No Bulb',
+  greenDevicesL: 'Connected',
+  noDevicesB: 'Check For Bulb  ',
+  greenDevicesB: 'Update',
 };
 
 Colours = {

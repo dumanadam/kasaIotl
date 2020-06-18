@@ -36,9 +36,10 @@ const App: () => React$Node = () => {
     authDeviceList: {},
     isLoggedIn: false,
     keyError: false,
-    isLoading: true,
+    isLoading: false,
     authStyle: 'demo',
     saveAuthObj: false,
+    showError: false,
   });
 
   const TabContainerStack = createStackNavigator();

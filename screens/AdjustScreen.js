@@ -15,6 +15,7 @@ import {Header, Slider, Button, Text} from 'react-native-elements';
 import {ColorPicker} from 'react-native-color-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import colorsys from 'colorsys';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 //import {ColorWheel} from 'react-native-color-wheel';
 
@@ -37,37 +38,59 @@ const AdjustScreen = props => {
     color_temp: 0,
   });
   //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
-  const [authObj, setAuthObj] = React.useState(getAppAuthObj('from settings'));
+  const [authObj, setAuthObj] = React.useState({
+    authName: '',
+    authPass: '',
+    authToken: '',
+    authUUID: '',
+    authDeviceList: {},
+    isLoggedIn: false,
+    keyError: false,
+    isLoading: false,
+    authStyle: 'demo',
+    saveAuthObj: false,
+    tplinkObj: null,
+  };
   const [userObj, setuserObj] = React.useState({
     backgroundImage: '../assets/images/light.gif',
     showbg: true,
     saveUserObj: false,
 
     isToKasa: false,
-
+    errorMessage: '',
+    errorTitle: '',
+    showAlert: true,
     slidBrightness: 0.5,
     slidSaturation: 0.5,
     slidSaturationT: 50,
     slidBrightnessT: 50,
     hueT: 90,
     hueText: 55,
-    hsltoRGB: '',
+    hsvtoHEX: '#ffffff',
+    hueHex: '#ffffff',
+    satHex: '#ffffff',
+    briHex: '#ffffff',
   });
 
   React.useEffect(() => {
     console.log('----------Colour ----------');
-    console.log('Settings userObj', JSON.stringify(authObj));
+    getAppAuthObj('from Colour');
+    tplinkLogin();
+    if(!authObj.authDeviceList) setuserObj({...userObj, myAlert()})
     convertHSL();
-
+    setAuthObj({...authObj, authDeviceList: null});
+    if (authObj.authDeviceList) alert;
+    console.log('Settings userObj', JSON.stringify(authObj));
     console.log('----------Colour Exit ----------');
   }, []);
 
   const convertHSL = () => {
     var justHsl = {h: kasaSettings.h, s: kasaSettings.s, v: kasaSettings.v};
-    var hslConverted = colorsys.hsl2Hex(justHsl);
-    setuserObj({...userObj, hsltoRGB: hslConverted});
+    var hslConverted = colorsys.hsv2Hex(justHsl);
+
+    setuserObj({...userObj, hsvtoHEX: hslConverted});
     console.log(hslConverted);
-    console.log(userObj.hsltoRGB);
+    console.log(userObj.hsvtoHEX);
   };
   const update = () => {
     setcount(count => count + 2);
@@ -80,18 +103,12 @@ const AdjustScreen = props => {
     if (colour.h == undefined) console.log('undefined');
     if (colour.h == 0) console.log('000000');
 
-    let tplinkUser = '';
-    let tplinkPass = '';
-    let tplinkUUID = '';
+ 
     let tplinkToken = '';
     let tplinkDeviceList;
 
-    tplinkUser = Secrets.demoUserName;
-    tplinkPass = Secrets.demoPassword;
-    tplinkUUID = Secrets.demoUUID;
-
     // log in to cloud, return a connected tplink object
-    const tplink = await new login(tplinkUser, tplinkPass, tplinkUUID);
+    const tplink = await new login(authObj.authName, authObj.authPass, authobj.authUUID);
     tplinkDeviceList = await tplink.getDeviceList();
     console.log('tplinkDeviceList', tplinkDeviceList);
     tplinkToken = tplink.getToken();
@@ -174,18 +191,22 @@ const AdjustScreen = props => {
       console.log(await myPlug.getRelayState()); */
   };
   const colourChanged = value => {
-    console.log(value);
     let slidBC = Math.floor(value.v * 100);
     let slidSC = Math.floor(value.s * 100);
     let cPV = Math.floor(value.h);
+    var hslConverted = colorsys.hsv2Hex({h: cPV, s: slidSC, v: slidBC});
+    var hsl2RGB = colorsys.hsv2Rgb({h: cPV, s: slidSC, v: slidBC});
+
     setKasaSettings({...kasaSettings, h: cPV, s: slidSC, v: slidBC});
     setuserObj({
       ...userObj,
       slidSaturationT: slidSC,
       slidBrightnessT: slidBC,
       hueT: cPV,
+      hsvtoHEX: hslConverted,
     });
-    console.log(kasaSettings);
+
+    console.log('hslConverted', hslConverted);
   };
 
   const sliderValueChanged = (slider, value) => {
@@ -204,33 +225,63 @@ const AdjustScreen = props => {
     return myslider;
   };
 
+  const myAlert = (title, message) => {
+    return( 
+    <View>
+      <AwesomeAlert
+    show={userObj.showAlert}
+    showProgress={false}
+    title=
+    message="Your KASA account doesn't seem to have any bulbs, Please check they are turned on and try connecting again"
+    closeOnTouchOutside={true}
+    closeOnHardwareBackPress={false}
+    showCancelButton={true}
+    showConfirmButton={true}
+    confirmText="OK"
+    confirmButtonColor="#DD6B55"
+    onConfirmPressed={() => {
+      this.hideAlert();
+    }}
+  />
+</View>)
+  ;
+
   const headerSelect = selection => {
     if (selection == 'left') {
       return (
         <View style={{justifyContent: 'flex-start'}}>
           <Text
-            style={{
-              justifyContent: 'flex-start',
-              alignContent: 'flex-start',
-
-              color: authObj.authDeviceList
-                ? Colours.myGreenConf
-                : Colours.myRedConf,
-            }}>
-            connected
+            style={
+              authObj.authDeviceList
+                ? styles.headerLeftCon
+                : styles.headerLeftDis
+            }>
+            {authObj.authDeviceList
+              ? IotlStrings.greenDevicesL
+              : IotlStrings.noDevicesL}
           </Text>
         </View>
       );
     } else {
       return (
-        <View style={{justifyContent: 'flex-start'}}>
+        <View>
           {
             <Icon
-              name={authObj.authDeviceList ? 'lan-connect' : 'lan-disconnect'}
-              size={25}
-              color={
-                authObj.authDeviceList ? Colours.myGreenConf : Colours.myRedConf
+              style={
+                authObj.authDeviceList
+                  ? styles.headerRightCon
+                  : styles.headerRightDis
               }
+              name={authObj.authDeviceList ? 'lan-connect' : 'lan-disconnect'}
+              disabledStyle={styles.headerLeftDis}
+              disabled={true}
+              size={25}
+              iconStyle={{
+                color: Colours.myRedConf,
+              }}
+              /*      color={
+                authObj.authDeviceList ? Colours.myGreenConf : Colours.myRedConf
+              } */
             />
           }
         </View>
@@ -247,13 +298,17 @@ const AdjustScreen = props => {
           statusBarProps={{barStyle: 'default'}}
           containerStyle={styles.header}
           centerComponent={{
-            text: 'Colour Adjustment',
-            style: {color: '#F68F00'},
+            text: authObj.authDeviceList
+              ? IotlStrings.greenDevices
+              : IotlStrings.noDevices,
+            style: authObj.authDeviceList
+              ? styles.headerTextCon
+              : styles.headerTextDis,
             icon: 'home',
           }}
           centerContainerStyle={{
             flex: 0,
-            marginEnd: 0,
+            marginStart: 25,
           }}
           rightContainerStyle={{
             flex: 1,
@@ -261,35 +316,94 @@ const AdjustScreen = props => {
           rightComponent={() => headerSelect('right')}
           leftComponent={() => headerSelect('left')}
         />
+        {myAlert()}
         <View style={styles.mainContainer}>
-          <View style={styles.pickerContainer}>
-            <ColorPicker
-              onColorSelected={color => alert(`Color selected: ${color}`)}
-              oldColor="white"
-              defaultColor="#c99c9c"
-              style={{flex: 1}}
-              onColorChange={value => colourChanged(value)}
-              sliderComponent={Slider}
+          <View style={styles.bottomHSBContainer}>
+            <View style={styles.pickerContainer}>
+              <ColorPicker
+                onColorSelected={color => alert(`Color selected: ${color}`)}
+                oldColor="white"
+                defaultColor="#c99c9c"
+                style={{flex: 1}}
+                onColorChange={value => colourChanged(value)}
+                sliderComponent={Slider}
+              />
+            </View>
+
+            <View style={styles.textRowtitles}>
+              <Text style={styles.rgbTextH}>Hue</Text>
+              <Text style={styles.rgbTextS}>Saturation</Text>
+              <Text style={styles.rgbTextB}>Brightness</Text>
+            </View>
+            <View style={styles.hsvNumRowContainer}>
+              <Text
+                style={
+                  authObj.authDeviceList
+                    ? [styles.rgbNumH, {color: userObj.hsvtoHEX}]
+                    : styles.rgbNumDis
+                }>
+                {JSON.stringify(userObj.hueT)}
+              </Text>
+              <Text
+                style={
+                  authObj.authDeviceList
+                    ? [
+                        styles.rgbNumS,
+                        {
+                          color: Colours.myYellow,
+                          opacity: kasaSettings.s * 0.01,
+                        },
+                      ]
+                    : styles.rgbNumDis
+                }>
+                {userObj.slidSaturationT}
+              </Text>
+              <Text
+                style={
+                  authObj.authDeviceList
+                    ? [
+                        styles.rgbNumS,
+                        {
+                          color: Colours.myWhite,
+                          opacity: kasaSettings.s * 0.01,
+                        },
+                      ]
+                    : styles.rgbNumDis
+                }>
+                {userObj.slidBrightnessT}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.butContainer}>
+            <Button
+              icon={
+                authObj.authDeviceList ? (
+                  <Icon name="reload" style={styles.buttonIconCon} />
+                ) : (
+                  <Icon name="arrow-right" style={styles.buttonIconDis} />
+                )
+              }
+              iconRight
+              titleStyle={
+                authObj.authDeviceList ? styles.butTextCon : styles.butTextDis
+              }
+              title={
+                authObj.authDeviceList
+                  ? IotlStrings.greenDevicesB
+                  : IotlStrings.noDevicesB
+              }
+              type="outline"
+              buttonStyle={
+                authObj.authDeviceList ? styles.buttonCon : styles.buttonDis
+              }
+              loading={userObj.isloading}
             />
           </View>
-
-          <View style={styles.textRowTitles}>
-            <Text style={styles.rgbText}>Hue</Text>
-            <Text style={styles.rgbText}>Saturation</Text>
-            <Text style={styles.rgbText}>Brightness</Text>
-          </View>
-          <View style={styles.hsvNumRowContainer}>
-            <Text style={styles.rgbText}>{JSON.stringify(userObj.hueT)}</Text>
-            <Text style={styles.rgbText}>{userObj.slidSaturationT}</Text>
-            <Text style={styles.rgbText}>{userObj.slidBrightnessT}</Text>
-          </View>
-          <Button
-            icon={<Icon name="arrow-right" size={15} color="white" />}
-            iconRight
-            title="Update"
-            buttonStyle={styles.button}
-          />
           <View />
+          {/*         <Text
+            style={authObj.authDeviceList ? styles.rgbNumB : styles.rgbNumB}>
+            {kasaSettings.s}
+          </Text> */}
         </View>
       </ImageBackground>
     </View>
@@ -324,13 +438,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignContent: 'center',
     flex: 1,
-    paddingBottom: 40,
+    paddingBottom: 55,
+  },
+  alertCont: {
+    zIndex: 100,
   },
   wheelContainer: {height: 150, width: 150},
-  button: {
-    backgroundColor: 'transparent',
-    marginBottom: 50,
+  buttonCon: {
+    borderColor: Colours.myWhite,
+    width: 150,
   },
+  buttonDis: {
+    borderColor: Colours.myRedConf,
+  },
+  buttonIconDis: {
+    fontSize: 17,
+    color: Colours.myRedConf,
+  },
+  butTextCon: {
+    fontSize: 17,
+    color: Colours.myWhite,
+  },
+  butTextDis: {
+    fontSize: 17,
+    color: Colours.myRedConf,
+  },
+  buttonIconCon: {
+    fontSize: 17,
+    color: Colours.myWhite,
+    marginLeft: 10,
+  },
+  butContainer: {
+    alignSelf: 'center',
+  },
+
   hsvNumRowContainer: {
     justifyContent: 'space-evenly',
     alignContent: 'center',
@@ -339,43 +480,125 @@ const styles = StyleSheet.create({
     flex: 0,
   },
   textRowtitles: {
-    justifyContent: 'space-evenly',
     alignContent: 'center',
-    backgroundColor: 'red',
+    marginTop: 8,
     flexDirection: 'row',
     flex: 0,
   },
-  rgbText: {
-    justifyContent: 'center',
-    alignContent: 'center',
-    color: Colours.myYellow,
-    fontSize: 50,
-    flex: 1,
+  rgbTextDis: {
+    fontSize: 15,
+    flex: 0,
+    paddingLeft: 45,
 
+    color: Colours.myWhite,
+  },
+  rgbTextH: {
+    fontSize: 15,
+    flex: 0,
+    paddingLeft: 45,
+
+    color: Colours.myWhite,
+  },
+  rgbTextS: {
+    fontSize: 15,
+    flex: 0,
+    paddingLeft: 73,
+    borderColor: 'white',
+
+    color: Colours.myWhite,
+  },
+  rgbTextB: {
+    fontSize: 15,
+    flex: 0,
+    paddingLeft: 48,
+
+    color: Colours.myWhite,
+  },
+  rgbNumDis: {
+    fontSize: 25,
+    flex: 1,
+    flexDirection: 'row',
     textAlign: 'center',
     textAlignVertical: 'center',
-
+    marginBottom: 10,
+    width: 100,
+    textTransform: 'uppercase',
+    textDecorationLine: 'line-through',
+    color: Colours.myWhite,
+  },
+  rgbNumH: {
+    color: Colours.myWhite,
+    fontSize: 25,
+    flex: 1,
+    flexDirection: 'row',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    marginBottom: 10,
     width: 100,
     textTransform: 'uppercase',
   },
-  rgbNum: {
-    justifyContent: 'center',
-    alignContent: 'center',
-    height: 50,
-    fontSize: 11,
-    flex: 0,
-    borderWidth: 3,
-    borderColor: 'white',
+  rgbNumS: {
+    fontSize: 25,
+    flex: 1,
+    flexDirection: 'row',
     textAlign: 'center',
-    textAlignVertical: 'top',
-    paddingTop: 3,
-    color: Colours.myWhite,
+    textAlignVertical: 'center',
+    marginBottom: 10,
     width: 100,
+    textTransform: 'uppercase',
+  },
+  rgbNumB: {
+    color: Colours.myYellow,
+    fontSize: 25,
+    flex: 1,
+    flexDirection: 'row',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    marginBottom: 10,
+    width: 100,
+    textTransform: 'uppercase',
+  },
+  bottomHSBContainer: {
+    flex: 1,
+    marginVertical: 20,
   },
   pickerContainer: {
     flex: 1,
     paddingHorizontal: 15,
-    paddingVertical: 20,
+    paddingVertical: 10,
+  },
+  headerTextCon: {
+    color: Colours.myWhite,
+    fontSize: 17,
+    fontWeight: '400',
+  },
+  headerTextDis: {
+    color: Colours.myRedConf,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  headerLeftCon: {
+    marginLeft: 5,
+    fontSize: 10,
+    color: Colours.myGreenConf,
+    flex: 0,
+    width: 35,
+    paddingTop: 5,
+  },
+  headerLeftDis: {
+    justifyContent: 'flex-start',
+    alignContent: 'flex-start',
+    fontSize: 13,
+    color: Colours.myRedConf,
+  },
+  headerRightCon: {
+    color: Colours.myGreenConf,
+    fontSize: 23,
+    marginEnd: 8,
+  },
+  headerRightDis: {
+    fontSize: 23,
+    color: Colours.myRedConf,
   },
 });
 export default AdjustScreen;

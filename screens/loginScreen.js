@@ -23,6 +23,7 @@ import {
   getAsyncData,
   tplinkLogin,
 } from '../api/KasaAuthFunctions';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 const LoginScreen = ({navigation}) => {
   const {login} = require('tplink-cloud-api');
@@ -39,7 +40,9 @@ const LoginScreen = ({navigation}) => {
   const [userObj, setUserObj] = React.useState({
     userNameError: '',
     userPassError: '',
-
+    showError: true,
+    errorTitle: ' Default',
+    errorMessage: 'Default',
     isEmailValid: true,
     isDemoUser: false,
     backgroundImage: '../assets/images/light.gif',
@@ -60,9 +63,13 @@ const LoginScreen = ({navigation}) => {
     isloading: false,
   });
 
-  const [authObj, setAuthObj] = React.useState(getAppAuthObj('login screen'));
+  const [authObj, setAuthObj] = React.useState(
+    getAppAuthObj(' Set Auth for login screen'),
+  );
 
   React.useEffect(() => {
+    console.log('authObj', authObj);
+
     console.log('-------enter LOGIN--------');
     if (authObj.saveAuthObj) {
       updateAuthObjTruth(authObj);
@@ -105,7 +112,7 @@ const LoginScreen = ({navigation}) => {
     }
 
     if (userObj.isDemoUser) {
-      let data = await tplinkLogin('demo', userObj);
+      let data = await tplinkLogin(authObj);
       console.log(
         'return USER in login from tplink',
         JSON.stringify({
@@ -202,6 +209,12 @@ const LoginScreen = ({navigation}) => {
         nameIconColour: Colours.myYellow,
         passIconColour: Colours.myYellow,
       });
+      setAuthObj({
+        ...authObj,
+        authName: Secrets.demoUserName,
+        authPass: Secrets.demoPassword,
+        authUUID: Secrets.demoUUID,
+      });
     } else {
       setUserObj({
         ...userObj,
@@ -211,6 +224,12 @@ const LoginScreen = ({navigation}) => {
         nameIconColour: demoUserReturnColor,
         passIconColour: Colours.myWhite,
         isInputEditable: !userObj.isInputEditable,
+      });
+      setAuthObj({
+        ...authObj,
+        authName: authObj.authName,
+        authPass: authObj.authPass,
+        authUUID: Secrets.demoUUID,
       });
 
       console.log(`isdemo ? >> ${userObj.isDemoUser}`);
@@ -238,11 +257,19 @@ const LoginScreen = ({navigation}) => {
         nameIconColour: Colours.myGreenConf,
         userName: name,
       });
+      setAuthObj({
+        ...authObj,
+        authName: name,
+      });
     } else {
       setUserObj({
         ...userObj,
         nameIconColour: Colours.myRedConf,
         userName: name,
+      });
+      setAuthObj({
+        ...authObj,
+        authName: name,
       });
     }
     if (name == '')
@@ -270,19 +297,8 @@ const LoginScreen = ({navigation}) => {
     }
   };
 
-  const test = () => {
-    setUserObj({
-      ...userObj,
-      authObj: {
-        ...authObj,
-        authStyle: 'demo',
-
-        demoUserName: '***REMOVED***',
-        demoPassword: 'nit3002ts',
-        demoToken: '',
-        demoDeviceList: {},
-      },
-    });
+  const showError = () => {
+    setAuthObj({...authObj, showError: !authObj.showError});
   };
   return (
     <ImageBackground
@@ -470,6 +486,21 @@ const LoginScreen = ({navigation}) => {
           )}
         </View>
       </KeyboardAwareScrollView>
+
+      <AwesomeAlert
+        show={authObj.showError}
+        title={userObj.errorTitle}
+        message={userObj.errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={true}
+        showCancelButton={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#F68F00"
+        onConfirmPressed={() => {
+          showError();
+        }}
+      />
     </ImageBackground>
   );
 };
@@ -517,6 +548,9 @@ const styles = StyleSheet.create({
   optionsText: {
     color: Colours.myYellow,
     fontSize: 10,
+  },
+  myAlert: {
+    zIndex: 10,
   },
 
   container: {
