@@ -252,13 +252,18 @@ const App: () => React$Node = () => {
                 activeBackgroundColor: 'transparent',
                 headerTintColor: 'red',
                 inactiveBackgroundColor: 'transparent',
+
                 style: {
                   backgroundColor: 'transparent',
                   borderTopWidth: 0,
+                  borderColor: 'transparent',
                   position: 'absolute',
+                  height: 37,
                 },
                 labelStyle: {
                   fontWeight: '700',
+                  marginBottom: 3,
+                  marginTop: 7,
                 },
               }}>
               <TabStack.Screen

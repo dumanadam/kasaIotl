@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Text, View, StyleSheet, Button} from 'react-native';
+import {Text, View, StyleSheet, Button, Switch} from 'react-native';
 import {AuthContext} from '../api/context';
 import KasaControl from '../api/KasaControl';
 
@@ -148,6 +148,22 @@ const SettingsScreen = ({navigation}) => {
 
   return (
     <View>
+      <Text style={{fontSize: 9, color: 'red'}}>"Forget all credentials?"</Text>
+      <Text style={{fontSize: 9, color: 'red'}}>
+        "Send Colour update instantly?"
+      </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>
+        "Send Temperature update instantly?"
+      </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>
+        "Use custom background image?"
+      </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>
+        "Update with latest Light info?"
+      </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>
+        "Centercolor wheel send update"
+      </Text>
       <Text style={{fontSize: 9, color: 'red'}}>
         {JSON.stringify(kasaresult.light_state)}
       </Text>

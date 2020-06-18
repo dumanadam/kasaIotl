@@ -17,10 +17,12 @@ npm i react-native-elements --save
 npm i --save react-native-vector-icons
 npm i react-native-keyboard-aware-scroll-view --save
 npm i react-native-color-wheel
+npm i react-native-awesome-alerts
 npx react-native run-android
 ```
 
 # Credits
 
+http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=F7171DDA13DABDD277051A465B04026D?doi=10.1.1.418.9240&rep=rep1&type=pdf
 [Simple Login Page](https://github.com/omeremreelmali/react-native-simple-login-form-design)
 [Colour design](https://color.adobe.com/GaryAmDesign-color-theme-7467753/edit/?copy=true&base=1&rule=Custom&selected=0&name=Copy%20of%20GaryAmDesign&mode=rgb&rgbvalues=0.5607843137254902,0.13725490196078433,0.1568627450980392,0.8588235294117647,0.8862745098039215,0.8980392156862745,0.9647058823529412,0.5607843137254902,0,0.08235294117647059,0.2549019607843137,0.34901960784313724,0.10196078431372549,0.3176470588235294,0.41568627450980394&swatchOrder=0,1,2,3,4)
