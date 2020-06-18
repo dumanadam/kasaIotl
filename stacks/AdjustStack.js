@@ -14,7 +14,7 @@ const AdjustStack = props => {
       <AdjustStack.Screen
         name={props.route.params.title}
         component={AdjustScreen}
-        options={{name: 'Adjust'}}
+        options={{name: 'Colour'}}
         initialParams={{title: 'asddddasd', name: 'ERTGERG'}}
       />
     </AdjustStack.Navigator>

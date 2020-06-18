@@ -6,14 +6,16 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import {IotlStrings, IotlGlobals, AuthContext} from '../api/context';
+import {IotlStrings, IotlGlobals, AuthContext, Colours} from '../api/context';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Secrets} from '../api/Secrets';
 import {useState} from 'react';
 import KasaControl from '../api/kasaKontrol';
 import {Header, Slider, Button, Text} from 'react-native-elements';
-import {ColorWheel} from '../api/ColorWheel';
-import {color} from 'react-native-reanimated';
+import {ColorPicker} from 'react-native-color-picker';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import colorsys from 'colorsys';
+
 //import {ColorWheel} from 'react-native-color-wheel';
 
 const AdjustScreen = props => {
@@ -28,22 +30,45 @@ const AdjustScreen = props => {
   } = React.useContext(AuthContext);
   const [count, setcount] = useState(0);
   const [show, setshow] = useState(0);
+  const [kasaSettings, setKasaSettings] = useState({
+    h: 180,
+    s: 50,
+    v: 50,
+    color_temp: 0,
+  });
+  //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
+  const [authObj, setAuthObj] = React.useState(getAppAuthObj('from settings'));
   const [userObj, setuserObj] = React.useState({
     backgroundImage: '../assets/images/light.gif',
     showbg: true,
     saveUserObj: false,
-    finalColour: {
-      isToKasa: false,
-    },
+
+    isToKasa: false,
+
+    slidBrightness: 0.5,
+    slidSaturation: 0.5,
+    slidSaturationT: 50,
+    slidBrightnessT: 50,
+    hueT: 90,
+    hueText: 55,
+    hsltoRGB: '',
   });
 
   React.useEffect(() => {
-    console.log('----------Settings ----------');
-    console.log('Settings authobj ', JSON.stringify(userObj));
-    setuserObj({...userObj, isEmailValid: true});
-    console.log('----------Settings Exit ----------');
+    console.log('----------Colour ----------');
+    console.log('Settings userObj', JSON.stringify(authObj));
+    convertHSL();
+
+    console.log('----------Colour Exit ----------');
   }, []);
 
+  const convertHSL = () => {
+    var justHsl = {h: kasaSettings.h, s: kasaSettings.s, v: kasaSettings.v};
+    var hslConverted = colorsys.hsl2Hex(justHsl);
+    setuserObj({...userObj, hsltoRGB: hslConverted});
+    console.log(hslConverted);
+    console.log(userObj.hsltoRGB);
+  };
   const update = () => {
     setcount(count => count + 2);
     route.params = {...route.params, asd: count => setcount(count)};
@@ -51,6 +76,9 @@ const AdjustScreen = props => {
 
   const tplinkLogin = async colour => {
     const {login} = require('tplink-cloud-api');
+
+    if (colour.h == undefined) console.log('undefined');
+    if (colour.h == 0) console.log('000000');
 
     let tplinkUser = '';
     let tplinkPass = '';
@@ -63,7 +91,7 @@ const AdjustScreen = props => {
     tplinkUUID = Secrets.demoUUID;
 
     // log in to cloud, return a connected tplink object
-    const tplink = await login(tplinkUser, tplinkPass, tplinkUUID);
+    const tplink = await new login(tplinkUser, tplinkPass, tplinkUUID);
     tplinkDeviceList = await tplink.getDeviceList();
     console.log('tplinkDeviceList', tplinkDeviceList);
     tplinkToken = tplink.getToken();
@@ -72,28 +100,25 @@ const AdjustScreen = props => {
     colour.s = Math.ceil(colour.s);
     colour.v = Math.ceil(colour.v);
 
-    let kasaSettings = {
-      hue: colour.h,
-      saturation: colour.s,
-      brightness: colour.b,
-      color_temp: 0,
-    };
-
     console.log(JSON.stringify(kasaSettings));
 
     // if (tplink == null) return console.log('no login');
 
     let myPlug = tplink.getLB130(tplink.deviceList[0].alias);
     console.log('alias is ', tplink.deviceList[0].alias);
-    let stateresult = await myPlug.setState(
-      1,
-      kasaSettings.brightness,
-      kasaSettings.hue,
-      kasaSettings.saturation,
-    );
+    try {
+      let stateresult = await myPlug.setState(
+        1,
+        kasaSettings.v,
+        kasaSettings.h,
+        kasaSettings.s,
+      );
 
-    console.log('state result', stateresult);
-
+      console.log('state result', stateresult);
+    } catch (error) {
+      alert(` Error: Code : ${error.errorCode} \n ${error.response.data.msg} `);
+      console.log(error);
+    }
     /* .catch(e => {
       console.log('error', e);
       sentAuthObj = {
@@ -148,73 +173,209 @@ const AdjustScreen = props => {
   
       console.log(await myPlug.getRelayState()); */
   };
+  const colourChanged = value => {
+    console.log(value);
+    let slidBC = Math.floor(value.v * 100);
+    let slidSC = Math.floor(value.s * 100);
+    let cPV = Math.floor(value.h);
+    setKasaSettings({...kasaSettings, h: cPV, s: slidSC, v: slidBC});
+    setuserObj({
+      ...userObj,
+      slidSaturationT: slidSC,
+      slidBrightnessT: slidBC,
+      hueT: cPV,
+    });
+    console.log(kasaSettings);
+  };
+
+  const sliderValueChanged = (slider, value) => {
+    if (slider == 'b') {
+      let slidBC = Math.floor(value * 100);
+      setuserObj({...userObj, slidBrightness: value, slidBrightnessT: slidBC});
+    }
+    if (slider == 's') {
+      let slidSC = Math.floor(value * 100);
+      setuserObj({...userObj, slidSaturation: value, slidSaturationT: slidSC});
+    }
+  };
+
+  const mySlider = () => {
+    myslider = <Slider />;
+    return myslider;
+  };
+
+  const headerSelect = selection => {
+    if (selection == 'left') {
+      return (
+        <View style={{justifyContent: 'flex-start'}}>
+          <Text
+            style={{
+              justifyContent: 'flex-start',
+              alignContent: 'flex-start',
+
+              color: authObj.authDeviceList
+                ? Colours.myGreenConf
+                : Colours.myRedConf,
+            }}>
+            connected
+          </Text>
+        </View>
+      );
+    } else {
+      return (
+        <View style={{justifyContent: 'flex-start'}}>
+          {
+            <Icon
+              name={authObj.authDeviceList ? 'lan-connect' : 'lan-disconnect'}
+              size={25}
+              color={
+                authObj.authDeviceList ? Colours.myGreenConf : Colours.myRedConf
+              }
+            />
+          }
+        </View>
+      );
+    }
+  };
 
   return (
-    <ImageBackground
-      source={require('../assets/images/light_dc.jpg')}
-      style={styles.backgroundImage}>
-      <View style={styles.container}>
+    <View style={styles.backgroundContainer}>
+      <ImageBackground
+        source={require('../assets/images/light_dc.jpg')}
+        style={styles.backgroundImage}>
         <Header
           statusBarProps={{barStyle: 'default'}}
-          containerStyle={{
-            backgroundColor: 'transparent',
-
-            height: 40,
-            padding: 0,
-            margin: 0,
-
-            borderBottomWidth: 0,
+          containerStyle={styles.header}
+          centerComponent={{
+            text: 'Colour Adjustment',
+            style: {color: '#F68F00'},
+            icon: 'home',
           }}
-          leftComponent={{icon: 'menu', color: '#F68F00'}}
-          centerComponent={{text: 'MY TITLE', style: {color: '#F68F00'}}}
-          rightComponent={{icon: 'home', color: '#fff'}}
+          centerContainerStyle={{
+            flex: 0,
+            marginEnd: 0,
+          }}
+          rightContainerStyle={{
+            flex: 1,
+          }}
+          rightComponent={() => headerSelect('right')}
+          leftComponent={() => headerSelect('left')}
         />
-        <View style={{flex: 1}}>
-          {/*           <ColorWheel
-            initialColor="#ee0000"
-            onColorChange={color => console.log({color})}
-            onColorChangeComplete={color => onChange(color)}
-            style={{width: Dimensions.get('window').width}}
-            thumbStyle={{height: 30, width: 30, borderRadius: 30}}
-          /> */}
-          {/*   <ColorWheel
-            initialColor="#00ee00"
-            style={{marginLeft: 20, padding: 40, height: 200, width: 200}}
-          /> */}
+        <View style={styles.mainContainer}>
+          <View style={styles.pickerContainer}>
+            <ColorPicker
+              onColorSelected={color => alert(`Color selected: ${color}`)}
+              oldColor="white"
+              defaultColor="#c99c9c"
+              style={{flex: 1}}
+              onColorChange={value => colourChanged(value)}
+              sliderComponent={Slider}
+            />
+          </View>
+
+          <View style={styles.textRowTitles}>
+            <Text style={styles.rgbText}>Hue</Text>
+            <Text style={styles.rgbText}>Saturation</Text>
+            <Text style={styles.rgbText}>Brightness</Text>
+          </View>
+          <View style={styles.hsvNumRowContainer}>
+            <Text style={styles.rgbText}>{JSON.stringify(userObj.hueT)}</Text>
+            <Text style={styles.rgbText}>{userObj.slidSaturationT}</Text>
+            <Text style={styles.rgbText}>{userObj.slidBrightnessT}</Text>
+          </View>
+          <Button
+            icon={<Icon name="arrow-right" size={15} color="white" />}
+            iconRight
+            title="Update"
+            buttonStyle={styles.button}
+          />
+          <View />
         </View>
-      </View>
-      <View style={{flex: 1}}>
-        <ColorWheel
-          initialColor="#ee0000"
-          onColorChange={color => console.log(color.h)}
-          onColorChangeComplete={color => tplinkLogin(color)}
-          style={{width: Dimensions.get('window').width}}
-          thumbStyle={{height: 50, width: 50, borderRadius: 20}}
-          thumbSize={20}
-        />
-      </View>
-      <Button
-        title="Logout"
-        onPress={() => {
-          tpli();
-        }}
-      />
-      <Text style={{fontSize: 9, color: 'red'}}>{JSON.stringify(count)}</Text>
-    </ImageBackground>
+      </ImageBackground>
+    </View>
   );
 };
 const styles = StyleSheet.create({
-  container: {
-    flex: 0,
-    alignItems: 'center',
-    marginTop: 150,
+  backgroundContainer: {
+    backgroundColor: 'black',
+    flex: 1,
   },
+  header: {
+    backgroundColor: 'transparent',
+    justifyContent: 'flex-start',
+    alignContent: 'flex-start',
+    flex: 0,
+    height: 40,
+    padding: 0,
+    margin: 0,
 
+    borderBottomWidth: 0,
+  },
   backgroundImage: {
     flex: 1,
     resizeMode: 'cover',
-    marginBottom: 20,
+    marginBottom: 0,
     backgroundColor: 'black',
+  },
+  overlay: {
+    backgroundColor: 'rgba(255,0,0,0.5)',
+  },
+  mainContainer: {
+    justifyContent: 'center',
+    alignContent: 'center',
+    flex: 1,
+    paddingBottom: 40,
+  },
+  wheelContainer: {height: 150, width: 150},
+  button: {
+    backgroundColor: 'transparent',
+    marginBottom: 50,
+  },
+  hsvNumRowContainer: {
+    justifyContent: 'space-evenly',
+    alignContent: 'center',
+
+    flexDirection: 'row',
+    flex: 0,
+  },
+  textRowtitles: {
+    justifyContent: 'space-evenly',
+    alignContent: 'center',
+    backgroundColor: 'red',
+    flexDirection: 'row',
+    flex: 0,
+  },
+  rgbText: {
+    justifyContent: 'center',
+    alignContent: 'center',
+    color: Colours.myYellow,
+    fontSize: 50,
+    flex: 1,
+
+    textAlign: 'center',
+    textAlignVertical: 'center',
+
+    width: 100,
+    textTransform: 'uppercase',
+  },
+  rgbNum: {
+    justifyContent: 'center',
+    alignContent: 'center',
+    height: 50,
+    fontSize: 11,
+    flex: 0,
+    borderWidth: 3,
+    borderColor: 'white',
+    textAlign: 'center',
+    textAlignVertical: 'top',
+    paddingTop: 3,
+    color: Colours.myWhite,
+    width: 100,
+  },
+  pickerContainer: {
+    flex: 1,
+    paddingHorizontal: 15,
+    paddingVertical: 20,
   },
 });
 export default AdjustScreen;

@@ -110,7 +110,9 @@ const PresetScreen = props => {
     <View>
       <Text>Preset Screen</Text>
       <Text style={{fontSize: 9, color: 'red', marginTop: 30}}>
-        {JSON.stringify(userObj)}
+        {userObj.authDeviceList
+          ? JSON.stringify(userObj.authDeviceList)
+          : 'asd'}
       </Text>
       <Button title="logintoada" onPress={() => tplinkLogin()} />
       <Text style={{fontSize: 9, color: 'red', marginTop: 30}}>
