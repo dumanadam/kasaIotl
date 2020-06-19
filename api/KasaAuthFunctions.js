@@ -2,6 +2,8 @@ import React from 'react';
 
 import AsyncStorage from '@react-native-community/async-storage';
 import {Secrets} from '../api/Secrets';
+import kasaKontrol from '../api/kasaKontrol';
+import KasaControl from '../api/KasaControl';
 
 const storeAsyncData = async (key, value) => {
   console.log(`store async key= ${key} value= ${JSON.stringify(value)}`);
@@ -48,6 +50,33 @@ const getAsyncData = async key => {
 };
 
 async function tplinkLogin(sentAuthObj) {
+  const kasa = new KasaControl();
+  try {
+    const mylogin = await kasa.login('***REMOVED***', '***REMOVED***');
+    console.log('mylogin'.JSON.stringify(mylogin));
+  } catch (error) {
+    console.log('error', JSON.stringify(error));
+  }
+  console.log('KASA+++++++++++++++++++++++++', kasa);
+  myret = {kasa: kasa};
+
+  console.log('sentAuthObj', sentAuthObj);
+  /*  sentAuthObj = {
+    ...sentAuthObj,
+    authObj: {
+      ...sentAuthObj.authObj,
+      authDeviceList: null,
+      isLoggedIn: false,
+      keyError: false,
+      isLoading: false,
+      saveAuthObj: false,
+      showAlert: true,
+    },
+  }; */
+  return myret;
+}
+
+async function tplinkLoginold(sentAuthObj) {
   const {login} = require('tplink-cloud-api');
   console.log('sentAuthObj+++++++++++++++++++++++++', sentAuthObj);
 
@@ -64,9 +93,14 @@ async function tplinkLogin(sentAuthObj) {
     // get a list of raw json objects (must be invoked before .get* works)
     tplinkDeviceList = await tplink.getDeviceList();
     //console.log('tplinkDeviceList', tplinkDeviceList);
+    console.log('tplinkDeviceList[0].alias', tplinkDeviceList[0].alias);
 
     // find a device by alias:
-    // let myPlug = tplink.getLB130('kasademots');
+    let myPlug = tplink.getLB130(tplinkDeviceList[0].alias);
+    console.log('myPlug', myPlug);
+
+    // let deviceState = await myPlug.getRelayState();
+    //  console.log('deviceState', deviceState);
     // or find by deviceId:
     // let myPlug = tplink.getHS100("558185B7EC793602FB8802A0F002BA80CB96F401");
     //console.log('myPlug:', myPlug);
@@ -76,11 +110,10 @@ async function tplinkLogin(sentAuthObj) {
 
     sentAuthObj = {
       ...sentAuthObj,
-      authObj: {
-        ...sentAuthObj.authObj,
-        authToken: tplinkToken,
-        authDeviceList: tplinkDeviceList,
-      },
+
+      authToken: tplinkToken,
+      authDeviceList: tplinkDeviceList,
+      authDeviceState: deviceState,
     };
 
     console.log(
@@ -93,15 +126,12 @@ async function tplinkLogin(sentAuthObj) {
     console.log(error);
     sentAuthObj = {
       ...sentAuthObj,
-      authObj: {
-        ...sentAuthObj.authObj,
-        authDeviceList: {},
-        isLoggedIn: false,
-        keyError: false,
-        isLoading: false,
-        saveAuthObj: false,
-        showError: true,
-      },
+      authDeviceList: null,
+      isLoggedIn: false,
+      keyError: false,
+      isLoading: false,
+      saveAuthObj: false,
+      showAlert: true,
     };
   }
 
@@ -134,4 +164,4 @@ async function tplinkLogin(sentAuthObj) {
     console.log(await myPlug.getRelayState()); */
 }
 
-export {storeAsyncData, getAsyncData, tplinkLogin};
+export {storeAsyncData, getAsyncData, tplinkLogin, tplinkLoginold};

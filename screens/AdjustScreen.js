@@ -43,23 +43,24 @@ const AdjustScreen = props => {
     authPass: '',
     authToken: '',
     authUUID: '',
-    authDeviceList: {},
     isLoggedIn: false,
     keyError: false,
     isLoading: false,
     authStyle: 'demo',
     saveAuthObj: false,
-    tplinkObj: null,
-  };
+    showAlert: true,
+    kasaObj: {},
+    deviceInfo: [],
+    authDeviceList: [],
+  });
   const [userObj, setuserObj] = React.useState({
     backgroundImage: '../assets/images/light.gif',
     showbg: true,
     saveUserObj: false,
-
     isToKasa: false,
     errorMessage: '',
     errorTitle: '',
-    showAlert: true,
+    showAlert: false,
     slidBrightness: 0.5,
     slidSaturation: 0.5,
     slidSaturationT: 50,
@@ -70,19 +71,31 @@ const AdjustScreen = props => {
     hueHex: '#ffffff',
     satHex: '#ffffff',
     briHex: '#ffffff',
+    noDevicesKasa: true,
   });
 
   React.useEffect(() => {
     console.log('----------Colour ----------');
-    getAppAuthObj('from Colour');
-    tplinkLogin();
-    if(!authObj.authDeviceList) setuserObj({...userObj, myAlert()})
-    convertHSL();
-    setAuthObj({...authObj, authDeviceList: null});
-    if (authObj.authDeviceList) alert;
-    console.log('Settings userObj', JSON.stringify(authObj));
+    let latestAuthObj = getAppAuthObj('request by Colour');
+
+    console.log(
+      'authObj lightstate >>>>',
+      JSON.stringify(latestAuthObj.deviceInfo[0].light_state),
+    );
+    if (authObj.authDeviceList == null) {
+      setAuthObj({...latestAuthObj, showAlert: true, noDevicesKasa: true});
+    } else {
+      setAuthObj({...latestAuthObj, showAlert: false, noDevicesKasa: false});
+
+      convertHSL();
+    }
+
     console.log('----------Colour Exit ----------');
   }, []);
+
+  React.useEffect(() => {
+    //  console.log('authObj devicelist', JSON.stringify(authObj));
+  }, [authObj]);
 
   const convertHSL = () => {
     var justHsl = {h: kasaSettings.h, s: kasaSettings.s, v: kasaSettings.v};
@@ -103,12 +116,15 @@ const AdjustScreen = props => {
     if (colour.h == undefined) console.log('undefined');
     if (colour.h == 0) console.log('000000');
 
- 
     let tplinkToken = '';
     let tplinkDeviceList;
 
     // log in to cloud, return a connected tplink object
-    const tplink = await new login(authObj.authName, authObj.authPass, authobj.authUUID);
+    const tplink = await new login(
+      authObj.authName,
+      authObj.authPass,
+      authobj.authUUID,
+    );
     tplinkDeviceList = await tplink.getDeviceList();
     console.log('tplinkDeviceList', tplinkDeviceList);
     tplinkToken = tplink.getToken();
@@ -220,31 +236,9 @@ const AdjustScreen = props => {
     }
   };
 
-  const mySlider = () => {
-    myslider = <Slider />;
-    return myslider;
+  const showError = () => {
+    setuserObj({...userObj, showAlert: !userObj.showAlert});
   };
-
-  const myAlert = (title, message) => {
-    return( 
-    <View>
-      <AwesomeAlert
-    show={userObj.showAlert}
-    showProgress={false}
-    title=
-    message="Your KASA account doesn't seem to have any bulbs, Please check they are turned on and try connecting again"
-    closeOnTouchOutside={true}
-    closeOnHardwareBackPress={false}
-    showCancelButton={true}
-    showConfirmButton={true}
-    confirmText="OK"
-    confirmButtonColor="#DD6B55"
-    onConfirmPressed={() => {
-      this.hideAlert();
-    }}
-  />
-</View>)
-  ;
 
   const headerSelect = selection => {
     if (selection == 'left') {
@@ -252,11 +246,11 @@ const AdjustScreen = props => {
         <View style={{justifyContent: 'flex-start'}}>
           <Text
             style={
-              authObj.authDeviceList
+              authObj.noDevicesKasa
                 ? styles.headerLeftCon
                 : styles.headerLeftDis
             }>
-            {authObj.authDeviceList
+            {authObj.noDevicesKasa
               ? IotlStrings.greenDevicesL
               : IotlStrings.noDevicesL}
           </Text>
@@ -268,11 +262,11 @@ const AdjustScreen = props => {
           {
             <Icon
               style={
-                authObj.authDeviceList
+                authObj.noDevicesKasa
                   ? styles.headerRightCon
                   : styles.headerRightDis
               }
-              name={authObj.authDeviceList ? 'lan-connect' : 'lan-disconnect'}
+              name={authObj.noDevicesKasa ? 'lan-connect' : 'lan-disconnect'}
               disabledStyle={styles.headerLeftDis}
               disabled={true}
               size={25}
@@ -280,7 +274,7 @@ const AdjustScreen = props => {
                 color: Colours.myRedConf,
               }}
               /*      color={
-                authObj.authDeviceList ? Colours.myGreenConf : Colours.myRedConf
+                authObj.noDevicesKasa ? Colours.myGreenConf : Colours.myRedConf
               } */
             />
           }
@@ -298,10 +292,10 @@ const AdjustScreen = props => {
           statusBarProps={{barStyle: 'default'}}
           containerStyle={styles.header}
           centerComponent={{
-            text: authObj.authDeviceList
+            text: authObj.noDevicesKasa
               ? IotlStrings.greenDevices
               : IotlStrings.noDevices,
-            style: authObj.authDeviceList
+            style: authObj.noDevicesKasa
               ? styles.headerTextCon
               : styles.headerTextDis,
             icon: 'home',
@@ -313,10 +307,13 @@ const AdjustScreen = props => {
           rightContainerStyle={{
             flex: 1,
           }}
+          leftContainerStyle={{
+            flex: 1,
+          }}
           rightComponent={() => headerSelect('right')}
           leftComponent={() => headerSelect('left')}
         />
-        {myAlert()}
+
         <View style={styles.mainContainer}>
           <View style={styles.bottomHSBContainer}>
             <View style={styles.pickerContainer}>
@@ -338,7 +335,7 @@ const AdjustScreen = props => {
             <View style={styles.hsvNumRowContainer}>
               <Text
                 style={
-                  authObj.authDeviceList
+                  authObj.noDevicesKasa
                     ? [styles.rgbNumH, {color: userObj.hsvtoHEX}]
                     : styles.rgbNumDis
                 }>
@@ -346,7 +343,7 @@ const AdjustScreen = props => {
               </Text>
               <Text
                 style={
-                  authObj.authDeviceList
+                  authObj.noDevicesKasa
                     ? [
                         styles.rgbNumS,
                         {
@@ -360,7 +357,7 @@ const AdjustScreen = props => {
               </Text>
               <Text
                 style={
-                  authObj.authDeviceList
+                  authObj.noDevicesKasa
                     ? [
                         styles.rgbNumS,
                         {
@@ -377,7 +374,7 @@ const AdjustScreen = props => {
           <View style={styles.butContainer}>
             <Button
               icon={
-                authObj.authDeviceList ? (
+                authObj.noDevicesKasa ? (
                   <Icon name="reload" style={styles.buttonIconCon} />
                 ) : (
                   <Icon name="arrow-right" style={styles.buttonIconDis} />
@@ -385,23 +382,37 @@ const AdjustScreen = props => {
               }
               iconRight
               titleStyle={
-                authObj.authDeviceList ? styles.butTextCon : styles.butTextDis
+                authObj.noDevicesKasa ? styles.butTextCon : styles.butTextDis
               }
               title={
-                authObj.authDeviceList
+                authObj.noDevicesKasa
                   ? IotlStrings.greenDevicesB
                   : IotlStrings.noDevicesB
               }
               type="outline"
               buttonStyle={
-                authObj.authDeviceList ? styles.buttonCon : styles.buttonDis
+                authObj.noDevicesKasa ? styles.buttonCon : styles.buttonDis
               }
               loading={userObj.isloading}
             />
           </View>
           <View />
+          <AwesomeAlert
+            show={userObj.showAlert}
+            title={userObj.errorTitle}
+            message={userObj.errorMessage}
+            closeOnTouchOutside={true}
+            closeOnHardwareBackPress={true}
+            showCancelButton={false}
+            showConfirmButton={true}
+            confirmText="OK"
+            confirmButtonColor="#F68F00"
+            onConfirmPressed={() => {
+              showError();
+            }}
+          />
           {/*         <Text
-            style={authObj.authDeviceList ? styles.rgbNumB : styles.rgbNumB}>
+            style={authObj.noDevicesKasa ? styles.rgbNumB : styles.rgbNumB}>
             {kasaSettings.s}
           </Text> */}
         </View>
@@ -438,7 +449,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignContent: 'center',
     flex: 1,
-    paddingBottom: 55,
+    paddingBottom: 85,
   },
   alertCont: {
     zIndex: 100,
@@ -582,7 +593,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colours.myGreenConf,
     flex: 0,
-    width: 35,
+    width: 55,
     paddingTop: 5,
   },
   headerLeftDis: {

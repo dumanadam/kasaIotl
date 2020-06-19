@@ -4,7 +4,7 @@ export const AuthContext = React.createContext();
 export const AlertMessage = React.createContext({
   title: 'None',
   mesage: 'None',
-  showError: true,
+  showAlert: true,
 });
 
 export const MyTPContext = React.createContext();

@@ -40,7 +40,7 @@ const LoginScreen = ({navigation}) => {
   const [userObj, setUserObj] = React.useState({
     userNameError: '',
     userPassError: '',
-    showError: true,
+    showAlert: true,
     errorTitle: ' Default',
     errorMessage: 'Default',
     isEmailValid: true,
@@ -112,33 +112,37 @@ const LoginScreen = ({navigation}) => {
     }
 
     if (userObj.isDemoUser) {
-      let data = await tplinkLogin(authObj);
-      console.log(
-        'return USER in login from tplink',
-        JSON.stringify({
-          ...data,
-          saveUserObj: true,
-        }),
-      );
-      console.log(
-        'return AUTH in login auth from tplink',
-        JSON.stringify({
-          ...data.authObj,
-          isLoggedIn: true,
+      const data = await tplinkLogin(authObj);
+      console.log('Loin page data', JSON.stringify(data));
+      const devices = await data.kasa.getDevices();
+      console.log(devices);
+      const info = await data.kasa.info(devices[0].deviceId);
+      console.log(info);
 
+      console.log(
+        'Set AUTH in login checkauth after login',
+        JSON.stringify({
+          ...authObj,
+          isLoggedIn: true,
           authStyle: 'demo',
+          saveAuthObj: true,
+          kasaObj: data.kasa,
+          deviceInfo: [info],
+          authDeviceList: [devices[0]],
+          isLoading: false,
           saveAuthObj: true,
         }),
       );
-      setUserObj({
-        ...data,
-        saveUserObj: true,
-      });
-      setAuthObj({
-        ...data.authObj,
-        isLoggedIn: true,
 
+      setAuthObj({
+        ...authObj,
+        isLoggedIn: true,
         authStyle: 'demo',
+        saveAuthObj: true,
+        kasaObj: data.kasa,
+        deviceInfo: [info],
+        authDeviceList: [devices[0]],
+        isLoading: false,
         saveAuthObj: true,
       });
 
@@ -298,7 +302,7 @@ const LoginScreen = ({navigation}) => {
   };
 
   const showError = () => {
-    setAuthObj({...authObj, showError: !authObj.showError});
+    setAuthObj({...authObj, showAlert: !authObj.showAlert});
   };
   return (
     <ImageBackground
@@ -488,7 +492,7 @@ const LoginScreen = ({navigation}) => {
       </KeyboardAwareScrollView>
 
       <AwesomeAlert
-        show={authObj.showError}
+        show={authObj.showAlert}
         title={userObj.errorTitle}
         message={userObj.errorMessage}
         closeOnTouchOutside={true}
