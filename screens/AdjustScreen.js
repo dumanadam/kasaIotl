@@ -118,6 +118,7 @@ const AdjustScreen = props => {
         s: slidSC,
         v: slidBC,
         oldHex: hslConverted,
+        newHex: hslConverted,
       });
       setuserObj({
         ...userObj,
@@ -145,12 +146,18 @@ const AdjustScreen = props => {
     let slidSC = Math.floor(value.s * 100);
     let cPV = Math.floor(value.h);
     var hslConverted = colorsys.hsv2Hex({h: cPV, s: slidSC, v: slidBC});
-    var hsl2RGB = colorsys.hsv2Rgb({h: cPV, s: slidSC, v: slidBC});
+
     console.log(
       'sending Colour Changed -------------------------------------------',
       {...kasaSettings, h: cPV, s: slidSC, v: slidBC},
     );
-    setKasaSettings({...kasaSettings, h: cPV, s: slidSC, v: slidBC});
+    setKasaSettings({
+      ...kasaSettings,
+      h: cPV,
+      s: slidSC,
+      v: slidBC,
+      newHex: hslConverted,
+    });
     setuserObj({
       ...userObj,
       slidSaturationT: slidSC,
@@ -398,10 +405,10 @@ const AdjustScreen = props => {
               <Text
                 style={
                   !authObj.noDevicesKasa
-                    ? [styles.rgbNumH, {color: kasaSettings.oldHex}]
+                    ? [styles.rgbNumH, {color: kasaSettings.newHex}]
                     : styles.rgbNumDis
                 }>
-                {JSON.stringify(kasaSettings.h)}
+                {kasaSettings.h}
               </Text>
               <Text
                 style={
@@ -421,15 +428,15 @@ const AdjustScreen = props => {
                 style={
                   !authObj.noDevicesKasa
                     ? [
-                        styles.rgbNumS,
+                        styles.rgbNumB,
                         {
                           color: Colours.myWhite,
-                          opacity: kasaSettings.s * 0.01,
+                          opacity: kasaSettings.v * 0.01,
                         },
                       ]
                     : styles.rgbNumDis
                 }>
-                {kasaSettings.s}
+                {kasaSettings.v}
               </Text>
             </View>
           </View>

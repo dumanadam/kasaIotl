@@ -113,9 +113,9 @@ const LoginScreen = ({navigation}) => {
 
     if (userObj.isDemoUser) {
       const data = await tplinkLogin(authObj);
-      console.log('Loin page data', JSON.stringify(data));
+
       const devices = await data.kasa.getDevices();
-      console.log(devices);
+
       if (devices == []) {
         setAuthObj({
           ...authObj,
@@ -131,7 +131,6 @@ const LoginScreen = ({navigation}) => {
         });
       } else {
         const info = await data.kasa.info(devices[0].deviceId);
-        console.log(info);
 
         setAuthObj({
           ...authObj,
