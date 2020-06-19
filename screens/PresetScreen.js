@@ -19,6 +19,7 @@ const PresetScreen = props => {
   const [count, setcount] = useState(0);
   const [show, setshow] = useState(0);
   const [userObj, setuserObj] = React.useState(getAppAuthObj('preset screen'));
+  const [authObj, setAuthObj] = React.useState(getAppAuthObj('preset screen'));
 
   const update = () => {
     setcount(count => count + 2);
@@ -116,7 +117,7 @@ const PresetScreen = props => {
       </Text>
       <Button title="logintoada" onPress={() => tplinkLogin()} />
       <Text style={{fontSize: 9, color: 'red', marginTop: 30}}>
-        {JSON.stringify(show ? 'asdf' : userObj.tplink)}
+        {JSON.stringify(authObj.deviceInfo[0].light_state)}
       </Text>
     </View>
   );

@@ -32,27 +32,15 @@ const AdjustScreen = props => {
   const [count, setcount] = useState(0);
   const [show, setshow] = useState(0);
   const [kasaSettings, setKasaSettings] = useState({
-    h: 180,
+    h: 50,
     s: 50,
     v: 50,
     color_temp: 0,
   });
   //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
-  const [authObj, setAuthObj] = React.useState({
-    authName: '',
-    authPass: '',
-    authToken: '',
-    authUUID: '',
-    isLoggedIn: false,
-    keyError: false,
-    isLoading: false,
-    authStyle: 'demo',
-    saveAuthObj: false,
-    showAlert: true,
-    kasaObj: {},
-    deviceInfo: [],
-    authDeviceList: [],
-  });
+  const [authObj, setAuthObj] = React.useState(
+    getAppAuthObj('request by Colour usestate defgault setup'),
+  );
   const [userObj, setuserObj] = React.useState({
     backgroundImage: '../assets/images/light.gif',
     showbg: true,
@@ -67,47 +55,77 @@ const AdjustScreen = props => {
     slidBrightnessT: 50,
     hueT: 90,
     hueText: 55,
-    hsvtoHEX: '#ffffff',
     hueHex: '#ffffff',
     satHex: '#ffffff',
     briHex: '#ffffff',
-    noDevicesKasa: true,
   });
 
   React.useEffect(() => {
     console.log('----------Colour ----------');
+    setAuthObj(getAppAuthObj('request by Colour'));
     let latestAuthObj = getAppAuthObj('request by Colour');
-
+    setupPage();
     console.log(
-      'authObj lightstate >>>>',
+      'adjust lightstate >>>>',
       JSON.stringify(latestAuthObj.deviceInfo[0].light_state),
     );
-    if (authObj.authDeviceList == null) {
-      setAuthObj({...latestAuthObj, showAlert: true, noDevicesKasa: true});
-    } else {
-      setAuthObj({...latestAuthObj, showAlert: false, noDevicesKasa: false});
-
-      convertHSL();
-    }
+    console.log(
+      'adjust nodevices >>>>',
+      JSON.stringify(latestAuthObj.noDevicesKasa),
+    );
 
     console.log('----------Colour Exit ----------');
   }, []);
 
   React.useEffect(() => {
-    //  console.log('authObj devicelist', JSON.stringify(authObj));
-  }, [authObj]);
+    console.log('kasasettings UPDATED', JSON.stringify(kasaSettings));
+  }, [kasaSettings]);
 
   const convertHSL = () => {
     var justHsl = {h: kasaSettings.h, s: kasaSettings.s, v: kasaSettings.v};
-    var hslConverted = colorsys.hsv2Hex(justHsl);
 
-    setuserObj({...userObj, hsvtoHEX: hslConverted});
     console.log(hslConverted);
-    console.log(userObj.hsvtoHEX);
   };
-  const update = () => {
-    setcount(count => count + 2);
-    route.params = {...route.params, asd: count => setcount(count)};
+
+  const setupPage = () => {
+    console.log(
+      'Page Setup -------------------------------------------',
+      authObj.deviceInfo[0].light_state,
+    );
+    let slidBC = authObj.deviceInfo[0].light_state.brightness;
+    let slidSC = authObj.deviceInfo[0].light_state.saturation;
+    const cPV = authObj.deviceInfo[0].light_state.hue;
+    var hslConverted = colorsys.hsv2Hex({h: cPV, s: slidSC, v: slidBC});
+    console.log(
+      'setuppage setting userobj -------------------------------------------',
+      {
+        ...userObj,
+        slidSaturationT: slidSC,
+        slidBrightnessT: slidBC,
+        hueT: cPV,
+      },
+    );
+    setKasaSettings({
+      ...kasaSettings,
+      h: cPV,
+      s: slidSC,
+      v: slidBC,
+      currentHex: hslConverted,
+    });
+    setuserObj({
+      ...userObj,
+      slidSaturationT: slidSC,
+      slidBrightnessT: slidBC,
+      hueT: cPV,
+    });
+
+    if (authObj.noDevicesKasa) {
+      //setAuthObj({...latestAuthObj, });
+      console.log('null');
+    } else {
+      //   setAuthObj({...latestAuthObj, showAlert: true});
+      console.log('NOT null');
+    }
   };
 
   const tplinkLogin = async colour => {
@@ -212,14 +230,16 @@ const AdjustScreen = props => {
     let cPV = Math.floor(value.h);
     var hslConverted = colorsys.hsv2Hex({h: cPV, s: slidSC, v: slidBC});
     var hsl2RGB = colorsys.hsv2Rgb({h: cPV, s: slidSC, v: slidBC});
-
+    console.log(
+      'sending Colour Changed -------------------------------------------',
+      {...kasaSettings, h: cPV, s: slidSC, v: slidBC},
+    );
     setKasaSettings({...kasaSettings, h: cPV, s: slidSC, v: slidBC});
     setuserObj({
       ...userObj,
       slidSaturationT: slidSC,
       slidBrightnessT: slidBC,
       hueT: cPV,
-      hsvtoHEX: hslConverted,
     });
 
     console.log('hslConverted', hslConverted);
@@ -240,17 +260,24 @@ const AdjustScreen = props => {
     setuserObj({...userObj, showAlert: !userObj.showAlert});
   };
 
+  const updateKasa = async () => {
+    const devices = await authObj.kasaObj.kasa.getDevices();
+    console.log('authObj.kasaObj', devices);
+  };
+
   const headerSelect = selection => {
+    console.log('heasderselect ???>>>?????, ', authObj.noDevicesKasa);
+
     if (selection == 'left') {
       return (
         <View style={{justifyContent: 'flex-start'}}>
           <Text
             style={
-              authObj.noDevicesKasa
+              !authObj.noDevicesKasa
                 ? styles.headerLeftCon
                 : styles.headerLeftDis
             }>
-            {authObj.noDevicesKasa
+            {!authObj.noDevicesKasa
               ? IotlStrings.greenDevicesL
               : IotlStrings.noDevicesL}
           </Text>
@@ -262,11 +289,11 @@ const AdjustScreen = props => {
           {
             <Icon
               style={
-                authObj.noDevicesKasa
+                !authObj.noDevicesKasa
                   ? styles.headerRightCon
                   : styles.headerRightDis
               }
-              name={authObj.noDevicesKasa ? 'lan-connect' : 'lan-disconnect'}
+              name={!authObj.noDevicesKasa ? 'lan-connect' : 'lan-disconnect'}
               disabledStyle={styles.headerLeftDis}
               disabled={true}
               size={25}
@@ -274,7 +301,7 @@ const AdjustScreen = props => {
                 color: Colours.myRedConf,
               }}
               /*      color={
-                authObj.noDevicesKasa ? Colours.myGreenConf : Colours.myRedConf
+                !authObj.noDevicesKasa ? Colours.myGreenConf : Colours.myRedConf
               } */
             />
           }
@@ -286,16 +313,20 @@ const AdjustScreen = props => {
   return (
     <View style={styles.backgroundContainer}>
       <ImageBackground
-        source={require('../assets/images/light_dc.jpg')}
+        source={
+          authObj.deviceInfo[0].light_state.on_off
+            ? require('../assets/images/light_lc.jpg')
+            : require('../assets/images/light_dc.jpg')
+        }
         style={styles.backgroundImage}>
         <Header
           statusBarProps={{barStyle: 'default'}}
           containerStyle={styles.header}
           centerComponent={{
-            text: authObj.noDevicesKasa
+            text: !authObj.noDevicesKasa
               ? IotlStrings.greenDevices
               : IotlStrings.noDevices,
-            style: authObj.noDevicesKasa
+            style: !authObj.noDevicesKasa
               ? styles.headerTextCon
               : styles.headerTextDis,
             icon: 'home',
@@ -318,9 +349,10 @@ const AdjustScreen = props => {
           <View style={styles.bottomHSBContainer}>
             <View style={styles.pickerContainer}>
               <ColorPicker
-                onColorSelected={color => alert(`Color selected: ${color}`)}
-                oldColor="white"
-                defaultColor="#c99c9c"
+                //  onColorSelected={color => alert(`Color selected: ${color}`)}
+                oldColor={kasaSettings.currentHex}
+                defaultColor="#28cc7a"
+                SliderProps={{value: 0.3}}
                 style={{flex: 1}}
                 onColorChange={value => colourChanged(value)}
                 sliderComponent={Slider}
@@ -335,15 +367,15 @@ const AdjustScreen = props => {
             <View style={styles.hsvNumRowContainer}>
               <Text
                 style={
-                  authObj.noDevicesKasa
-                    ? [styles.rgbNumH, {color: userObj.hsvtoHEX}]
+                  !authObj.noDevicesKasa
+                    ? [styles.rgbNumH, {color: kasaSettings.currentHex}]
                     : styles.rgbNumDis
                 }>
-                {JSON.stringify(userObj.hueT)}
+                {JSON.stringify(kasaSettings.h)}
               </Text>
               <Text
                 style={
-                  authObj.noDevicesKasa
+                  !authObj.noDevicesKasa
                     ? [
                         styles.rgbNumS,
                         {
@@ -353,11 +385,11 @@ const AdjustScreen = props => {
                       ]
                     : styles.rgbNumDis
                 }>
-                {userObj.slidSaturationT}
+                {kasaSettings.s}
               </Text>
               <Text
                 style={
-                  authObj.noDevicesKasa
+                  !authObj.noDevicesKasa
                     ? [
                         styles.rgbNumS,
                         {
@@ -367,14 +399,14 @@ const AdjustScreen = props => {
                       ]
                     : styles.rgbNumDis
                 }>
-                {userObj.slidBrightnessT}
+                {kasaSettings.s}
               </Text>
             </View>
           </View>
           <View style={styles.butContainer}>
             <Button
               icon={
-                authObj.noDevicesKasa ? (
+                !authObj.noDevicesKasa ? (
                   <Icon name="reload" style={styles.buttonIconCon} />
                 ) : (
                   <Icon name="arrow-right" style={styles.buttonIconDis} />
@@ -382,18 +414,19 @@ const AdjustScreen = props => {
               }
               iconRight
               titleStyle={
-                authObj.noDevicesKasa ? styles.butTextCon : styles.butTextDis
+                !authObj.noDevicesKasa ? styles.butTextCon : styles.butTextDis
               }
               title={
-                authObj.noDevicesKasa
+                !authObj.noDevicesKasa
                   ? IotlStrings.greenDevicesB
                   : IotlStrings.noDevicesB
               }
               type="outline"
               buttonStyle={
-                authObj.noDevicesKasa ? styles.buttonCon : styles.buttonDis
+                !authObj.noDevicesKasa ? styles.buttonCon : styles.buttonDis
               }
               loading={userObj.isloading}
+              onPress={() => updateKasa()}
             />
           </View>
           <View />
@@ -412,7 +445,7 @@ const AdjustScreen = props => {
             }}
           />
           {/*         <Text
-            style={authObj.noDevicesKasa ? styles.rgbNumB : styles.rgbNumB}>
+            style={!authObj.noDevicesKasa ? styles.rgbNumB : styles.rgbNumB}>
             {kasaSettings.s}
           </Text> */}
         </View>

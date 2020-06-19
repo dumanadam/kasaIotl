@@ -116,35 +116,53 @@ const LoginScreen = ({navigation}) => {
       console.log('Loin page data', JSON.stringify(data));
       const devices = await data.kasa.getDevices();
       console.log(devices);
-      const info = await data.kasa.info(devices[0].deviceId);
-      console.log(info);
-
-      console.log(
-        'Set AUTH in login checkauth after login',
-        JSON.stringify({
+      if (devices == []) {
+        setAuthObj({
           ...authObj,
           isLoggedIn: true,
           authStyle: 'demo',
           saveAuthObj: true,
-          kasaObj: data.kasa,
+          kasaObj: data,
+          deviceInfo: [info],
+          authDeviceList: [],
+          isLoading: false,
+          saveAuthObj: true,
+          noDevicesKasa: true,
+        });
+      } else {
+        const info = await data.kasa.info(devices[0].deviceId);
+        console.log(info);
+
+        setAuthObj({
+          ...authObj,
+          isLoggedIn: true,
+          authStyle: 'demo',
+          saveAuthObj: true,
+          kasaObj: data,
           deviceInfo: [info],
           authDeviceList: [devices[0]],
           isLoading: false,
           saveAuthObj: true,
-        }),
-      );
+          noDevicesKasa: false,
+        });
 
-      setAuthObj({
-        ...authObj,
-        isLoggedIn: true,
-        authStyle: 'demo',
-        saveAuthObj: true,
-        kasaObj: data.kasa,
-        deviceInfo: [info],
-        authDeviceList: [devices[0]],
-        isLoading: false,
-        saveAuthObj: true,
-      });
+        /*         console.log(
+          'Set AUTH in login checkauth after login',
+          JSON.stringify({
+            ...authObj,
+            isLoggedIn: true,
+            authStyle: 'demo',
+            saveAuthObj: true,
+            kasaObj: data.kasa,
+            deviceInfo: [info],
+            authDeviceList: [devices[0]],
+            isLoading: false,
+            saveAuthObj: true,
+            noDevicesKasa: false,
+            
+          }),
+        ); */
+      }
 
       /*         .catch(e => {
           console.log(' Loginscreen error', e);
