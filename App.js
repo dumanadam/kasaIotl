@@ -67,14 +67,8 @@ const App: () => React$Node = () => {
 
     returnedAsyncAuthData.isLoggedIn
       ? setTimeout(() => {
-          console.log(
-            'APP KEYCHECK TRUE',
-            JSON.stringify({
-              ...returnedAsyncAuthData,
-              showSplash: false,
-              isLoggedIn: true,
-            }),
-          );
+          console.log('APP KEYCHECK TRUE');
+
           setUserObj({
             ...returnedAsyncUserData,
           });
@@ -97,7 +91,7 @@ const App: () => React$Node = () => {
       });
       storeAsyncData(Secrets.authObjKey, authObj);
 
-      console.log('App useeffect SAVING auth', JSON.stringify(authObj));
+      console.log('App useeffect SAVING auth');
     }
   }, [authObj.saveAuthObj]);
 
@@ -144,9 +138,7 @@ const App: () => React$Node = () => {
   };
 
   const updatedAppAuthObject = from => {
-    console.log(
-      `Sending AUTHOBJ from APP>>>>>  from ${from} ${JSON.stringify(authObj)}`,
-    );
+    console.log(`Sending AUTHOBJ from APP>>>>>  from ${from} }`);
     return authObj;
   };
 

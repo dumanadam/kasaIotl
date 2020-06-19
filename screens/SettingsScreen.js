@@ -164,9 +164,11 @@ const SettingsScreen = ({navigation}) => {
       <Text style={{fontSize: 9, color: 'red'}}>
         "Centercolor wheel send update"
       </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>"Poll updates and time "</Text>
       <Text style={{fontSize: 9, color: 'red'}}>
         {JSON.stringify(kasaresult.light_state)}
       </Text>
+
       <Button
         title="login kasacontrol"
         onPress={() => {

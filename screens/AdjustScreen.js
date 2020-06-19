@@ -6,7 +6,13 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import {IotlStrings, IotlGlobals, AuthContext, Colours} from '../api/context';
+import {
+  IotlStrings,
+  IotlGlobals,
+  AuthContext,
+  Colours,
+  Errors,
+} from '../api/context';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Secrets} from '../api/Secrets';
 import {useState} from 'react';
@@ -16,6 +22,7 @@ import {ColorPicker} from 'react-native-color-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import colorsys from 'colorsys';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import {tplinkLogin} from '../api/KasaAuthFunctions';
 
 //import {ColorWheel} from 'react-native-color-wheel';
 
@@ -36,6 +43,8 @@ const AdjustScreen = props => {
     s: 50,
     v: 50,
     color_temp: 0,
+    oldHex: '',
+    newHex: '',
   });
   //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
   const [authObj, setAuthObj] = React.useState(
@@ -62,16 +71,11 @@ const AdjustScreen = props => {
 
   React.useEffect(() => {
     console.log('----------Colour ----------');
-    setAuthObj(getAppAuthObj('request by Colour'));
-    let latestAuthObj = getAppAuthObj('request by Colour');
+
     setupPage();
     console.log(
       'adjust lightstate >>>>',
-      JSON.stringify(latestAuthObj.deviceInfo[0].light_state),
-    );
-    console.log(
-      'adjust nodevices >>>>',
-      JSON.stringify(latestAuthObj.noDevicesKasa),
+      JSON.stringify(authObj.deviceInfo[0].light_state),
     );
 
     console.log('----------Colour Exit ----------');
@@ -92,138 +96,50 @@ const AdjustScreen = props => {
       'Page Setup -------------------------------------------',
       authObj.deviceInfo[0].light_state,
     );
-    let slidBC = authObj.deviceInfo[0].light_state.brightness;
-    let slidSC = authObj.deviceInfo[0].light_state.saturation;
-    const cPV = authObj.deviceInfo[0].light_state.hue;
-    var hslConverted = colorsys.hsv2Hex({h: cPV, s: slidSC, v: slidBC});
-    console.log(
-      'setuppage setting userobj -------------------------------------------',
-      {
+    if (authObj.noDevicesKasa) {
+      setuserObj({
+        ...userObj,
+        showAlert: true,
+        errorTitle: Errors.noBulbKasaT,
+        errorMessage: noBulbKasa,
+      });
+    } else {
+      let slidBC = authObj.deviceInfo[0].light_state.brightness;
+      let slidSC = authObj.deviceInfo[0].light_state.saturation;
+      const cPV = authObj.deviceInfo[0].light_state.hue;
+      var hslConverted = colorsys.hsv2Hex({h: cPV, s: slidSC, v: slidBC});
+      console.log(
+        'setuppage setting setting default and old to hslConverted -------------------------------------------',
+        hslConverted,
+      );
+      setKasaSettings({
+        ...kasaSettings,
+        h: cPV,
+        s: slidSC,
+        v: slidBC,
+        oldHex: hslConverted,
+      });
+      setuserObj({
         ...userObj,
         slidSaturationT: slidSC,
         slidBrightnessT: slidBC,
         hueT: cPV,
-      },
-    );
-    setKasaSettings({
-      ...kasaSettings,
-      h: cPV,
-      s: slidSC,
-      v: slidBC,
-      currentHex: hslConverted,
-    });
-    setuserObj({
-      ...userObj,
-      slidSaturationT: slidSC,
-      slidBrightnessT: slidBC,
-      hueT: cPV,
-    });
+      });
 
-    if (authObj.noDevicesKasa) {
-      //setAuthObj({...latestAuthObj, });
-      console.log('null');
-    } else {
-      //   setAuthObj({...latestAuthObj, showAlert: true});
-      console.log('NOT null');
+      if (authObj.noDevicesKasa) {
+        //setAuthObj({...latestAuthObj, });
+        console.log('null');
+      } else {
+        //   setAuthObj({...latestAuthObj, showAlert: true});
+        console.log('NOT null');
+      }
     }
+
+    /* const latestLightState = await authObj.kasaObj.kasa.info(
+      authObj.deviceInfo[0].deviceId,
+    ); */
   };
 
-  const tplinkLogin = async colour => {
-    const {login} = require('tplink-cloud-api');
-
-    if (colour.h == undefined) console.log('undefined');
-    if (colour.h == 0) console.log('000000');
-
-    let tplinkToken = '';
-    let tplinkDeviceList;
-
-    // log in to cloud, return a connected tplink object
-    const tplink = await new login(
-      authObj.authName,
-      authObj.authPass,
-      authobj.authUUID,
-    );
-    tplinkDeviceList = await tplink.getDeviceList();
-    console.log('tplinkDeviceList', tplinkDeviceList);
-    tplinkToken = tplink.getToken();
-    console.log('current auth token is', tplinkToken);
-    colour.h = Math.ceil(colour.h);
-    colour.s = Math.ceil(colour.s);
-    colour.v = Math.ceil(colour.v);
-
-    console.log(JSON.stringify(kasaSettings));
-
-    // if (tplink == null) return console.log('no login');
-
-    let myPlug = tplink.getLB130(tplink.deviceList[0].alias);
-    console.log('alias is ', tplink.deviceList[0].alias);
-    try {
-      let stateresult = await myPlug.setState(
-        1,
-        kasaSettings.v,
-        kasaSettings.h,
-        kasaSettings.s,
-      );
-
-      console.log('state result', stateresult);
-    } catch (error) {
-      alert(` Error: Code : ${error.errorCode} \n ${error.response.data.msg} `);
-      console.log(error);
-    }
-    /* .catch(e => {
-      console.log('error', e);
-      sentAuthObj = {
-        ...sentAuthObj,
-        userNameError: 'User Credentials Error - TPLINK',
-        userPassError: "'User Credentials Error - TPLINK'",
-      };
-  
-      return sentAuthObj;
-    }); */
-    //console.log('current auth token is', tplink.getToken());
-    if (false) {
-    }
-    // get a list of raw json objects (must be invoked before .get* works)
-    if (false) {
-      tplinkDeviceList = await tplink.getDeviceList();
-      console.log('tplinkDeviceList', tplinkDeviceList);
-    }
-
-    // find a device by alias:
-
-    // or find by deviceId:
-    // let myPlug = tplink.getHS100("558185B7EC793602FB8802A0F002BA80CB96F401");
-    // console.log('myPlug:', myPlug);
-
-    // let response = await myPlug.powerOn();
-    // console.log('kasauth myplugpower response =' + JSON.stringify(response)); */
-
-    // console.log('tplink return from  kasa imported library >>>>>>', tplink);
-    /*  setuserObj({
-      tplink: tplink,
-      dl: tplinkDeviceList,
-      token: tplinkToken,
-      //MYPLUG: myPlug,
-    });
-    return tplink; */
-
-    // find a device by alias:
-    //let myPlug = tplink.getHS100('My Smart Plug');
-    // or find by deviceId:
-    // let myPlug = tplink.getHS100("558185B7EC793602FB8802A0F002BA80CB96F401");
-    //console.log('myPlug:', myPlug);
-
-    //let response = await myPlug.powerOn();
-    //console.log("response=" + response );
-
-    /*  let response = await myPlug.toggle();
-      console.log('response=' + response);
-  
-      response = await myPlug.getSysInfo();
-      console.log('relay_state=' + response.relay_state);
-  
-      console.log(await myPlug.getRelayState()); */
-  };
   const colourChanged = value => {
     let slidBC = Math.floor(value.v * 100);
     let slidSC = Math.floor(value.s * 100);
@@ -261,8 +177,122 @@ const AdjustScreen = props => {
   };
 
   const updateKasa = async () => {
-    const devices = await authObj.kasaObj.kasa.getDevices();
-    console.log('authObj.kasaObj', devices);
+    let tokenExpired = false;
+    console.log(
+      'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+      JSON.stringify(authObj.kasaObj),
+    );
+
+    try {
+      let sentLightSettings = {
+        mode: 'normal',
+        hue: kasaSettings.h,
+        saturation: kasaSettings.s,
+        color_temp: 0,
+        brightness: kasaSettings.v,
+      };
+
+      const power = await authObj.kasaObj.kasa.power(
+        authObj.deviceInfo[0].deviceId,
+        true,
+        0,
+        sentLightSettings,
+      );
+      console.log('return from light update', JSON.stringify(power));
+      /*   setKasaSettings({
+        ...kasaSettings,
+        h: latestLightState.hue,
+        s: latestLightState.saturation,
+        v: latestLightState.brightness,
+        color_temp: latestLightState.color_temp,
+        rssi: authObj.deviceInfo[0].rssi,
+      }); */
+      var latestHex = colorsys.hsv2Hex({
+        h: kasaSettings.h,
+        s: kasaSettings.s,
+        v: kasaSettings.v,
+      });
+      console.log(
+        '+++++++++++++++++++++++++++++++++++++++++latestLightState++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',
+        latestHex,
+      );
+      setKasaSettings({
+        ...kasaSettings,
+        oldHex: latestHex,
+      });
+      console.log(
+        '++++++++++++++++++++++++++++++++++++++++++++++++++hslConverted+++++++++++++++++++++++++++++++++++++++++++++++++++',
+        latestHex,
+      );
+    } catch (error) {
+      console.log('----------------', error);
+      tokenExpired = true;
+    }
+    if (tokenExpired == true) {
+      console.log(
+        '-*----------------------------EXPIRED---------------------------------------------',
+      );
+
+      try {
+        const latestLogin = await tplinkLogin(authObj);
+        console.log('Loin page data', JSON.stringify(latestLogin));
+        const devices = await latestLogin.kasa.getDevices();
+        const latestLightState = await latestLogin.kasa.info(
+          authObj.deviceInfo[0].deviceId,
+        );
+        console.log(devices);
+        console.log(latestLightState);
+        if (devices == []) {
+          setAuthObj({
+            ...authObj,
+            isLoggedIn: true,
+            authStyle: 'demo',
+            saveAuthObj: true,
+            kasaObj: latestLogin,
+            deviceInfo: [latestLightState],
+            authDeviceList: [],
+            isLoading: false,
+            saveAuthObj: true,
+            noDevicesKasa: true,
+          });
+        } else {
+          setAuthObj({
+            ...authObj,
+            isLoggedIn: true,
+            authStyle: 'demo',
+            saveAuthObj: true,
+            kasaObj: latestLogin,
+            deviceInfo: [latestLightState],
+            authDeviceList: [devices[0]],
+            isLoading: false,
+            saveAuthObj: true,
+            noDevicesKasa: false,
+          });
+
+          /*         console.log(
+        'Set AUTH in login checkauth after login',
+        JSON.stringify({
+          ...authObj,
+          isLoggedIn: true,
+          authStyle: 'demo',
+          saveAuthObj: true,
+          kasaObj: data.kasa,
+          deviceInfo: [info],
+          authDeviceList: [devices[0]],
+          isLoading: false,
+          saveAuthObj: true,
+          noDevicesKasa: false,
+          
+        }),
+      ); */
+        }
+      } catch (error) {
+        console.log(
+          'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+          error,
+        );
+      }
+    }
   };
 
   const headerSelect = selection => {
@@ -350,8 +380,8 @@ const AdjustScreen = props => {
             <View style={styles.pickerContainer}>
               <ColorPicker
                 //  onColorSelected={color => alert(`Color selected: ${color}`)}
-                oldColor={kasaSettings.currentHex}
-                defaultColor="#28cc7a"
+                oldColor={kasaSettings.oldHex}
+                defaultColor={kasaSettings.oldHex}
                 SliderProps={{value: 0.3}}
                 style={{flex: 1}}
                 onColorChange={value => colourChanged(value)}
@@ -368,7 +398,7 @@ const AdjustScreen = props => {
               <Text
                 style={
                   !authObj.noDevicesKasa
-                    ? [styles.rgbNumH, {color: kasaSettings.currentHex}]
+                    ? [styles.rgbNumH, {color: kasaSettings.oldHex}]
                     : styles.rgbNumDis
                 }>
                 {JSON.stringify(kasaSettings.h)}

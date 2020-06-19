@@ -16,11 +16,21 @@ export const IotlGlobals = React.createContext({
   testFunc: value => !value,
 });
 export let IotlStrings = React.createContext();
-export let Colours = React.createContext();
+export let Colours = React.createContext({
+  myBlack: '#050F14',
+  myWhite: '#DBE2E5',
+  myYellow: '#F68F00',
+  myDrkBlue: '#154159',
+  myLgtBlue: '#1A516A',
+  myGreenConf: '#16F049',
+  myRedConf: '#FF221F',
+});
 export let Errors = React.createContext({
   usernameDefaultError: 'Please enter a Username',
   userPassDefaultError: 'Please enter a Password',
   tpLinkUserError: 'Please check your Tp-Link Login details ',
+  noBulbKasaT: 'No Bulb Found',
+  noBulbKasa: 'Please add a bulb to your Kasa Account ',
 });
 
 IotlStrings = {
