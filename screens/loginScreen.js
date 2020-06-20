@@ -104,6 +104,21 @@ const LoginScreen = ({navigation}) => {
     }, 50);
   }, [userObj.userNameError]); */
 
+  const resolveLoginError = (error, devices, data) => {
+    setAuthObj({
+      ...authObj,
+      isLoggedIn: true,
+      authStyle: 'demo',
+      saveAuthObj: true,
+      kasaObj: data.kasaObj,
+      deviceInfo: [],
+      authDeviceList: [devices[0]],
+      isLoading: false,
+      saveAuthObj: true,
+      noDevicesKasa: true,
+    });
+  };
+
   const checkAuth = async () => {
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
 
@@ -113,23 +128,30 @@ const LoginScreen = ({navigation}) => {
 
     if (userObj.isDemoUser) {
       const data = await tplinkLogin(authObj);
+      const devices = await data.kasaObj.getDevices();
+      try {
+        const info = await data.kasaObj.info(devices[0].deviceId);
 
-      const devices = await data.kasa.getDevices();
-
-      if (devices == []) {
         setAuthObj({
           ...authObj,
           isLoggedIn: true,
           authStyle: 'demo',
           saveAuthObj: true,
-          kasaObj: data,
-          deviceInfo: [info],
-          authDeviceList: [],
-          isLoading: false,
+          kasaObj: data.kasaObj,
+          deviceInfo: [],
+          authDeviceList: [devices[0]],
+          isLoading: true,
           saveAuthObj: true,
           noDevicesKasa: true,
         });
-      } else {
+      } catch (error) {
+        resolveLoginError(error, devices, data);
+        return;
+      }
+
+      //console.log('LOGIN SUCCESS   DATA =====>>', data);
+      //console.log('LOGIN SUCCESS   INFO =====>>', info);
+      /*    if (data.errorMessage == '') {
         const info = await data.kasa.info(devices[0].deviceId);
 
         setAuthObj({
@@ -137,15 +159,60 @@ const LoginScreen = ({navigation}) => {
           isLoggedIn: true,
           authStyle: 'demo',
           saveAuthObj: true,
-          kasaObj: data,
+          kasaObj: data.kasaObj,
           deviceInfo: [info],
           authDeviceList: [devices[0]],
           isLoading: false,
           saveAuthObj: true,
           noDevicesKasa: false,
         });
+      } else {
+        console.log(' ERROR HIT message>>', data.errorMessage);
 
-        /*         console.log(
+        switch (data.errorMessage) {
+          case 'Error: Device is offline':
+            setAuthObj({
+              ...authObj,
+              isLoggedIn: true,
+              authStyle: 'demo',
+              saveAuthObj: true,
+              kasaObj: data.kasaObj,
+              deviceInfo: [],
+              authDeviceList: [],
+              isLoading: false,
+              saveAuthObj: true,
+              noDevicesKasa: true,
+              errorMessage: Errors.alertDeviceOffline,
+              errorTitle: Errors.alertDeviceOfflineT,
+              showProgress: false,
+              showConfirm: true,
+              showAlert: true,
+              closeOut: true,
+              closeBack: true,
+              showCancel: false,
+              confText: 'OK',
+              confirmButtonColor: Colours.myYellow,
+            });
+            break;
+
+          case '2':
+            this.TWO();
+            break;
+
+          case '3':
+            this.THREE();
+            break;
+
+          case '4':
+            this.FOUR();
+            break;
+
+          default:
+            console.log('Hit default');
+        }
+      }
+ */
+      /*         console.log(
           'Set AUTH in login checkauth after login',
           JSON.stringify({
             ...authObj,
@@ -161,7 +228,6 @@ const LoginScreen = ({navigation}) => {
             
           }),
         ); */
-      }
 
       /*         .catch(e => {
           console.log(' Loginscreen error', e);
@@ -510,14 +576,20 @@ const LoginScreen = ({navigation}) => {
 
       <AwesomeAlert
         show={authObj.showAlert}
-        title={userObj.errorTitle}
-        message={userObj.errorMessage}
-        closeOnTouchOutside={true}
-        closeOnHardwareBackPress={true}
-        showCancelButton={false}
-        showConfirmButton={true}
-        confirmText="OK"
-        confirmButtonColor="#F68F00"
+        title={authObj.errorTitle}
+        message={authObj.errorMessage}
+        showProgress={authObj.showProgress}
+        closeOnTouchOutside={authObj.closeOut}
+        closeOnHardwareBackPress={authObj.closeBack}
+        showCancelButton={authObj.showCancel}
+        showConfirmButton={authObj.showConfirm}
+        confirmText={authObj.confText}
+        confirmButtonColor={authObj.confirmButtonColor}
+        progressSize={30}
+        contentContainerStyle={styles.alertMCont}
+        titleStyle={styles.alertTitle}
+        messageStyle={styles.alertMessage}
+        progressColor={Colours.myLgtBlue}
         onConfirmPressed={() => {
           showError();
         }}

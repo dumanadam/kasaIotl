@@ -39,7 +39,15 @@ const App: () => React$Node = () => {
     isLoading: false,
     authStyle: 'demo',
     saveAuthObj: false,
-    showError: false,
+    showAlert: false,
+    kasaObj: {},
+    deviceInfo: [],
+    authDeviceList: [],
+    noDevicesKasa: true,
+    tokenExpired: true,
+    isPolling: false,
+    pollTime: 10000,
+    showSplash: true,
   });
 
   const TabContainerStack = createStackNavigator();
@@ -80,6 +88,12 @@ const App: () => React$Node = () => {
         }, 500)
       : setTimeout(() => {
           console.log('APP KEYCHECK FALSE ');
+
+          setAuthObj({
+            ...authObj,
+            showSplash: false,
+            isLoggedIn: false,
+          });
         }, 100);
   };
 
@@ -107,13 +121,7 @@ const App: () => React$Node = () => {
       ...sentAuthObj,
       saveAuthObj: !authObj.saveAuthObj,
     });
-    console.log(
-      'updating APP AUTH obj ',
-      JSON.stringify({
-        ...sentAuthObj,
-        saveAuthObj: !authObj.saveAuthObj,
-      }),
-    );
+    console.log('updating APP AUTH obj ');
   };
   const updateUserObj = sentUserObject => {
     console.log('sentuserobj USER TRUTH');

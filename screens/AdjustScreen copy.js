@@ -16,6 +16,7 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 import {tplinkLogin} from '../api/KasaAuthFunctions';
 import useInterval from '../api/useInterval';
 import HeaderLeft from '../components/HeaderLeft';
+import KasaControl from '../api/KasaControl';
 
 //import {ColorWheel} from 'react-native-color-wheel';
 
@@ -127,7 +128,7 @@ const AdjustScreen = props => {
         confText: 'OK',
         confirmButtonColor: Colours.myYellow,
         errorTitle: 'No Bulb Found',
-        errorMessage: 'Offline - Turn light switch on ',
+        errorMessage: 'Please add a bulb to your Kasa Account ',
       });
     } else {
       try {
@@ -218,16 +219,36 @@ const AdjustScreen = props => {
   };
 
   const localKasaLogin = async () => {
+    let returnKasaLogin = {};
+    const kasa = new KasaControl();
+
+    try {
+      const latestLogin = await kasa.login(
+        '***REMOVED***',
+        '***REMOVED***',
+      );
+      console.log('mylogin', JSON.stringify(latestLogin));
+      returnKasaLogin = {
+        kasaObj: kasa,
+        errorMessage: '',
+        errorTitle: '',
+      };
+    } catch (error) {
+      console.log('error+++++', error);
+      returnKasaLogin.errorMessage = JSON.stringify(error);
+    }
+
     try {
       const latestLogin = await tplinkLogin(authObj);
       console.log(
         '+++++++++++++++++++++++++   Creating a New LOGIN +++++++++++++++ ',
       );
-      const devices = await latestLogin.kasa.getDevices();
-      console.log('DEvices >> ', devices[0]);
-      const latestLightState = await latestLogin.kasa.info(devices[0].deviceId);
-
-      console.log('Latest .info return >>>> ', latestLightState);
+      //const latestLightState = await latestLogin.info(devices[0].deviceId);
+      const devices = await latestLogin.getDevices();
+      console.log('DEvices >> ', devices);
+      console.log('DEvices >> ', latestLogin);
+ */
+    /* console.log('Latest .info return >>>> ', latestLightState);
       console.log('Latest .info return >>>> ', latestLightState.rssi);
       // Try again after expired token - reuse this code
       const latestHSV = {
@@ -281,14 +302,14 @@ const AdjustScreen = props => {
           '+++++++++++++++++++++++++   LOCAL LOGIN SUCCESS !!!!!!!!!!!!!!!!!!!!!!! +++++++++++++++ ',
           authObj.authDeviceList,
         );
-        return latestLogin;
-      }
-    } catch (e) {
+        return latestLogin; 
+      }*/
+    /*     } catch (e) {
       console.log(
         'Local Login FAILED ---------------------------------------',
         e,
       );
-    }
+    } */
   };
 
   const wheelPressed = async () => {
@@ -317,12 +338,12 @@ const AdjustScreen = props => {
     let tokenExpired = false;
     console.log(
       '+++++++++update button  kasaobj >>',
-      JSON.stringify(authObj.authDeviceList[0].deviceId),
+      JSON.stringify(authObj.kasaObj),
     );
     if (authObj.noDevicesKasa) {
       try {
-        const latestLightState = await authObj.kasaObj.info(
-          authObj.authDeviceList[0].deviceId,
+        const latestLightState = await authObj.kasaObj.kasa.info(
+          authObj.deviceInfo[0].deviceId,
         );
         console.log(
           '+++++++++++++++++ page RELOAD UPDATE FROM KASA FOR LATEST',
@@ -333,24 +354,10 @@ const AdjustScreen = props => {
           '+++++++++++++++++ page RELOAD UPDATE FROM KASA FAILED TRYING LOGIN ',
           error,
         );
-        setuserObj({
-          ...userObj,
-          showAlert: true,
-          showbg: require('../assets/images/light_dc.jpg'),
-          showProgress: false,
-          showConfirm: true,
-          showAlert: true,
-          closeOut: true,
-          closeBack: true,
-          showCancel: false,
-          confText: 'OK',
-          confirmButtonColor: Colours.myYellow,
-          errorTitle: 'No Bulb Found',
-          errorMessage: 'Still not found. Check Power ',
-        });
-        /*         try {
+
+        try {
           localKasaLogin();
-        } catch (error) {} */
+        } catch (error) {}
       }
     } else {
       try {
@@ -394,19 +401,20 @@ const AdjustScreen = props => {
         console.log('----------------', error);
         tokenExpired = true;
       }
-      if (tokenExpired == true) {
-        console.log(
-          '-*----------------------------EXPIRED---------------------------------------------',
-        );
+    }
 
-        try {
-          localKasaLogin();
-        } catch (error) {
-          console.log(
-            'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   CANT LOGIN   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            error,
-          );
-        }
+    if (tokenExpired == true) {
+      console.log(
+        '-*----------------------------EXPIRED---------------------------------------------',
+      );
+
+      try {
+        localKasaLogin();
+      } catch (error) {
+        console.log(
+          'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   CANT LOGIN   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+          error,
+        );
       }
     }
   };

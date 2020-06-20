@@ -117,7 +117,7 @@ const PresetScreen = props => {
       </Text>
       <Button title="logintoada" onPress={() => tplinkLogin()} />
       <Text style={{fontSize: 9, color: 'red', marginTop: 30}}>
-        {JSON.stringify(authObj.deviceInfo[0].deviceId)}
+        {JSON.stringify(authObj)}
       </Text>
     </View>
   );

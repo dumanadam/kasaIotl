@@ -6,7 +6,7 @@ import kasaKontrol from '../api/kasaKontrol';
 import KasaControl from '../api/KasaControl';
 
 const storeAsyncData = async (key, value) => {
-  console.log(`store async key= ${key} value= ${JSON.stringify(value)}`);
+  console.log(`store async key= ${key} `);
   if (value == '') {
     console.log('Sent key emopty for store rejected');
     return;
@@ -50,17 +50,24 @@ const getAsyncData = async key => {
 };
 
 async function tplinkLogin(sentAuthObj) {
+  let returnKasaLogin = {};
+  console.log('LOGGING IN VIA KASAAUTHFUNCTION', sentAuthObj);
   const kasa = new KasaControl();
   try {
     const mylogin = await kasa.login('***REMOVED***', '***REMOVED***');
-    console.log('mylogin'.JSON.stringify(mylogin));
+    console.log('mylogin', JSON.stringify(mylogin));
+    returnKasaLogin = {
+      kasaObj: mylogin,
+      errorMessage: '',
+      errorTitle: '',
+    };
+    return returnKasaLogin;
   } catch (error) {
-    console.log('error', JSON.stringify(error));
+    console.log('error+++++', error);
+    returnKasaLogin.errorMessage = JSON.stringify(error);
+    return returnKasaLogin;
   }
-  console.log('KASA+++++++++++++++++++++++++', kasa);
-  myret = {kasa: kasa};
 
-  console.log('sentAuthObj', sentAuthObj);
   /*  sentAuthObj = {
     ...sentAuthObj,
     authObj: {
@@ -73,7 +80,6 @@ async function tplinkLogin(sentAuthObj) {
       showAlert: true,
     },
   }; */
-  return myret;
 }
 
 async function tplinkLoginold(sentAuthObj) {

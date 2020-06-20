@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Text, View, StyleSheet, Button, Switch} from 'react-native';
 import {AuthContext} from '../api/context';
 import KasaControl from '../api/KasaControl';
+import {Secrets} from '../api/Secrets';
 
 const SettingsScreen = ({navigation}) => {
   const {
@@ -138,11 +139,7 @@ const SettingsScreen = ({navigation}) => {
     if (authObj == undefined) {
       console.log('authObj underfined');
     } else {
-      updateAuthObjTruth({
-        ...authObj,
-        saveAuthObj: true,
-        isLoggedIn: false,
-      });
+      updateAuthObjTruth({});
     }
   };
 
@@ -155,6 +152,10 @@ const SettingsScreen = ({navigation}) => {
       <Text style={{fontSize: 9, color: 'red'}}>
         "Send Temperature update instantly?"
       </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>
+        "toggle or power for colour screen wheel button?"
+      </Text>
+      <Text style={{fontSize: 9, color: 'red'}}>"hide icons"</Text>
       <Text style={{fontSize: 9, color: 'red'}}>
         "Use custom background image?"
       </Text>

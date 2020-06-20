@@ -25,13 +25,29 @@ export let Colours = React.createContext({
   myGreenConf: '#16F049',
   myRedConf: '#FF221F',
 });
-export let Errors = React.createContext({
+export let MyErrors = React.createContext({
   usernameDefaultError: 'Please enter a Username',
   userPassDefaultError: 'Please enter a Password',
   tpLinkUserError: 'Please check your Tp-Link Login details ',
   noBulbKasaT: 'No Bulb Found',
   noBulbKasa: 'Please add a bulb to your Kasa Account ',
+  alertUpdatingM: 'Getting latest Settings',
+  alertUpdatingT: 'Updating',
+  alertDeviceOffline: 'Device is Offline',
+  alertDeviceOfflineT: 'Device Error',
 });
+
+myErrors = {
+  usernameDefaultError: 'Please enter a Username',
+  userPassDefaultError: 'Please enter a Password',
+  tpLinkUserError: 'Please check your Tp-Link Login details ',
+  noBulbKasaT: 'No Bulb Found',
+  noBulbKasa: 'Please add a bulb to your Kasa Account ',
+  alertUpdatingM: 'Getting latest Settings',
+  alertUpdatingT: 'Updating',
+  alertDeviceOffline: 'Device is Offline',
+  alertDeviceOfflineT: 'Device Error',
+};
 
 IotlStrings = {
   loginTextButton: 'Login',
@@ -46,7 +62,7 @@ IotlStrings = {
   userNamePlaceholder: 'Username',
   userPassPlaceholder: 'Password',
   demoPasswordPlaceholder: 'Demo Password Set',
-  noDevices: 'Add bulb to account',
+  noDevices: 'Bulb powered?',
   greenDevices: 'Colour Adjustment',
   noDevicesL: 'No Bulb',
   greenDevicesL: 'Connected',
