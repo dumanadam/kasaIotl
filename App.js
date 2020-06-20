@@ -71,9 +71,8 @@ const App: () => React$Node = () => {
   const getAsyncDatad = async () => {
     console.log('entered');
     let returnedAsyncUserData = await getAsyncData(Secrets.userObjKey);
-    let returnedAsyncAuthData = await getAsyncData(Secrets.authObjKey);
 
-    returnedAsyncAuthData.isLoggedIn
+    returnedAsyncUserData.isLoggedIn
       ? setTimeout(() => {
           console.log('APP KEYCHECK TRUE');
 
@@ -81,7 +80,7 @@ const App: () => React$Node = () => {
             ...returnedAsyncUserData,
           });
           setAuthObj({
-            ...returnedAsyncAuthData,
+            ...returnedAsyncUserData,
             showSplash: false,
             isLoggedIn: true,
           });
@@ -183,7 +182,7 @@ const App: () => React$Node = () => {
     };
   }, [authObj]);
 
-  const AppTPContext = React.useContext(MyTPContext);
+  const contextStrings = React.useContext(IotlStrings);
 
   if (authObj.showSplash) {
     return <SplashScreen />;
@@ -218,7 +217,7 @@ const App: () => React$Node = () => {
   };
 
   return (
-    <MyTPContext.Provider value={testObject}>
+    <MyTPContext.Provider value={contextStrings}>
       <AuthContext.Provider value={authContext}>
         <NavigationContainer>
           {authObj.isLoggedIn == true ? (

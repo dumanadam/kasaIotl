@@ -10,10 +10,9 @@ import {
 } from '../api/context';
 
 const HeaderLeft = props => {
-  const {kasaSettings} = props;
-  const authObj = props.authObj;
-  // console.log('Current device status >', kasaSettings.authDeviceList[0]);
-  console.log('authobj >', kasaSettings.isLoggedIn);
+  const {kasaSettings, authObj} = props;
+  //  console.log('Current device status >', kasaSettings);
+  // console.log('authobj >', authObj);
   return (
     <View style={{flexDirection: 'row'}}>
       {kasaSettings.noDevicesKasa ? (
@@ -43,6 +42,8 @@ const HeaderLeft = props => {
                 ? 'flash-outline'
                 : 'flash-off'
             }
+            disabledStyle={styles.headerLeftDis}
+            disabled={true}
             size={25}
             iconStyle={{
               color: Colours.myRedConf,
@@ -50,13 +51,11 @@ const HeaderLeft = props => {
           />
           <Icon
             style={
-              kasaSettings.isLoggedIn
-                ? styles.headerLeftCon
-                : styles.headerLeftDis
+              authObj.isLoggedIn ? styles.headerLeftCon : styles.headerLeftDis
             }
-            name={
-              kasaSettings.isLoggedIn ? 'cloud-outline' : 'cloud-off-outline'
-            }
+            name={authObj.isLoggedIn ? 'cloud-outline' : 'cloud-off-outline'}
+            disabledStyle={styles.headerLeftDis}
+            disabled={true}
             size={25}
             iconStyle={{
               color: Colours.myRedConf,
@@ -101,6 +100,8 @@ const styles = StyleSheet.create({
     marginRight: 7,
     fontSize: 12,
     color: Colours.myGreenConf,
+    flex: 0,
+    width: 55,
   },
   headerLeftDis: {
     marginRight: 7,

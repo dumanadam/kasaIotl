@@ -12,6 +12,7 @@ const storeAsyncData = async (key, value) => {
   try {
     const asuncConfirm = await AsyncStorage.setItem(key, JSON.stringify(value));
     if (asuncConfirm != null) console.log('asunconfirm', asuncConfirm);
+    console.log('Async Storage Value >>>', value);
   } catch (e) {
     // saving error
     console.log('async storage error', e);

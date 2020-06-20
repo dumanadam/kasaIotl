@@ -177,7 +177,6 @@ const LoginScreen = ({navigation}) => {
           closeBack: true,
           showCancel: false,
           confText: 'OK',
-          appErrorCode: 'Timeout',
         });
       }
       if (latestLightState.errorMessage == IotlStrings.plug_Offline) {
@@ -216,22 +215,18 @@ const LoginScreen = ({navigation}) => {
         errorMessage: IotlStrings.is_LoggedInM,
       });
 
-      setTimeout(() => {
-        setAuthObj({
-          ...authObj,
-          isLoggedIn: true,
-          authStyle: 'demo',
+      setAuthObj({
+        ...authObj,
+        isLoggedIn: true,
+        authStyle: 'demo',
 
-          kasaObj: latestLogin.kasaObj,
-          deviceInfo: latestLightState,
-          authDeviceList: [devices[0]],
-          isLoading: false,
-          saveAuthObj: true,
-          noDevicesKasa: false,
-        });
-
-        return;
-      }, 250);
+        kasaObj: latestLogin.kasaObj,
+        deviceInfo: latestLightState,
+        authDeviceList: [devices[0]],
+        isLoading: false,
+        saveAuthObj: true,
+        noDevicesKasa: false,
+      });
     }
   };
 
