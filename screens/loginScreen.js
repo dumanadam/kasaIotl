@@ -24,6 +24,8 @@ import {
   tplinkLogin,
 } from '../api/KasaAuthFunctions';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import getLatestLightState from '../api/getLatestLightState';
+import getDeviceList from '../api/getDeviceList';
 
 const LoginScreen = ({navigation}) => {
   const {login} = require('tplink-cloud-api');
@@ -114,25 +116,27 @@ const LoginScreen = ({navigation}) => {
     }, 50);
   }, [userObj.userNameError]); */
 
-  const resolveLoginError = (devices, data) => {
-    setUserObj({
-      ...userObj,
-      isloading: false,
-      showAlert: false,
-    });
-    setAuthObj({
-      ...authObj,
+  const resolveLoginError = (devices, data, logCheck) => {
+    if (logCheck == 'timeout') {
+      setUserObj({
+        ...userObj,
+        isloading: false,
+        showAlert: false,
+      });
+      setAuthObj({
+        ...authObj,
 
-      authStyle: 'demo',
-      saveAuthObj: true,
-      kasaObj: data.kasaObj,
-      deviceInfo: [],
-      authDeviceList: [devices[0]],
-      isLoading: false,
-      saveAuthObj: true,
-      noDevicesKasa: true,
-      isLoggedIn: true,
-    });
+        authStyle: 'demo',
+        saveAuthObj: true,
+        kasaObj: data.kasaObj,
+        deviceInfo: {},
+        authDeviceList: [],
+        isLoading: false,
+
+        noDevicesKasa: true,
+        isLoggedIn: false,
+      });
+    }
   };
 
   const checkAuth = async () => {
@@ -141,6 +145,7 @@ const LoginScreen = ({navigation}) => {
       isloading: true,
       showAlert: true,
     });
+
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
 
     if (checkPlaceholder()) {
@@ -148,12 +153,35 @@ const LoginScreen = ({navigation}) => {
     }
 
     if (userObj.isDemoUser) {
-      const data = await tplinkLogin(authObj);
-      const devices = await data.kasaObj.getDevices();
-      console.log('devices', devices[0].status);
+      const latestLogin = await tplinkLogin(authObj);
+      const devices = await getDeviceList(latestLogin.kasaObj);
 
-      if (devices[0].status) {
-        const info = await data.kasaObj.info(devices[0].deviceId);
+      const latestLightState = await getLatestLightState(
+        latestLogin.kasaObj,
+        devices[0].deviceId,
+      );
+      if (latestLightState.errorMessage == 'Timeout') {
+        console.log(
+          '--------------------------------------Login Timeout error',
+        );
+        setUserObj({
+          ...userObj,
+          isloading: false,
+          showAlert: true,
+          errorMessage: 'Connection timed out, please try again',
+          errorTitle: 'Network Error',
+          showProgress: false,
+          showConfirm: true,
+
+          closeOut: true,
+          closeBack: true,
+          showCancel: false,
+          confText: 'OK',
+          appErrorCode: 'Timeout',
+        });
+      }
+      if (latestLightState.errorMessage == IotlStrings.plug_Offline) {
+        console.log('--------------------------------------Plug Offline error');
         setUserObj({
           ...userObj,
           isloading: false,
@@ -163,109 +191,47 @@ const LoginScreen = ({navigation}) => {
           ...authObj,
           isLoggedIn: true,
           authStyle: 'demo',
-          saveAuthObj: true,
-          kasaObj: data.kasaObj,
-          deviceInfo: [info],
+
+          kasaObj: latestLogin.kasaObj,
+          deviceInfo: latestLightState,
           authDeviceList: [devices[0]],
           isLoading: false,
           saveAuthObj: true,
-          noDevicesKasa: false,
+          noDevicesKasa: true,
+          appErrorCode: IotlStrings.plug_Offline,
         });
-      } else {
-        resolveLoginError(devices, data);
       }
+      console.log('--------------------------------------Normal Login');
 
-      //console.log('LOGIN SUCCESS   DATA =====>>', data);
-      //console.log('LOGIN SUCCESS   INFO =====>>', info);
-      /*    if (data.errorMessage == '') {
-        const info = await data.kasa.info(devices[0].deviceId);
+      setUserObj({
+        ...userObj,
+        showAlert: true,
+        showbg: require('../assets/images/light_lc.jpg'),
+        showProgress: false,
+        showConfirm: false,
+        closeOut: false,
+        closeBack: false,
+        showCancel: false,
+        errorTitle: IotlStrings.is_LoggedInT,
+        errorMessage: IotlStrings.is_LoggedInM,
+      });
 
+      setTimeout(() => {
         setAuthObj({
           ...authObj,
           isLoggedIn: true,
           authStyle: 'demo',
-          saveAuthObj: true,
-          kasaObj: data.kasaObj,
-          deviceInfo: [info],
+
+          kasaObj: latestLogin.kasaObj,
+          deviceInfo: latestLightState,
           authDeviceList: [devices[0]],
           isLoading: false,
           saveAuthObj: true,
           noDevicesKasa: false,
         });
-      } else {
-        console.log(' ERROR HIT message>>', data.errorMessage);
 
-        switch (data.errorMessage) {
-          case 'Error: Device is offline':
-            setAuthObj({
-              ...authObj,
-              isLoggedIn: true,
-              authStyle: 'demo',
-              saveAuthObj: true,
-              kasaObj: data.kasaObj,
-              deviceInfo: [],
-              authDeviceList: [],
-              isLoading: false,
-              saveAuthObj: true,
-              noDevicesKasa: true,
-              errorMessage: Errors.alertDeviceOffline,
-              errorTitle: Errors.alertDeviceOfflineT,
-              showProgress: false,
-              showConfirm: true,
-              showAlert: true,
-              closeOut: true,
-              closeBack: true,
-              showCancel: false,
-              confText: 'OK',
-              confirmButtonColor: Colours.myYellow,
-            });
-            break;
-
-          case '2':
-            this.TWO();
-            break;
-
-          case '3':
-            this.THREE();
-            break;
-
-          case '4':
-            this.FOUR();
-            break;
-
-          default:
-            console.log('Hit default');
-        }
-      }
- */
-      /*         console.log(
-          'Set AUTH in login checkauth after login',
-          JSON.stringify({
-            ...authObj,
-            isLoggedIn: true,
-            authStyle: 'demo',
-            saveAuthObj: true,
-            kasaObj: data.kasa,
-            deviceInfo: [info],
-            authDeviceList: [devices[0]],
-            isLoading: false,
-            saveAuthObj: true,
-            noDevicesKasa: false,
-            
-          }),
-        ); */
-
-      /*         .catch(e => {
-          console.log(' Loginscreen error', e);
-          setUserObj({
-            ...userObj,
-           userObj.LoginScreen.userNameError: Errors.tpLinkUserError,
-          });
-
-          return 'Login Error';
-        }); */
-
-      return;
+        return;
+      }, 250);
     }
   };
 

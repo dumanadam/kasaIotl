@@ -1,8 +1,6 @@
 import React from 'react';
 
 import AsyncStorage from '@react-native-community/async-storage';
-import {Secrets} from '../api/Secrets';
-import kasaKontrol from '../api/kasaKontrol';
 import KasaControl from '../api/KasaControl';
 
 const storeAsyncData = async (key, value) => {
@@ -56,10 +54,7 @@ async function tplinkLogin(sentAuthObj) {
   try {
     const mylogin = await kasa.login('***REMOVED***', '***REMOVED***');
     console.log('latest kasa from KASAAUTHFUNCTION', JSON.stringify(kasa));
-    console.log(
-      'latest MYLOGIN from KASAAUTHFUNCTION',
-      JSON.stringify(mylogin),
-    );
+
     returnKasaLogin = {
       kasaObj: kasa,
       errorMessage: '',

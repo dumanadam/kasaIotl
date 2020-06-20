@@ -4,7 +4,8 @@ import {IotlStrings, IotlGlobals, AuthContext} from '../api/context';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Secrets} from '../api/Secrets';
 import {useState} from 'react';
-import KasaControl from '../api/kasaKontrol';
+import KasaControl from '../api/KasaControl';
+import {tplinkLogin} from '../api/KasaAuthFunctions';
 
 const PresetScreen = props => {
   const {
@@ -24,6 +25,16 @@ const PresetScreen = props => {
   const update = () => {
     setcount(count => count + 2);
     route.params = {...route.params, asd: count => setcount(count)};
+  };
+
+  const testinfo = async () => {
+    const latestLightState = await authObj.kasaObj.info(
+      authObj.deviceInfo[0].deviceId,
+    );
+    console.log(
+      '+++++++++++++++++ page RELOAD UPDATE FROM KASA FOR LATEST',
+      latestLightState,
+    );
   };
 
   const tplinkLogin = async (sentLoginUserType, userObj) => {
@@ -111,13 +122,11 @@ const PresetScreen = props => {
     <View>
       <Text>Preset Screen</Text>
       <Text style={{fontSize: 9, color: 'red', marginTop: 30}}>
-        {userObj.authDeviceList
-          ? JSON.stringify(userObj.authDeviceList)
-          : 'asd'}
+        {userObj.authDeviceList ? JSON.stringify(userObj) : 'asd'}
       </Text>
-      <Button title="logintoada" onPress={() => tplinkLogin()} />
+      <Button title="logintoada" onPress={() => testinfo()} />
       <Text style={{fontSize: 9, color: 'red', marginTop: 30}}>
-        {JSON.stringify(authObj)}
+        {JSON.stringify(authObj.kasaObj)}
       </Text>
     </View>
   );

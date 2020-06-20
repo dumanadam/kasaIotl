@@ -139,7 +139,7 @@ const SettingsScreen = ({navigation}) => {
     if (authObj == undefined) {
       console.log('authObj underfined');
     } else {
-      updateAuthObjTruth({});
+      updateAuthObjTruth({saveAuthObj: true});
     }
   };
 

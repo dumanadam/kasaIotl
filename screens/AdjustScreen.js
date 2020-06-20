@@ -16,6 +16,9 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 import {tplinkLogin} from '../api/KasaAuthFunctions';
 import useInterval from '../api/useInterval';
 import HeaderLeft from '../components/HeaderLeft';
+import getLatestLightState from '../api/getLatestLightState';
+import getDeviceList from '../api/getDeviceList';
+import sendLatestLightKasa from '../api/sendLatestLightKasa';
 
 //import {ColorWheel} from 'react-native-color-wheel';
 
@@ -72,7 +75,11 @@ const AdjustScreen = props => {
 
   React.useEffect(() => {
     console.log('----------Colour ----------');
-    console.log(myErrors);
+    console.log('--------- AUTHOBJ.KASAoBJ INITIAL LOAD >>', authObj.kasaObj);
+    console.log(
+      '--------- AUTHOBJ.KASAoBJ INITIAL LOAD >>',
+      JSON.stringify(authObj.kasaObj),
+    );
 
     setupPage();
 
@@ -86,17 +93,20 @@ const AdjustScreen = props => {
   }, [authObj]);
 
   React.useEffect(() => {
-    console.log('authObj.kasaObj.kasa updated', authObj.kasaObj.kasa);
+    console.log(
+      'useffect adjust authobj.kasaobj',
+      JSON.stringify(authObj.kasaObj),
+    );
 
     //  console.log('kasasettings UPDATED', JSON.stringify(kasaSettings));
-  }, [authObj.kasaObj.kasa]);
+  }, [authObj.kasaObj]);
 
   /* if(authObj.isPolling) {
   console.log("polling", authObj.kasaObj.kasa)
   useInterval(async () => {
     
     try {const latestLightState = await authObj.kasaObj.kasa.info(
-      authObj.deviceInfo[0].deviceId,
+      authObj.deviceInfo.deviceId,
     );
     console.log(latestLightState);
       
@@ -107,12 +117,15 @@ const AdjustScreen = props => {
   }, authObj.pollTime); } */
 
   const setupPage = async () => {
-    console.log(
-      'Page Setup -------------------------------------------',
-      authObj.kasaObj.kasa,
-    );
+    console.log('Page Setup  ', authObj.kasaObj);
 
-    if (authObj.noDevicesKasa) {
+    if (
+      authObj.noDevicesKasa ||
+      authObj.errorCode == IotlStrings.plug_Offline
+    ) {
+      console.log(
+        '--------------------------------------Colour Plug offline error',
+      );
       setuserObj({
         ...userObj,
         showAlert: true,
@@ -125,64 +138,12 @@ const AdjustScreen = props => {
         showCancel: false,
         confText: 'OK',
         confirmButtonColor: Colours.myYellow,
-        errorTitle: 'No Bulb Found',
-        errorMessage: 'Offline - Turn light switch on ',
+        errorTitle: IotlStrings.plug_OfflineT,
+        errorMessage: IotlStrings.plug_OfflineM,
       });
     } else {
-      try {
-        const latestLightState = await authObj.kasaObj.kasa.info(
-          authObj.deviceInfo[0].deviceId,
-        );
-        console.log(
-          '+++++++++++++++++ page RELOAD UPDATE FROM KASA FOR LATEST',
-          latestLightState,
-        );
-      } catch (error) {
-        console.log(
-          '+++++++++++++++++ page RELOAD UPDATE FROM KASA FAILED TRYING LOGIN ',
-          error,
-        );
-
-        try {
-          localKasaLogin();
-        } catch (error) {}
-      }
-
-      /* let slidBC = authObj.deviceInfo[0].light_state.brightness;
-      let slidSC = authObj.deviceInfo[0].light_state.saturation;
-      const cPV = authObj.deviceInfo[0].light_state.hue;
-      var hslConverted = colorsys.hsv2Hex({h: cPV, s: slidSC, v: slidBC});
-      console.log(
-        'setuppage setting setting default and old to hslConverted -------------------------------------------',
-        hslConverted,
-      );
-      setKasaSettings({
-        ...kasaSettings,
-        h: cPV,
-        s: slidSC,
-        v: slidBC,
-        oldHex: hslConverted,
-        newHex: 'black',
-      });
-      setuserObj({
-        ...userObj,
-        slidSaturationT: slidSC,
-        slidBrightnessT: slidBC,
-        hueT: cPV,
-      }); */
-
-      if (authObj.noDevicesKasa) {
-        //setAuthObj({...latestAuthObj, });
-        console.log('null');
-      } else {
-        //   setAuthObj({...latestAuthObj, showAlert: true});
-        console.log('NOT null');
-      }
+      updateBulbState();
     }
-
-    /* const latestLightState = await authObj.kasaObj.kasa.info(
-      authObj.deviceInfo[0].deviceId,
-    ); */
   };
 
   const colourChanged = value => {
@@ -216,120 +177,34 @@ const AdjustScreen = props => {
     setuserObj({...userObj, showAlert: !userObj.showAlert});
   };
 
-  const localKasaLogin = async () => {
-    try {
-      const latestLogin = await tplinkLogin(authObj);
-      console.log(
-        '+++++++++++++++++++++++++   Creating a New LOGIN +++++++++++++++ ',
-      );
-      const devices = await latestLogin.kasa.getDevices();
-      console.log('DEvices >> ', devices[0]);
-      const latestLightState = await latestLogin.kasa.info(devices[0].deviceId);
+  const _is_loading = () =>
+    setuserObj({
+      ...userObj,
+      showAlert: true,
+      showbg: require('../assets/images/light_dc.jpg'),
+      showProgress: true,
+      showConfirm: false,
+      closeOut: false,
+      closeBack: false,
+      showCancel: false,
+      errorTitle: IotlStrings.is_loadingT,
+      errorMessage: IotlStrings.is_loadingM,
+    });
 
-      console.log('Latest .info return >>>> ', latestLightState);
-      console.log('Latest .info return >>>> ', latestLightState.rssi);
-      // Try again after expired token - reuse this code
-      const latestHSV = {
-        h: latestLightState.light_state.hue,
-        s: latestLightState.light_state.saturation,
-        v: latestLightState.light_state.brightness,
-      };
-      var hslConverted = colorsys.hsv2Hex(latestHSV);
-      console.log('hslconverted >>>> ', hslConverted);
-      if (devices == []) {
-        setAuthObj({
-          ...authObj,
+  const _finished_Loading = () =>
+    setuserObj({
+      ...userObj,
+      showAlert: false,
+      showbg: require('../assets/images/light_lc.jpg'),
+    });
 
-          kasaObj: latestLogin,
-          deviceInfo: [latestLightState],
-          authDeviceList: [],
-          isLoading: false,
-          saveAuthObj: true,
-          noDevicesKasa: true,
-        });
-      } else {
-        setAuthObj({
-          ...authObj,
-
-          kasaObj: latestLogin,
-          deviceInfo: [latestLightState],
-          authDeviceList: [devices[0]],
-          isLoading: false,
-          saveAuthObj: true,
-          noDevicesKasa: false,
-        });
-
-        setKasaSettings({
-          h: latestHSV.h,
-          s: latestHSV.s,
-          v: latestHSV.v,
-          color_temp: latestLightState.light_state.color_temp,
-          rssi: latestLightState.rssi,
-          oldHex: hslConverted,
-          newHex: hslConverted,
-          power: latestLightState.light_state.on_off,
-        });
-        setuserObj({
-          ...userObj,
-          slidSaturationT: latestHSV.s,
-          slidBrightnessT: latestHSV.v,
-          hueT: latestHSV,
-          showAlert: false,
-        });
-        console.log(
-          '+++++++++++++++++++++++++   LOCAL LOGIN SUCCESS !!!!!!!!!!!!!!!!!!!!!!! +++++++++++++++ ',
-          authObj.authDeviceList,
-        );
-        return latestLogin;
-      }
-    } catch (e) {
-      console.log(
-        'Local Login FAILED ---------------------------------------',
-        e,
-      );
-    }
-  };
-
-  const wheelPressed = async () => {
-    let tokenExpired = false;
-    console.log('Turning off');
-
-    try {
-      let sentLightSettings = {};
-
-      const power = await authObj.kasaObj.kasa.power(
-        authObj.deviceInfo[0].deviceId,
-        true,
-        10000,
-        sentLightSettings,
-      );
-      console.log('return from light update', JSON.stringify(power));
-    } catch (e) {
-      console.log(
-        ' +++++++++++++++++++++++++++++++++++++++             POWEEERRRRR ERROR',
-        JSON.stringify(power),
-      );
-    }
-  };
-
-  const updateKasa = async () => {
-    let latestErrorMessage = '';
-    let tokenExpired = false;
-
-    try {
-      const latestLightState = await authObj.kasaObj.info(
-        authObj.authDeviceList[0].deviceId,
-      );
-      console.log(
-        'Latest Light state from button >>',
-        JSON.stringify(latestLightState),
-      );
-    } catch (error) {
-      console.log('----------------- Button Token failed  ', error);
-      latestErrorMessage = error;
-    }
-    if (latestErrorMessage != '') {
-      console.log('IFFFFFFFF not empty  ');
+  const updateBulbState = async () => {
+    _is_loading();
+    const latestLightState = await getLatestLightState(
+      authObj.kasaObj,
+      authObj.deviceInfo.deviceId,
+    );
+    if (latestLightState.errorMessage == IotlStrings.plug_Offline) {
       setuserObj({
         ...userObj,
         showAlert: true,
@@ -341,76 +216,87 @@ const AdjustScreen = props => {
         closeBack: true,
         showCancel: false,
         confText: 'OK',
-        confirmButtonColor: Colours.myYellow,
-        errorTitle: 'No Bulb Found',
-        errorMessage: 'Still not found. Check Power ',
+        confirmButtonColor: Colours.myRedConf,
+        errorTitle: IotlStrings.plug_OfflineT,
+        errorMessage: IotlStrings.plug_OfflineM,
       });
-    } else {
-      console.log('IFFFFFFFF not empty  ');
-      try {
-        let sentLightSettings = {
-          mode: 'normal',
-          hue: kasaSettings.h,
-          saturation: kasaSettings.s,
-          color_temp: 0,
-          brightness: kasaSettings.v,
-        };
-
-        const power = await authObj.kasaObj.kasa.power(
-          authObj.deviceInfo[0].deviceId,
-          true,
-          0,
-          sentLightSettings,
-        );
-        console.log('return from light update', JSON.stringify(power));
-
-        var latestHex = colorsys.hsv2Hex({
-          h: kasaSettings.h,
-          s: kasaSettings.s,
-          v: kasaSettings.v,
-        });
-        console.log(
-          '+++++++++++++++++++++++++++++++++++++++++latestLightState++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',
-          latestHex,
-        );
-        setKasaSettings({
-          ...kasaSettings,
-          oldHex: latestHex,
-        });
-        setuserObj({
-          ...userObj,
-          showAlert: true,
-          showbg: require('../assets/images/light_lc.jpg'),
-          showProgress: false,
-          showConfirm: true,
-          showAlert: true,
-          closeOut: true,
-          closeBack: true,
-          showCancel: true,
-          confText: 'OK',
-          confirmButtonColor: Colours.myYellow,
-          errorTitle: 'Bulb Found!',
-          errorMessage: 'Online - Updating latest settings ',
-        });
-      } catch (error) {
-        console.log('----------------', error);
-        tokenExpired = true;
-      }
+      return latestLightState;
     }
-    console.log('IFFFFFFFF outside ');
-    if (tokenExpired == true) {
-      console.log(
-        '-*----------------------------EXPIRED---------------------------------------------',
-      );
+    console.log('latestlightstate', latestLightState);
 
-      try {
-        localKasaLogin();
-      } catch (error) {
-        console.log(
-          'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   CANT LOGIN   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-          error,
-        );
-      }
+    // Try again after expired token - reuse this code
+    const latestHSV = {
+      h: latestLightState.light_state.hue,
+      s: latestLightState.light_state.saturation,
+      v: latestLightState.light_state.brightness,
+    };
+    var hslConverted = colorsys.hsv2Hex(latestHSV);
+    console.log('hslconverted >>>> ', hslConverted);
+
+    setTimeout(() => {
+      setuserObj({
+        ...userObj,
+
+        showbg: require('../assets/images/light_lc.jpg'),
+
+        closeOut: true,
+        closeBack: true,
+        showCancel: false,
+        confText: 'OK',
+        confirmButtonColor: Colours.myGreenConf,
+        errorTitle: IotlStrings.plug_OnlineT,
+        errorMessage: IotlStrings.plug_OnlineM,
+      });
+    }, 950);
+
+    setAuthObj({
+      ...authObj,
+
+      deviceInfo: latestLightState,
+
+      isLoading: false,
+      saveAuthObj: true,
+      noDevicesKasa: false,
+    });
+
+    setKasaSettings({
+      h: latestHSV.h,
+      s: latestHSV.s,
+      v: latestHSV.v,
+      color_temp: latestLightState.light_state.color_temp,
+      rssi: latestLightState.rssi,
+      oldHex: hslConverted,
+      newHex: hslConverted,
+      power: latestLightState.light_state.on_off,
+    });
+    setuserObj({
+      ...userObj,
+      slidSaturationT: latestHSV.s,
+      slidBrightnessT: latestHSV.v,
+      hueT: latestHSV,
+      showAlert: false,
+    });
+  };
+
+  const wheelPressed = async () => {
+    let tokenExpired = false;
+    console.log('Turning off');
+
+    try {
+      let sentLightSettings = {};
+
+      const power = await authObj.kasaObj.kasa.power(
+        authObj.deviceInfo.deviceId,
+        true,
+        10000,
+        sentLightSettings,
+      );
+      console.log('return from light update', JSON.stringify(power));
+    } catch (e) {
+      console.log(
+        ' +++++++++++++++++++++++++++++++++++++++             POWEEERRRRR ERROR',
+        JSON.stringify(power),
+      );
     }
   };
 
@@ -553,7 +439,7 @@ const AdjustScreen = props => {
                 !authObj.noDevicesKasa ? styles.buttonCon : styles.buttonDis
               }
               loading={userObj.isloading}
-              onPress={() => updateKasa()}
+              onPress={() => updateBulbState()}
             />
           </View>
           <View />

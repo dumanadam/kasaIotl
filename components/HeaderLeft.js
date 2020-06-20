@@ -10,8 +10,10 @@ import {
 } from '../api/context';
 
 const HeaderLeft = props => {
-  const {kasaSettings, authObj} = props;
-  console.log('kasasettings and autobj', kasaSettings.authDeviceList[0].status);
+  const {kasaSettings} = props;
+  const authObj = props.authObj;
+  console.log('Current device status >', kasaSettings.authDeviceList[0]);
+  console.log('authobj >', kasaSettings.isLoggedIn);
   return (
     <View style={{flexDirection: 'row'}}>
       {kasaSettings.noDevicesKasa ? (
@@ -28,21 +30,33 @@ const HeaderLeft = props => {
       ) : (
         <React.Fragment>
           <Text style={styles.headerRSSI}>
-            {JSON.stringify(kasaSettings.deviceInfo[0].rssi)}
+            {JSON.stringify(kasaSettings.deviceInfo.rssi)}
           </Text>
           <Icon
             style={
               kasaSettings.authDeviceList[0].status
-                ? styles.headerRightCon
-                : styles.headerRightDis
+                ? styles.headerLeftCon
+                : styles.headerLeftDis
             }
             name={
               kasaSettings.authDeviceList[0].status
                 ? 'flash-outline'
                 : 'flash-off'
             }
-            disabledStyle={styles.headerLeftDis}
-            disabled={true}
+            size={25}
+            iconStyle={{
+              color: Colours.myRedConf,
+            }}
+          />
+          <Icon
+            style={
+              kasaSettings.isLoggedIn
+                ? styles.headerLeftCon
+                : styles.headerLeftDis
+            }
+            name={
+              kasaSettings.isLoggedIn ? 'cloud-outline' : 'cloud-off-outline'
+            }
             size={25}
             iconStyle={{
               color: Colours.myRedConf,
@@ -50,29 +64,15 @@ const HeaderLeft = props => {
           />
         </React.Fragment>
       )}
-
-      <Icon
-        style={
-          kasaSettings.isLoggedIn
-            ? styles.headerRightCon
-            : styles.headerRightDis
-        }
-        name={kasaSettings.isLoggedIn ? 'cloud-outline' : 'cloud-off-outline'}
-        disabledStyle={styles.headerLeftDis}
-        disabled={true}
-        size={25}
-        iconStyle={{
-          color: Colours.myRedConf,
-        }}
-      />
     </View>
   );
 };
 const styles = StyleSheet.create({
   headerRSSI: {
     marginRight: 7,
-    fontSize: 12,
+    fontSize: 10,
     color: Colours.myGreenConf,
+    paddingBottom: 20,
   },
   headerRightCon: {
     color: Colours.myGreenConf,
@@ -101,8 +101,6 @@ const styles = StyleSheet.create({
     marginRight: 7,
     fontSize: 12,
     color: Colours.myGreenConf,
-    flex: 0,
-    width: 55,
   },
   headerLeftDis: {
     marginRight: 7,

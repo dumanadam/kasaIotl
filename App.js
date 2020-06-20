@@ -104,15 +104,12 @@ const App: () => React$Node = () => {
         saveAuthObj: false,
       });
       storeAsyncData(Secrets.authObjKey, authObj);
-
-      console.log('App useeffect SAVING auth');
     }
   }, [authObj.saveAuthObj]);
 
   React.useEffect(() => {
     if (userObj.saveUserObj) {
       storeAsyncData(Secrets.userObjKey, userObj);
-      console.log('App useeffect SAVING USER', JSON.stringify(userObj));
     }
   }, [userObj]);
 
@@ -121,7 +118,7 @@ const App: () => React$Node = () => {
       ...sentAuthObj,
       saveAuthObj: !authObj.saveAuthObj,
     });
-    console.log('updating APP AUTH obj ');
+    //    console.log('updating APP AUTH obj ');
   };
   const updateUserObj = sentUserObject => {
     console.log('sentuserobj USER TRUTH');
@@ -139,14 +136,11 @@ const App: () => React$Node = () => {
   };
 
   const updatedAppUserObject = from => {
-    console.log(
-      `Sending UserObj from APP>>>>>  from ${from} ${JSON.stringify(userObj)}`,
-    );
     return userObj;
   };
 
   const updatedAppAuthObject = from => {
-    console.log(`Sending AUTHOBJ from APP>>>>>  from ${from} }`);
+    //console.log(`Sending AUTHOBJ from APP>>>>>  from ${from} }`);
     return authObj;
   };
 

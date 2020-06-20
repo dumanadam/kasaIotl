@@ -68,6 +68,18 @@ IotlStrings = {
   greenDevicesL: 'Connected',
   noDevicesB: 'Check For Bulb  ',
   greenDevicesB: 'Update',
+  plug_Offline: 'Plug_Offline',
+  plug_OfflineM: 'Offline - Turn light switch on ',
+  plug_OfflineT: 'No Bulb Found',
+  plug_Online: 'Plug_Online',
+  plug_OnlineT: 'Bulb Found!',
+  plug_OnlineM: 'Onnline! - Settings updated ',
+  is_loading: 'Kasa_loading',
+  is_loadingT: 'Connecting to Kasa',
+  is_loadingM: 'Hamster Wheel Running',
+  is_LoggedIn: 'Kasa_LoggedIn',
+  is_LoggedInT: 'Connected to Kasa',
+  is_LoggedInM: 'Checking status',
 };
 
 Colours = {
