@@ -45,7 +45,6 @@ const AdjustScreen = props => {
   );
 
   const [userObj, setuserObj] = React.useState({
-    backgroundImage: '../assets/images/light.gif',
     showbg: require('../assets/images/light_lc.jpg'),
 
     saveUserObj: false,
@@ -314,45 +313,40 @@ const AdjustScreen = props => {
   };
 
   const updateKasa = async () => {
+    let latestErrorMessage = '';
     let tokenExpired = false;
-    console.log(
-      '+++++++++update button  kasaobj >>',
-      JSON.stringify(authObj.authDeviceList[0].deviceId),
-    );
-    if (authObj.noDevicesKasa) {
-      try {
-        const latestLightState = await authObj.kasaObj.info(
-          authObj.authDeviceList[0].deviceId,
-        );
-        console.log(
-          '+++++++++++++++++ page RELOAD UPDATE FROM KASA FOR LATEST',
-          latestLightState,
-        );
-      } catch (error) {
-        console.log(
-          '+++++++++++++++++ page RELOAD UPDATE FROM KASA FAILED TRYING LOGIN ',
-          error,
-        );
-        setuserObj({
-          ...userObj,
-          showAlert: true,
-          showbg: require('../assets/images/light_dc.jpg'),
-          showProgress: false,
-          showConfirm: true,
-          showAlert: true,
-          closeOut: true,
-          closeBack: true,
-          showCancel: false,
-          confText: 'OK',
-          confirmButtonColor: Colours.myYellow,
-          errorTitle: 'No Bulb Found',
-          errorMessage: 'Still not found. Check Power ',
-        });
-        /*         try {
-          localKasaLogin();
-        } catch (error) {} */
-      }
+
+    try {
+      const latestLightState = await authObj.kasaObj.info(
+        authObj.authDeviceList[0].deviceId,
+      );
+      console.log(
+        'Latest Light state from button >>',
+        JSON.stringify(latestLightState),
+      );
+    } catch (error) {
+      console.log('----------------- Button Token failed  ', error);
+      latestErrorMessage = error;
+    }
+    if (latestErrorMessage != '') {
+      console.log('IFFFFFFFF not empty  ');
+      setuserObj({
+        ...userObj,
+        showAlert: true,
+        showbg: require('../assets/images/light_dc.jpg'),
+        showProgress: false,
+        showConfirm: true,
+        showAlert: true,
+        closeOut: true,
+        closeBack: true,
+        showCancel: false,
+        confText: 'OK',
+        confirmButtonColor: Colours.myYellow,
+        errorTitle: 'No Bulb Found',
+        errorMessage: 'Still not found. Check Power ',
+      });
     } else {
+      console.log('IFFFFFFFF not empty  ');
       try {
         let sentLightSettings = {
           mode: 'normal',
@@ -369,14 +363,7 @@ const AdjustScreen = props => {
           sentLightSettings,
         );
         console.log('return from light update', JSON.stringify(power));
-        /*   setKasaSettings({
-      ...kasaSettings,
-      h: latestLightState.hue,
-      s: latestLightState.saturation,
-      v: latestLightState.brightness,
-      color_temp: latestLightState.color_temp,
-      rssi: authObj.deviceInfo[0].rssi,
-    }); */
+
         var latestHex = colorsys.hsv2Hex({
           h: kasaSettings.h,
           s: kasaSettings.s,
@@ -390,23 +377,39 @@ const AdjustScreen = props => {
           ...kasaSettings,
           oldHex: latestHex,
         });
+        setuserObj({
+          ...userObj,
+          showAlert: true,
+          showbg: require('../assets/images/light_lc.jpg'),
+          showProgress: false,
+          showConfirm: true,
+          showAlert: true,
+          closeOut: true,
+          closeBack: true,
+          showCancel: true,
+          confText: 'OK',
+          confirmButtonColor: Colours.myYellow,
+          errorTitle: 'Bulb Found!',
+          errorMessage: 'Online - Updating latest settings ',
+        });
       } catch (error) {
         console.log('----------------', error);
         tokenExpired = true;
       }
-      if (tokenExpired == true) {
-        console.log(
-          '-*----------------------------EXPIRED---------------------------------------------',
-        );
+    }
+    console.log('IFFFFFFFF outside ');
+    if (tokenExpired == true) {
+      console.log(
+        '-*----------------------------EXPIRED---------------------------------------------',
+      );
 
-        try {
-          localKasaLogin();
-        } catch (error) {
-          console.log(
-            'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   CANT LOGIN   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            error,
-          );
-        }
+      try {
+        localKasaLogin();
+      } catch (error) {
+        console.log(
+          'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   CANT LOGIN   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+          error,
+        );
       }
     }
   };

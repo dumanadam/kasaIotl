@@ -55,9 +55,13 @@ async function tplinkLogin(sentAuthObj) {
   const kasa = new KasaControl();
   try {
     const mylogin = await kasa.login('***REMOVED***', '***REMOVED***');
-    console.log('mylogin', JSON.stringify(mylogin));
+    console.log('latest kasa from KASAAUTHFUNCTION', JSON.stringify(kasa));
+    console.log(
+      'latest MYLOGIN from KASAAUTHFUNCTION',
+      JSON.stringify(mylogin),
+    );
     returnKasaLogin = {
-      kasaObj: mylogin,
+      kasaObj: kasa,
       errorMessage: '',
       errorTitle: '',
     };

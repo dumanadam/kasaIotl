@@ -11,7 +11,7 @@ import {
 
 const HeaderLeft = props => {
   const {kasaSettings, authObj} = props;
-  //console.log('kasasettings and autobj', kasaSettings);
+  console.log('kasasettings and autobj', kasaSettings.authDeviceList[0].status);
   return (
     <View style={{flexDirection: 'row'}}>
       {kasaSettings.noDevicesKasa ? (
@@ -27,20 +27,27 @@ const HeaderLeft = props => {
         </Text>
       ) : (
         <React.Fragment>
-          {' '}
-          <Text>{kasaSettings.rssi}</Text>
+          <Text style={styles.headerRSSI}>
+            {JSON.stringify(kasaSettings.deviceInfo[0].rssi)}
+          </Text>
           <Icon
             style={
-              kasaSettings.power ? styles.headerRightCon : styles.headerRightDis
+              kasaSettings.authDeviceList[0].status
+                ? styles.headerRightCon
+                : styles.headerRightDis
             }
-            name={kasaSettings.power ? 'flash-outline' : 'flash-off'}
+            name={
+              kasaSettings.authDeviceList[0].status
+                ? 'flash-outline'
+                : 'flash-off'
+            }
             disabledStyle={styles.headerLeftDis}
             disabled={true}
             size={25}
             iconStyle={{
               color: Colours.myRedConf,
             }}
-          />{' '}
+          />
         </React.Fragment>
       )}
 
@@ -62,6 +69,11 @@ const HeaderLeft = props => {
   );
 };
 const styles = StyleSheet.create({
+  headerRSSI: {
+    marginRight: 7,
+    fontSize: 12,
+    color: Colours.myGreenConf,
+  },
   headerRightCon: {
     color: Colours.myGreenConf,
     fontSize: 15,

@@ -61,6 +61,16 @@ const LoginScreen = ({navigation}) => {
     saveUserObj: false,
     optionsChevron: 'chevron-up',
     isloading: false,
+    errorMessage: 'Getting settings',
+    errorTitle: 'Logging In',
+    showProgress: true,
+    showConfirm: false,
+    showAlert: false,
+    closeOut: false,
+    closeBack: false,
+    showCancel: false,
+    confText: 'OK',
+    confirmButtonColor: Colours.myYellow,
   });
 
   const [authObj, setAuthObj] = React.useState(
@@ -104,10 +114,15 @@ const LoginScreen = ({navigation}) => {
     }, 50);
   }, [userObj.userNameError]); */
 
-  const resolveLoginError = (error, devices, data) => {
+  const resolveLoginError = (devices, data) => {
+    setUserObj({
+      ...userObj,
+      isloading: false,
+      showAlert: false,
+    });
     setAuthObj({
       ...authObj,
-      isLoggedIn: true,
+
       authStyle: 'demo',
       saveAuthObj: true,
       kasaObj: data.kasaObj,
@@ -116,10 +131,16 @@ const LoginScreen = ({navigation}) => {
       isLoading: false,
       saveAuthObj: true,
       noDevicesKasa: true,
+      isLoggedIn: true,
     });
   };
 
   const checkAuth = async () => {
+    setUserObj({
+      ...userObj,
+      isloading: true,
+      showAlert: true,
+    });
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
 
     if (checkPlaceholder()) {
@@ -129,24 +150,29 @@ const LoginScreen = ({navigation}) => {
     if (userObj.isDemoUser) {
       const data = await tplinkLogin(authObj);
       const devices = await data.kasaObj.getDevices();
-      try {
-        const info = await data.kasaObj.info(devices[0].deviceId);
+      console.log('devices', devices[0].status);
 
+      if (devices[0].status) {
+        const info = await data.kasaObj.info(devices[0].deviceId);
+        setUserObj({
+          ...userObj,
+          isloading: false,
+          showAlert: false,
+        });
         setAuthObj({
           ...authObj,
           isLoggedIn: true,
           authStyle: 'demo',
           saveAuthObj: true,
           kasaObj: data.kasaObj,
-          deviceInfo: [],
+          deviceInfo: [info],
           authDeviceList: [devices[0]],
-          isLoading: true,
+          isLoading: false,
           saveAuthObj: true,
-          noDevicesKasa: true,
+          noDevicesKasa: false,
         });
-      } catch (error) {
-        resolveLoginError(error, devices, data);
-        return;
+      } else {
+        resolveLoginError(devices, data);
       }
 
       //console.log('LOGIN SUCCESS   DATA =====>>', data);
@@ -575,16 +601,16 @@ const LoginScreen = ({navigation}) => {
       </KeyboardAwareScrollView>
 
       <AwesomeAlert
-        show={authObj.showAlert}
-        title={authObj.errorTitle}
-        message={authObj.errorMessage}
-        showProgress={authObj.showProgress}
-        closeOnTouchOutside={authObj.closeOut}
-        closeOnHardwareBackPress={authObj.closeBack}
-        showCancelButton={authObj.showCancel}
-        showConfirmButton={authObj.showConfirm}
-        confirmText={authObj.confText}
-        confirmButtonColor={authObj.confirmButtonColor}
+        show={userObj.showAlert}
+        title={userObj.errorTitle}
+        message={userObj.errorMessage}
+        showProgress={userObj.showProgress}
+        closeOnTouchOutside={userObj.closeOut}
+        closeOnHardwareBackPress={userObj.closeBack}
+        showCancelButton={userObj.showCancel}
+        showConfirmButton={userObj.showConfirm}
+        confirmText={userObj.confText}
+        confirmButtonColor={userObj.confirmButtonColor}
         progressSize={30}
         contentContainerStyle={styles.alertMCont}
         titleStyle={styles.alertTitle}
