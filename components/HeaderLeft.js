@@ -12,7 +12,7 @@ import {
 const HeaderLeft = props => {
   const {kasaSettings} = props;
   const authObj = props.authObj;
-  console.log('Current device status >', kasaSettings.authDeviceList[0]);
+  // console.log('Current device status >', kasaSettings.authDeviceList[0]);
   console.log('authobj >', kasaSettings.isLoggedIn);
   return (
     <View style={{flexDirection: 'row'}}>

@@ -71,6 +71,8 @@ const AdjustScreen = props => {
     hueHex: '#ffffff',
     satHex: '#ffffff',
     briHex: '#ffffff',
+    toState: 1,
+    transTime: 0,
   });
 
   React.useEffect(() => {
@@ -204,7 +206,7 @@ const AdjustScreen = props => {
       authObj.kasaObj,
       authObj.deviceInfo.deviceId,
     );
-    if (latestLightState.errorMessage == IotlStrings.plug_Offline) {
+    /*   if (latestLightState.errorMessage == IotlStrings.plug_Offline) {
       setuserObj({
         ...userObj,
         showAlert: true,
@@ -225,14 +227,23 @@ const AdjustScreen = props => {
     console.log('latestlightstate', latestLightState);
 
     // Try again after expired token - reuse this code
-    const latestHSV = {
-      h: latestLightState.light_state.hue,
-      s: latestLightState.light_state.saturation,
-      v: latestLightState.light_state.brightness,
-    };
-    var hslConverted = colorsys.hsv2Hex(latestHSV);
-    console.log('hslconverted >>>> ', hslConverted);
+*/
 
+    let sendingLightUpdateObj = {
+      authObj: authObj.kasaObj,
+      deviceId: authObj.deviceInfo.deviceId,
+      toState: userObj.toState,
+      transTime: userObj.transTime,
+      lightSettings: {
+        mode: 'normal',
+        hue: kasaSettings.h,
+        saturation: kasaSettings.s,
+        color_temp: 0,
+        brightness: kasaSettings.v,
+      },
+    };
+
+    sendLatestLightKasa(sendingLightUpdateObj);
     setTimeout(() => {
       setuserObj({
         ...userObj,
@@ -248,7 +259,13 @@ const AdjustScreen = props => {
         errorMessage: IotlStrings.plug_OnlineM,
       });
     }, 950);
-
+    const latestHSV = {
+      h: latestLightState.light_state.hue,
+      s: latestLightState.light_state.saturation,
+      v: latestLightState.light_state.brightness,
+    };
+    var hslConverted = colorsys.hsv2Hex(latestHSV);
+    console.log('hslconverted >>>> ', hslConverted);
     setAuthObj({
       ...authObj,
 
