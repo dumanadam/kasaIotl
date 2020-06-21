@@ -36,7 +36,7 @@ const getAsyncData = async key => {
         authPass: '',
         authToken: '',
         authUUID: '',
-        authDeviceList: {},
+        authDeviceList: [],
         isLoggedIn: false,
         showSplash: false,
         keyError: true,
@@ -67,19 +67,6 @@ async function tplinkLogin(sentAuthObj) {
     returnKasaLogin.errorMessage = JSON.stringify(error);
     return returnKasaLogin;
   }
-
-  /*  sentAuthObj = {
-    ...sentAuthObj,
-    authObj: {
-      ...sentAuthObj.authObj,
-      authDeviceList: null,
-      isLoggedIn: false,
-      keyError: false,
-      isLoading: false,
-      saveAuthObj: false,
-      showAlert: true,
-    },
-  }; */
 }
 
 export {storeAsyncData, getAsyncData, tplinkLogin};

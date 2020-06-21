@@ -12,12 +12,11 @@ import {Tooltip, Text} from 'react-native-elements';
 
 const HeaderLeft = props => {
   const kasaSettings = props.kasaSettings;
-  console.log('Current device status >', kasaSettings);
 
   const authObj = props.authObj;
-  // console.log('Current device status >', kasaSettings.authDeviceList[0]);
-  console.log('authobj >', authObj.isLoggedIn);
 
+  console.log('authobj >', authObj.isLoggedIn);
+  console.log('Current kasaSettings.power >', kasaSettings.power);
   return (
     <View style={{flexDirection: 'row'}}>
       {authObj.noDevicesKasa ? (
@@ -39,22 +38,14 @@ const HeaderLeft = props => {
           <Tooltip
             popover={
               <Text>
-                {authObj.authDeviceList[0].status
-                  ? 'Bulb Powered ON'
-                  : 'Bulb Powered OFF'}
+                {kasaSettings.power ? 'Bulb Powered ON' : 'Bulb Powered OFF'}
               </Text>
             }>
             <Icon
               style={
-                authObj.authDeviceList[0].status
-                  ? styles.headerLeftCon
-                  : styles.headerLeftDis
+                kasaSettings.power ? styles.headerLeftCon : styles.headerLeftDis
               }
-              name={
-                authObj.authDeviceList[0].status ? 'flash-outline' : 'flash-off'
-              }
-              disabledStyle={styles.headerLeftDis}
-              disabled={true}
+              name={kasaSettings.power ? 'flash-outline' : 'flash-off'}
               size={25}
               iconStyle={{
                 color: Colours.myRedConf,

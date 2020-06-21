@@ -32,12 +32,12 @@ const AdjustScreen = props => {
   } = React.useContext(AuthContext);
 
   const [kasaSettings, setKasaSettings] = useState({
-    h: 500,
-    s: 50,
-    v: 50,
+    h: '00',
+    s: '50',
+    v: '50',
     color_temp: 0,
-    oldHex: '#364D1F',
-    newHex: '#364D1F',
+    oldHex: '#332929',
+    newHex: '#332929',
     power: false,
     transitionTime: 0,
   });
@@ -186,6 +186,7 @@ const AdjustScreen = props => {
         errorTitle: IotlStrings.plug_OfflineT,
         errorMessage: IotlStrings.plug_OfflineM,
       });
+      setKasaSettings({...kasaSettings, power: 0});
     } else {
       getBulbState();
     }
@@ -275,7 +276,7 @@ const AdjustScreen = props => {
         noDevicesKasa: false,
         saveAuthObj: true,
       });
-      kasaSettings.h == 500
+      kasaSettings.h == '00'
         ? setuserObj({
             ...userObj,
             slidSaturationT: latestHSV.s,
@@ -289,8 +290,8 @@ const AdjustScreen = props => {
             closeOut: true,
             closeBack: true,
             showCancel: false,
-            errorTitle: IotlStrings.plug_OnlineT,
-            errorMessage: IotlStrings.plug_OnlineM,
+            errorTitle: 'Bulb Found!',
+            errorMessage: 'Online! - Settings updated ',
           })
         : setuserObj({
             ...userObj,
@@ -314,7 +315,10 @@ const AdjustScreen = props => {
     }
   };
 
-  const sendBulbState = async () => {
+  const sendBulbState = async sentBulbOptions => {
+    let latestBulbSettings = {};
+    let _sendingLightUpdateObj = {};
+
     setuserObj({
       ...userObj,
       showAlert: true,
@@ -329,23 +333,39 @@ const AdjustScreen = props => {
     });
 
     //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
-    let latestBulbSettings = {};
-    let sendingLightUpdateObj = {
-      authObj: authObj.kasaObj,
-      deviceId: authObj.authDeviceList[0].deviceId,
-      toState: userObj.toState,
-      transTime: userObj.transTime,
-      lightSettings: {
-        mode: 'normal',
-        hue: kasaSettings.h,
-        saturation: kasaSettings.s,
-        color_temp: 0,
-        brightness: kasaSettings.v,
-      },
-    };
+    if (sentBulbOptions == 'toggle') {
+      _sendingLightUpdateObj = {
+        authObj: authObj.kasaObj,
+        deviceId: authObj.authDeviceList[0].deviceId,
+        toState: !kasaSettings.power,
+        transTime: userObj.transTime,
+        lightSettings: {
+          mode: 'normal',
+          hue: kasaSettings.h,
+          saturation: kasaSettings.s,
+          color_temp: 0,
+          brightness: kasaSettings.v,
+        },
+      };
+    } else {
+      _sendingLightUpdateObj = {
+        authObj: authObj.kasaObj,
+        deviceId: authObj.authDeviceList[0].deviceId,
+        toState: userObj.toState,
+        transTime: userObj.transTime,
+        lightSettings: {
+          mode: 'normal',
+          hue: kasaSettings.h,
+          saturation: kasaSettings.s,
+          color_temp: 0,
+          brightness: kasaSettings.v,
+        },
+      };
+    }
+
     console.log('----', authObj.authDeviceList[0].deviceId);
     try {
-      latestBulbSettings = await sendLatestLightKasa(sendingLightUpdateObj);
+      latestBulbSettings = await sendLatestLightKasa(_sendingLightUpdateObj);
       console.log('latestBulbSettings >>>', latestBulbSettings);
     } catch (error) {
       console.log(' POWEER CATCH ERROR >>>>>'.error);
@@ -414,11 +434,11 @@ const AdjustScreen = props => {
       });
 
       setKasaSettings({
+        ...kasaSettings,
         h: latestHSV.h,
         s: latestHSV.s,
         v: latestHSV.v,
         color_temp: latestBulbSettings.color_temp,
-        rssi: latestDeviceList[0].rssi, //getdevices?
         oldHex: hslConverted,
         newHex: hslConverted,
         power: latestBulbSettings.on_off,
@@ -431,6 +451,10 @@ const AdjustScreen = props => {
         showAlert: false,
       });
     }
+  };
+
+  const toggleBulbPower = () => {
+    power(deviceId, powerState, transition, options);
   };
 
   const wheelPressed = async () => {
@@ -486,9 +510,7 @@ const AdjustScreen = props => {
           statusBarProps={{barStyle: 'default'}}
           containerStyle={styles.header}
           centerComponent={{
-            text: !authObj.noDevicesKasa
-              ? IotlStrings.greenDevices
-              : IotlStrings.noDevices,
+            text: !authObj.noDevicesKasa ? '' : IotlStrings.noDevices,
             style: !authObj.noDevicesKasa
               ? styles.headerTextCon
               : styles.headerTextDis,
@@ -596,8 +618,32 @@ const AdjustScreen = props => {
             />
           </View>
           <View />
+          <View style={styles.powerIconContainer}>
+            <Icon
+              name={!authObj.noDevicesKasa ? 'flash-outline' : 'flash-off'}
+              type="material-community"
+              style={
+                !authObj.noDevicesKasa
+                  ? styles.resetIconCon
+                  : styles.resetIconDis
+              }
+              onPress={() => sendBulbState('toggle')}
+            />
+          </View>
+          <View style={styles.resetIconContainer}>
+            <Icon
+              name="backup-restore"
+              type="material-community"
+              onPress={() => console.log('hello')}
+              style={
+                !authObj.noDevicesKasa
+                  ? styles.resetIconCon
+                  : styles.resetIconDis
+              }
+            />
+          </View>
 
-          <AwesomeAlert
+          {/*  <AwesomeAlert
             show={userObj.showAlert}
             title={userObj.errorTitle}
             message={userObj.errorMessage}
@@ -616,7 +662,7 @@ const AdjustScreen = props => {
             onConfirmPressed={() => {
               showError();
             }}
-          />
+          /> */}
         </View>
       </ImageBackground>
     </View>
@@ -679,6 +725,45 @@ const styles = StyleSheet.create({
     color: Colours.myLgtBlue,
   },
   wheelContainer: {height: 150, width: 150},
+  resetIconContainer: {
+    position: 'absolute',
+    left: 118,
+    top: 182,
+
+    flex: 0,
+    zIndex: 10,
+  },
+  powerIconContainer: {
+    position: 'absolute',
+    left: 218,
+    top: 185,
+
+    alignContent: 'center',
+
+    flex: 0,
+    zIndex: 10,
+  },
+  resetIconDis: {
+    fontSize: 25,
+    color: 'red',
+    zIndex: 15,
+  },
+  powerIconDis: {
+    fontSize: 25,
+    color: 'red',
+    zIndex: 15,
+  },
+  resetIconCon: {
+    fontSize: 25,
+    color: Colours.myGreenConf,
+    zIndex: 15,
+  },
+  powerIconCon: {
+    fontSize: 25,
+
+    color: Colours.myGreenConf,
+    zIndex: 15,
+  },
   buttonCon: {
     borderColor: Colours.myWhite,
     width: 150,
@@ -765,7 +850,7 @@ const styles = StyleSheet.create({
     width: 100,
     textTransform: 'uppercase',
     textDecorationLine: 'line-through',
-    color: Colours.myWhite,
+    color: Colours.myRedConf,
   },
   rgbNumH: {
     color: Colours.myWhite,

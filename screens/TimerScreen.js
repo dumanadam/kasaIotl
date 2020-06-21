@@ -37,7 +37,7 @@ const TimerScreen = ({navigation}) => {
       authPass: '',
       authToken: '',
       authUUID: '',
-      authDeviceList: {},
+      authDeviceList: [],
       isLoggedIn: false,
       showSplash: false,
     },
