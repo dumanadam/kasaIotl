@@ -5,7 +5,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import SplashScreen from './screens/SplashScreen';
 import LoginScreen from './screens/loginScreen';
-import {AuthContext, MyTPContext, IotlStrings} from './api/context';
+import {AuthContext, IotlStrings, iotlContext} from './api/context';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import PresetStack from './stacks/PresetStack';
 import AdjustStack from './stacks/AdjustStack';
@@ -183,7 +183,7 @@ const App: () => React$Node = () => {
     };
   }, [authObj]);
 
-  const contextStrings = React.useContext(IotlStrings);
+  const contextStrings = React.useContext(iotlContext);
 
   if (authObj.showSplash) {
     return <SplashScreen />;
@@ -218,7 +218,7 @@ const App: () => React$Node = () => {
   };
 
   return (
-    <MyTPContext.Provider value={contextStrings}>
+    <iotlContext.Provider value={contextStrings}>
       <AuthContext.Provider value={authContext}>
         <NavigationContainer>
           {authObj.isLoggedIn == true ? (
@@ -316,7 +316,7 @@ const App: () => React$Node = () => {
           )}
         </NavigationContainer>
       </AuthContext.Provider>
-    </MyTPContext.Provider>
+    </iotlContext.Provider>
   );
 };
 

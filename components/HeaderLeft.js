@@ -11,7 +11,7 @@ import {
 import {Tooltip, Text} from 'react-native-elements';
 
 const HeaderLeft = props => {
-  const {kasaSettings} = props;
+  const kasaSettings = props.kasaSettings;
   console.log('Current device status >', kasaSettings);
 
   const authObj = props.authObj;
@@ -33,7 +33,7 @@ const HeaderLeft = props => {
         <React.Fragment>
           <Tooltip popover={<Text>Wifi Strength of Bulb</Text>}>
             <Text style={styles.headerRSSI}>
-              {JSON.stringify(authObj.deviceInfo.rssi)}
+              {JSON.stringify(kasaSettings.rssi)}
             </Text>
           </Tooltip>
           <Tooltip

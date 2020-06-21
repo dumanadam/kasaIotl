@@ -23,6 +23,7 @@ import sendLatestLightKasa from '../api/sendLatestLightKasa';
 //import {ColorWheel} from 'react-native-color-wheel';
 
 const AdjustScreen = props => {
+  const contextStrings = React.useContext(IotlStrings);
   const {
     updateAuthObjTruth,
     updateUserObjTruth,
@@ -40,8 +41,6 @@ const AdjustScreen = props => {
     power: false,
     transitionTime: 0,
   });
-
-  //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
 
   const [authObj, setAuthObj] = React.useState(
     getAppAuthObj('request by Colour usestate defgault setup'),
@@ -89,7 +88,7 @@ const AdjustScreen = props => {
       setuserObj({
         ...userObj,
         showAlert: false,
-        showbg: require('../assets/images/light_lc.jpg'),
+        showbg: require('../assets/images/light_lcr.jpg'),
         showProgress: false,
         showConfirm: true,
         closeOut: true,
@@ -102,46 +101,13 @@ const AdjustScreen = props => {
       });
       setAuthObj({
         ...authObj,
-        showAlert: false,
+
         noDevicesKasa: false,
 
         isLoading: false,
         saveAuthObj: true,
       });
-      /*  setTimeout(() => {
-        setuserObj({
-          ...userObj,
-          showAlert: true,
-
-          showConfirm: true,
-          closeOut: true,
-          closeBack: true,
-          showCancel: false,
-          confText: 'OK',
-          confirmButtonColor: Colours.myGreenConf,
-          errorTitle: IotlStrings.plug_OnlineT,
-          errorMessage: IotlStrings.plug_OfflineM,
-        });
-      }, 100); */
     } else {
-      setuserObj({
-        ...userObj,
-        showAlert: true,
-        showbg: require('../assets/images/light_dc.jpg'),
-        showProgress: false,
-        showConfirm: true,
-        closeOut: true,
-        closeBack: true,
-        showCancel: false,
-        confText: 'OK',
-        confirmButtonColor: Colours.myRedConf,
-        errorTitle: IotlStrings.plug_OfflineT,
-        errorMessage: IotlStrings.plug_OfflineM,
-      });
-      setAuthObj({
-        ...authObj,
-        noDevicesKasa: true,
-      });
     }
   };
 
@@ -257,13 +223,42 @@ const AdjustScreen = props => {
   };
 
   const getBulbState = async () => {
+    setuserObj({
+      ...userObj,
+      showAlert: true,
+      showbg: require('../assets/images/light_dc.jpg'),
+      showProgress: true,
+      showConfirm: false,
+      closeOut: false,
+      closeBack: false,
+      showCancel: false,
+      errorTitle: 'Connecting to Kasa',
+      errorMessage: 'Hamster Wheel Running',
+    });
     const latestBulbSettings = await getLatestLightState(
       authObj.kasaObj,
       authObj.authDeviceList[0].deviceId,
     );
     console.log('??????????????????latestLightState', latestBulbSettings);
     if (latestBulbSettings.errorMessage == 'Plug_Offline') {
-      _alertBulbStatus(false);
+      setuserObj({
+        ...userObj,
+        showAlert: true,
+        showbg: require('../assets/images/light_dc.jpg'),
+        showProgress: false,
+        showConfirm: true,
+        closeOut: true,
+        closeBack: true,
+        showCancel: false,
+        confText: 'OK',
+        confirmButtonColor: Colours.myRedConf,
+        errorTitle: IotlStrings.plug_OfflineT,
+        errorMessage: IotlStrings.plug_OfflineM,
+      });
+      setAuthObj({
+        ...authObj,
+        noDevicesKasa: true,
+      });
     } else {
       const latestHSV = {
         h: latestBulbSettings.light_state.hue,
@@ -278,6 +273,7 @@ const AdjustScreen = props => {
         ...authObj,
         deviceInfo: latestBulbSettings,
         noDevicesKasa: false,
+        saveAuthObj: true,
       });
       kasaSettings.h == 500
         ? setuserObj({
@@ -287,7 +283,7 @@ const AdjustScreen = props => {
             hueT: latestHSV,
 
             showAlert: true,
-            showbg: require('../assets/images/light_lc.jpg'),
+            showbg: require('../assets/images/light_lcr.jpg'),
             showProgress: false,
             showConfirm: true,
             closeOut: true,
@@ -303,7 +299,7 @@ const AdjustScreen = props => {
             hueT: latestHSV,
 
             showAlert: false,
-            showbg: require('../assets/images/light_lc.jpg'),
+            showbg: require('../assets/images/light_lcr.jpg'),
           });
       setKasaSettings({
         h: latestHSV.h,
@@ -319,6 +315,20 @@ const AdjustScreen = props => {
   };
 
   const sendBulbState = async () => {
+    setuserObj({
+      ...userObj,
+      showAlert: true,
+      showbg: require('../assets/images/light_dc.jpg'),
+      showProgress: true,
+      showConfirm: false,
+      closeOut: false,
+      closeBack: false,
+      showCancel: false,
+      errorTitle: 'Connecting to Kasa',
+      errorMessage: 'Hamster Wheel Running',
+    });
+
+    //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
     let latestBulbSettings = {};
     let sendingLightUpdateObj = {
       authObj: authObj.kasaObj,
@@ -337,13 +347,15 @@ const AdjustScreen = props => {
     try {
       latestBulbSettings = await sendLatestLightKasa(sendingLightUpdateObj);
       console.log('latestBulbSettings >>>', latestBulbSettings);
-
-      //  console.log('latestBulbSettings', IotlStrings.plug_Offline);
     } catch (error) {
       console.log(' POWEER CATCH ERROR >>>>>'.error);
     }
 
     if (latestBulbSettings.errorMessage == 'Plug_Offline') {
+      console.log(
+        '+++++++++++++++++++++++++++++++latestBulbSettings',
+        IotlStrings.plug_Offline,
+      );
       setuserObj({
         ...userObj,
         showAlert: true,
@@ -358,13 +370,17 @@ const AdjustScreen = props => {
         errorTitle: IotlStrings.plug_OfflineT,
         errorMessage: IotlStrings.plug_OfflineM,
       });
+      setAuthObj({
+        ...authObj,
+        noDevicesKasa: true,
+      });
     } else {
       console.log('online');
 
-      /*   setuserObj({
+      setuserObj({
         ...userObj,
 
-        showbg: require('../assets/images/light_lc.jpg'),
+        showbg: require('../assets/images/light_lcr.jpg'),
 
         closeOut: true,
         closeBack: true,
@@ -373,14 +389,14 @@ const AdjustScreen = props => {
         confirmButtonColor: Colours.myGreenConf,
         errorTitle: IotlStrings.plug_OnlineT,
         errorMessage: IotlStrings.plug_OnlineM,
-      }); */
+      });
 
       let latestDeviceList = await getDeviceList(authObj.kasaObj);
       console.log(
-        '???????????????????????????   IS RRSI HERE',
+        '???????????????????????????   latest device list ',
         latestDeviceList,
       );
-      _alertBulbStatus(true);
+
       const latestHSV = {
         h: latestBulbSettings.hue,
         s: latestBulbSettings.saturation,
@@ -394,6 +410,7 @@ const AdjustScreen = props => {
         ...authObj,
         authDeviceList: latestDeviceList,
         deviceInfo: latestBulbSettings,
+        noDevicesKasa: false,
       });
 
       setKasaSettings({
@@ -401,7 +418,7 @@ const AdjustScreen = props => {
         s: latestHSV.s,
         v: latestHSV.v,
         color_temp: latestBulbSettings.color_temp,
-        //  rssi: latestDeviceList[0].rssi, //getdevices?
+        rssi: latestDeviceList[0].rssi, //getdevices?
         oldHex: hslConverted,
         newHex: hslConverted,
         power: latestBulbSettings.on_off,
@@ -411,6 +428,7 @@ const AdjustScreen = props => {
         slidSaturationT: latestHSV.s,
         slidBrightnessT: latestHSV.v,
         hueT: latestHSV,
+        showAlert: false,
       });
     }
   };

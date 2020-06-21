@@ -7,7 +7,7 @@ export const AlertMessage = React.createContext({
   showAlert: true,
 });
 
-export const MyTPContext = React.createContext();
+export const iotlContext = React.createContext();
 
 export const IotlGlobals = React.createContext({
   in1IotlGlobals: false,
@@ -48,7 +48,8 @@ export let IotlStrings = React.createContext({
   is_LoggedInM: 'Checking status',
   is_updating: 'is_updating',
   is_updatingT: 'Connecting to Kasa',
-  is_updating: 'Getting latest bulb settings',
+  is_updatingM: 'Getting latest bulb settings',
+  is_sendingM: 'Getting latest bulb settings',
 });
 export let Colours = React.createContext({
   myBlack: '#050F14',
