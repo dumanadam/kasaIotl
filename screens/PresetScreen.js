@@ -126,7 +126,7 @@ const PresetScreen = props => {
       </Text>
       <Button title="logintoada" onPress={() => testinfo()} />
       <Text style={{fontSize: 9, color: 'red', marginTop: 30}}>
-        {JSON.stringify(authObj.kasaObj)}
+        {JSON.stringify(authObj.authDeviceList)}
       </Text>
     </View>
   );

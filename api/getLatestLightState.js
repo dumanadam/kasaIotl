@@ -1,12 +1,12 @@
 import React from 'react';
 import {IotlStrings, Colours, AuthContext, Errors} from '../api/context';
 
-const getLatestLightState = async (authObj, deviceId) => {
-  console.log('received authobj ', authObj);
+const getLatestLightState = async (kasaObj, deviceId) => {
+  console.log('received kasaObj ', kasaObj);
   console.log('received deviceId ', deviceId);
 
   try {
-    latestLightState = await authObj.info(deviceId);
+    latestLightState = await kasaObj.info(deviceId);
     return latestLightState;
   } catch (error) {
     console.log(

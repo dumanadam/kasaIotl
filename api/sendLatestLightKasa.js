@@ -2,8 +2,11 @@ import React from 'react';
 import {IotlStrings} from './context';
 
 const sendLatestLightKasa = async updatesettings => {
-  console.log('updatesettings', updatesettings.authObj);
-  console.log('updatesettings', updatesettings.deviceId);
+  console.log(
+    '???????????????????????updatesettings received as ',
+    updatesettings,
+  );
+  //  console.log('updatesettings', updatesettings);
   // console.log('updatesettings.lightSettings', updatesettings.lightSettings);
 
   try {

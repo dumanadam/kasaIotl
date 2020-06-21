@@ -10,7 +10,7 @@ const getDeviceList = async authObj => {
       '----------------------------------------------error no devices>',
       error,
     );
-    return 'No_Devices';
+    return error;
   }
 };
 

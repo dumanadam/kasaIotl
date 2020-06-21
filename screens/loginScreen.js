@@ -100,45 +100,6 @@ const LoginScreen = ({navigation}) => {
     }
   }, [userObj]);
 
-  /*   React.useEffect(() => {
-    console.log(
-      'usernameerror updated>>>>',
-      JSON.stringify(userObj.userNameError),
-    );
-    setTimeout(() => {
-      setUserObj({
-        ...userObj,
-
-        userNameError: '',
-        userPassError: '',
-      });
-      return true;
-    }, 50);
-  }, [userObj.userNameError]); */
-
-  const resolveLoginError = (devices, data, logCheck) => {
-    if (logCheck == 'timeout') {
-      setUserObj({
-        ...userObj,
-        isloading: false,
-        showAlert: false,
-      });
-      setAuthObj({
-        ...authObj,
-
-        authStyle: 'demo',
-        saveAuthObj: true,
-        kasaObj: data.kasaObj,
-        deviceInfo: {},
-        authDeviceList: [],
-        isLoading: false,
-
-        noDevicesKasa: true,
-        isLoggedIn: false,
-      });
-    }
-  };
-
   const checkAuth = async () => {
     setUserObj({
       ...userObj,
@@ -192,12 +153,11 @@ const LoginScreen = ({navigation}) => {
           authStyle: 'demo',
 
           kasaObj: latestLogin.kasaObj,
-          deviceInfo: latestLightState,
-          authDeviceList: [devices[0]],
+          deviceInfo: {},
+          authDeviceList: devices,
           isLoading: false,
           saveAuthObj: true,
           noDevicesKasa: true,
-          appErrorCode: IotlStrings.plug_Offline,
         });
       }
       console.log('--------------------------------------Normal Login');
@@ -217,16 +177,23 @@ const LoginScreen = ({navigation}) => {
 
       setAuthObj({
         ...authObj,
-        isLoggedIn: true,
+
         authStyle: 'demo',
 
         kasaObj: latestLogin.kasaObj,
-        deviceInfo: latestLightState,
-        authDeviceList: [devices[0]],
+        deviceInfo: latestLightState.light_state,
+
+        authDeviceList: devices,
         isLoading: false,
         saveAuthObj: true,
         noDevicesKasa: false,
+        isLoggedIn: true,
       });
+
+      /* setTimeout(() => {
+        
+        
+      }, 500) */
     }
   };
 
@@ -372,7 +339,7 @@ const LoginScreen = ({navigation}) => {
   };
 
   const showError = () => {
-    setAuthObj({...authObj, showAlert: !authObj.showAlert});
+    setAuthObj({...authObj, showAlert: !userObj.showAlert});
   };
   return (
     <ImageBackground

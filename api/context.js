@@ -46,6 +46,9 @@ export let IotlStrings = React.createContext({
   is_LoggedIn: 'Kasa_LoggedIn',
   is_LoggedInT: 'Connected to Kasa',
   is_LoggedInM: 'Checking status',
+  is_updating: 'is_updating',
+  is_updatingT: 'Connecting to Kasa',
+  is_updating: 'Getting latest bulb settings',
 });
 export let Colours = React.createContext({
   myBlack: '#050F14',

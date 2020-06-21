@@ -70,9 +70,10 @@ const App: () => React$Node = () => {
 
   const getAsyncDatad = async () => {
     console.log('entered');
-    let returnedAsyncUserData = await getAsyncData(Secrets.userObjKey);
+    const returnedAsyncUserData = await getAsyncData(Secrets.userObjKey);
+    const returnedAsyncAuthData = await getAsyncData(Secrets.authObjKey);
 
-    returnedAsyncUserData.isLoggedIn
+    returnedAsyncAuthData.isLoggedIn
       ? setTimeout(() => {
           console.log('APP KEYCHECK TRUE');
 
@@ -80,7 +81,7 @@ const App: () => React$Node = () => {
             ...returnedAsyncUserData,
           });
           setAuthObj({
-            ...returnedAsyncUserData,
+            ...returnedAsyncAuthData,
             showSplash: false,
             isLoggedIn: true,
           });

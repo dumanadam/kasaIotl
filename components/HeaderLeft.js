@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Text, View, StyleSheet, Button} from 'react-native';
+import {View, StyleSheet, Button} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   IotlStrings,
@@ -8,59 +8,80 @@ import {
   Colours,
   Errors,
 } from '../api/context';
+import {Tooltip, Text} from 'react-native-elements';
 
 const HeaderLeft = props => {
-  const {kasaSettings, authObj} = props;
-  //  console.log('Current device status >', kasaSettings);
-  // console.log('authobj >', authObj);
+  const {kasaSettings} = props;
+  console.log('Current device status >', kasaSettings);
+
+  const authObj = props.authObj;
+  // console.log('Current device status >', kasaSettings.authDeviceList[0]);
+  console.log('authobj >', authObj.isLoggedIn);
+
   return (
     <View style={{flexDirection: 'row'}}>
-      {kasaSettings.noDevicesKasa ? (
+      {authObj.noDevicesKasa ? (
         <Text
           style={
-            !kasaSettings.noDevicesKasa
-              ? styles.headerLeftCon
-              : styles.headerLeftDis
+            !authObj.noDevicesKasa ? styles.headerLeftCon : styles.headerLeftDis
           }>
-          {!kasaSettings.noDevicesKasa
+          {!authObj.noDevicesKasa
             ? IotlStrings.greenDevicesL
             : IotlStrings.noDevicesL}
         </Text>
       ) : (
         <React.Fragment>
-          <Text style={styles.headerRSSI}>
-            {JSON.stringify(kasaSettings.deviceInfo.rssi)}
-          </Text>
-          <Icon
-            style={
-              kasaSettings.authDeviceList[0].status
-                ? styles.headerLeftCon
-                : styles.headerLeftDis
-            }
-            name={
-              kasaSettings.authDeviceList[0].status
-                ? 'flash-outline'
-                : 'flash-off'
-            }
-            disabledStyle={styles.headerLeftDis}
-            disabled={true}
-            size={25}
-            iconStyle={{
-              color: Colours.myRedConf,
-            }}
-          />
-          <Icon
-            style={
-              authObj.isLoggedIn ? styles.headerLeftCon : styles.headerLeftDis
-            }
-            name={authObj.isLoggedIn ? 'cloud-outline' : 'cloud-off-outline'}
-            disabledStyle={styles.headerLeftDis}
-            disabled={true}
-            size={25}
-            iconStyle={{
-              color: Colours.myRedConf,
-            }}
-          />
+          <Tooltip popover={<Text>Wifi Strength of Bulb</Text>}>
+            <Text style={styles.headerRSSI}>
+              {JSON.stringify(authObj.deviceInfo.rssi)}
+            </Text>
+          </Tooltip>
+          <Tooltip
+            popover={
+              <Text>
+                {authObj.authDeviceList[0].status
+                  ? 'Bulb Powered ON'
+                  : 'Bulb Powered OFF'}
+              </Text>
+            }>
+            <Icon
+              style={
+                authObj.authDeviceList[0].status
+                  ? styles.headerLeftCon
+                  : styles.headerLeftDis
+              }
+              name={
+                authObj.authDeviceList[0].status ? 'flash-outline' : 'flash-off'
+              }
+              disabledStyle={styles.headerLeftDis}
+              disabled={true}
+              size={25}
+              iconStyle={{
+                color: Colours.myRedConf,
+              }}
+            />
+          </Tooltip>
+          <Tooltip
+            popover={
+              <Text>
+                {authObj.isLoggedIn
+                  ? 'Logged into Kasa account'
+                  : 'Bulb Powered OFF'}
+              </Text>
+            }>
+            <Icon
+              style={
+                authObj.isLoggedIn ? styles.headerLeftCon : styles.headerLeftDis
+              }
+              name={authObj.isLoggedIn ? 'cloud-outline' : 'cloud-off-outline'}
+              disabledStyle={styles.headerLeftDis}
+              disabled={true}
+              size={25}
+              iconStyle={{
+                color: Colours.myRedConf,
+              }}
+            />
+          </Tooltip>
         </React.Fragment>
       )}
     </View>
@@ -101,7 +122,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colours.myGreenConf,
     flex: 0,
-    width: 55,
   },
   headerLeftDis: {
     marginRight: 7,
