@@ -7,7 +7,7 @@ import {useState} from 'react';
 import KasaControl from '../api/KasaControl';
 import {tplinkLogin} from '../api/KasaAuthFunctions';
 
-const PresetScreen = props => {
+const PresetScreen = (props) => {
   const {
     signIn,
     signUp,
@@ -23,8 +23,8 @@ const PresetScreen = props => {
   const [authObj, setAuthObj] = React.useState(getAppAuthObj('preset screen'));
 
   const update = () => {
-    setcount(count => count + 2);
-    route.params = {...route.params, asd: count => setcount(count)};
+    setcount((count) => count + 2);
+    route.params = {...route.params, asd: (count) => setcount(count)};
   };
 
   const testinfo = async () => {

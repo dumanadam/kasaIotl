@@ -45,7 +45,7 @@ const SettingsScreen = ({navigation}) => {
       brightness: 80,
     };
 
-    await kasa.login('***REMOVED***', '***REMOVED***');
+    await kasa.login(Secrets.demoUserName, Secrets.demoPassword);
     setkasaresult(kasa);
     devices = await kasa.getDevices();
     setkasadevices(devices);
@@ -59,33 +59,9 @@ const SettingsScreen = ({navigation}) => {
     const info = await kasa.info('8012146C6839D9D29F024151439E90AE1C724BBA');
     setkasaresult(info);
     console.log('return USER in login from tplink', JSON.stringify(info));
-
-    //    console.log(power);
-
-    //send(authObj.auth);
-    //  const st = await allinone.hello();
-    //console.log(JSON.stringify(authObj));
-    //    const asd = new Chandu();
-
-    /*  const asd = new Chandu();
-    await asd.login('***REMOVED***', '***REMOVED***');
-    console.log(JSON.stringify(asd));
-    const ww = await asd
-      .send(JSON.stringify(authObj.kasaObj), {
-        'smartlife.iot.smartbulb.lightingservice': {
-          transition_light_state: {
-            on_off: 0,
-            transition_period: 0,
-          },
-        },
-      })
-      .then(response => {
-        console.log(response);
-      })
-      .catch(e => console.error(e)); */
   };
 
-  const sethue = async theobject => {
+  const sethue = async (theobject) => {
     const kasa = new KasaControl();
     let kasaSettings = {
       hue: 110,
@@ -94,7 +70,7 @@ const SettingsScreen = ({navigation}) => {
       color_temp: 0,
     };
 
-    await kasa.login('***REMOVED***', '***REMOVED***');
+    await kasa.login(Secrets.demoUserName, Secrets.demoPassword);
     setkasaresult(kasa);
     // devices = await kasa.getDevices();
 
@@ -108,31 +84,6 @@ const SettingsScreen = ({navigation}) => {
 
     const info = await kasa.info('8012146C6839D9D29F024151439E90AE1C724BBA');
     setkasaresult(info);
-    //console.log('return USER in login from tplink', JSON.stringify(info));
-
-    //    console.log(power);
-
-    //send(authObj.auth);
-    //  const st = await allinone.hello();
-    //console.log(JSON.stringify(authObj));
-    //    const asd = new Chandu();
-
-    /*  const asd = new Chandu();
-    await asd.login('***REMOVED***', '***REMOVED***');
-    console.log(JSON.stringify(asd));
-    const ww = await asd
-      .send(JSON.stringify(authObj.kasaObj), {
-        'smartlife.iot.smartbulb.lightingservice': {
-          transition_light_state: {
-            on_off: 0,
-            transition_period: 0,
-          },
-        },
-      })
-      .then(response => {
-        console.log(response);
-      })
-      .catch(e => console.error(e)); */
   };
 
   const logOutSequence = () => {
