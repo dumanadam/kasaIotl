@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   Image,
   TouchableOpacity,
@@ -28,7 +28,6 @@ import getLatestLightState from '../api/getLatestLightState';
 import getDeviceList from '../api/getDeviceList';
 
 const LoginScreen = ({navigation}) => {
-  const {login} = require('tplink-cloud-api');
   let returnObj;
   const {
     signIn,
@@ -48,7 +47,7 @@ const LoginScreen = ({navigation}) => {
     isEmailValid: true,
     isDemoUser: false,
     backgroundImage: '../assets/images/light.gif',
-    userName: Secrets.defaultUsername,
+    userName: IotlStrings.userNamePlaceholder,
     userPassword: IotlStrings.userPassPlaceholder,
     userNamePlaceholder: IotlStrings.userNamePlaceholder,
     userPassPlaceholder: IotlStrings.userPassPlaceholder,

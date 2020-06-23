@@ -20,7 +20,7 @@ const storeAsyncData = async (key, value) => {
   return false;
 };
 
-const getAsyncData = async (key) => {
+const getAsyncData = async key => {
   console.log('lue???', key);
   try {
     const value = await AsyncStorage.getItem(key);
@@ -54,8 +54,8 @@ async function tplinkLogin(sentAuthObj) {
   const kasa = new KasaControl();
   try {
     const mylogin = await kasa.login(
-      Secrets.demoUserName,
-      Secrets.demoPassword,
+      sentAuthObj.authName,
+      sentAuthObj.authPass,
     );
     console.log('latest kasa from KASAAUTHFUNCTION', JSON.stringify(kasa));
 

@@ -4,7 +4,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import SplashScreen from './screens/SplashScreen';
-import LoginScreen from './screens/loginScreen';
+import LoginScreen from './screens/LoginScreen';
 import {AuthContext, IotlStrings, iotlContext} from './api/context';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import PresetStack from './stacks/PresetStack';
