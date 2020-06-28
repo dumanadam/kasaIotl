@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {
   Image,
   TouchableOpacity,
@@ -28,6 +28,7 @@ import getLatestLightState from '../api/getLatestLightState';
 import getDeviceList from '../api/getDeviceList';
 
 const LoginScreen = ({navigation}) => {
+  const {login} = require('tplink-cloud-api');
   let returnObj;
   const {
     signIn,
@@ -46,8 +47,8 @@ const LoginScreen = ({navigation}) => {
     errorMessage: 'Default',
     isEmailValid: true,
     isDemoUser: false,
-    backgroundImage: '../assets/images/light.gif',
-    userName: IotlStrings.userNamePlaceholder,
+    backgroundImage: '../assets/images/lightBG3.jpg',
+    userName: Secrets.defaultUsername,
     userPassword: IotlStrings.userPassPlaceholder,
     userNamePlaceholder: IotlStrings.userNamePlaceholder,
     userPassPlaceholder: IotlStrings.userPassPlaceholder,
@@ -108,92 +109,79 @@ const LoginScreen = ({navigation}) => {
 
     Vibration.vibrate([50, 50, 50, 50, 50, 50]);
 
-    if (checkPlaceholder()) {
-      return;
-    }
+    const latestLogin = await tplinkLogin(authObj);
+    const devices = await getDeviceList(latestLogin.kasaObj);
 
-    if (userObj.isDemoUser) {
-      const latestLogin = await tplinkLogin(authObj);
-      const devices = await getDeviceList(latestLogin.kasaObj);
-
-      const latestLightState = await getLatestLightState(
-        latestLogin.kasaObj,
-        devices[0].deviceId,
-      );
-      if (latestLightState.errorMessage == 'Timeout') {
-        console.log(
-          '--------------------------------------Login Timeout error',
-        );
-        setUserObj({
-          ...userObj,
-          isloading: false,
-          showAlert: true,
-          errorMessage: 'Connection timed out, please try again',
-          errorTitle: 'Network Error',
-          showProgress: false,
-          showConfirm: true,
-
-          closeOut: true,
-          closeBack: true,
-          showCancel: false,
-          confText: 'OK',
-        });
-      }
-      if (latestLightState.errorMessage == IotlStrings.plug_Offline) {
-        console.log('--------------------------------------Plug Offline error');
-        setUserObj({
-          ...userObj,
-          isloading: false,
-          showAlert: false,
-        });
-        setAuthObj({
-          ...authObj,
-          isLoggedIn: true,
-          authStyle: 'demo',
-
-          kasaObj: latestLogin.kasaObj,
-          deviceInfo: {},
-          authDeviceList: devices,
-          isLoading: false,
-          saveAuthObj: true,
-          noDevicesKasa: true,
-        });
-      }
-      console.log('--------------------------------------Normal Login');
-
+    const latestLightState = await getLatestLightState(
+      latestLogin.kasaObj,
+      devices[0].deviceId,
+    );
+    if (latestLightState.errorMessage == 'Timeout') {
+      console.log('--------------------------------------Login Timeout error');
       setUserObj({
         ...userObj,
+        isloading: false,
         showAlert: true,
-        showbg: require('../assets/images/light_lc.jpg'),
+        errorMessage: 'Connection timed out, please try again',
+        errorTitle: 'Network Error',
         showProgress: false,
-        showConfirm: false,
-        closeOut: false,
-        closeBack: false,
-        showCancel: false,
-        errorTitle: IotlStrings.is_LoggedInT,
-        errorMessage: IotlStrings.is_LoggedInM,
-      });
+        showConfirm: true,
 
+        closeOut: true,
+        closeBack: true,
+        showCancel: false,
+        confText: 'OK',
+      });
+    }
+    if (latestLightState.errorMessage == IotlStrings.plug_Offline) {
+      console.log('--------------------------------------Plug Offline error');
+      setUserObj({
+        ...userObj,
+        isloading: false,
+        showAlert: false,
+      });
       setAuthObj({
         ...authObj,
-
+        isLoggedIn: true,
         authStyle: 'demo',
 
         kasaObj: latestLogin.kasaObj,
-        deviceInfo: latestLightState.light_state,
-
+        deviceInfo: {},
         authDeviceList: devices,
         isLoading: false,
         saveAuthObj: true,
-        noDevicesKasa: false,
-        isLoggedIn: true,
+        noDevicesKasa: true,
       });
-
-      /* setTimeout(() => {
-        
-        
-      }, 500) */
     }
+    console.log('--------------------------------------Normal Login');
+
+    setUserObj({
+      ...userObj,
+      showAlert: true,
+      showbg: require('../assets/images/light_lc.jpg'),
+      showProgress: false,
+      showConfirm: false,
+      closeOut: false,
+      closeBack: false,
+      showCancel: false,
+      errorTitle: IotlStrings.is_LoggedInT,
+      errorMessage: IotlStrings.is_LoggedInM,
+    });
+
+    setAuthObj({
+      ...authObj,
+
+      authStyle: 'demo',
+
+      kasaObj: latestLogin.kasaObj,
+      deviceInfo: latestLightState.light_state,
+
+      authDeviceList: devices,
+      isLoading: false,
+      saveAuthObj: true,
+      noDevicesKasa: false,
+      isLoggedIn: true,
+    });
   };
 
   const checkPlaceholder = () => {
@@ -344,8 +332,8 @@ const LoginScreen = ({navigation}) => {
     <ImageBackground
       source={
         userObj.isEmailValid
-          ? require('../assets/images/light_lc.jpg')
-          : require('../assets/images/light_dc.jpg')
+          ? require('../assets/images/lightBG3.jpg')
+          : require('../assets/images/lightBG6.jpg')
       }
       /*       source={() =>
         userObj.isEmailValid
@@ -421,13 +409,13 @@ const LoginScreen = ({navigation}) => {
                 onPress={() => checkAuth()}
                 loading={userObj.isloading}
               />
-              <Button
+              {/*       <Button
                 title="test"
                 type="outline"
                 buttonStyle={styles.button}
                 onPress={() => test()}
                 loading={userObj.isloading}
-              />
+              /> */}
             </View>
           </View>
         </View>
@@ -476,7 +464,7 @@ const LoginScreen = ({navigation}) => {
                   textStyle={styles.checkText}
                 />
               </View>
-              <View style={styles.secondLineContainer}>
+              {/*         <View style={styles.secondLineContainer}>
                 <View style={styles.textButtonContainer}>
                   <Icon
                     name="account-plus"
@@ -484,7 +472,9 @@ const LoginScreen = ({navigation}) => {
                     style={styles.buttonIcon}
                   />
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('CreateAccountScreen')}>
+                    onPress={() =>
+                      console.log("navigation.navigate('CreateAccountScreen'")
+                    }>
                     <Text style={styles.createAccountText}>
                       {IotlStrings.createAccountButton}
                     </Text>
@@ -498,7 +488,9 @@ const LoginScreen = ({navigation}) => {
                     style={styles.buttonIcon}
                   />
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('ResetPasswordScreen')}>
+                    onPress={() =>
+                      console.log("navigation.navigate('CreateAccountScreen'")
+                    }>
                     <Text style={styles.resetPWButtonText}>
                       {IotlStrings.resetPWButton}
                     </Text>
@@ -513,13 +505,15 @@ const LoginScreen = ({navigation}) => {
                     style={styles.buttonIcon}
                   />
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('CreateAccountScreen')}>
+                    onPress={() =>
+                      console.log("navigation.navigate('CreateAccountScreen'")
+                    }>
                     <Text style={styles.defaultsText}>
                       {IotlStrings.defaultsButton}
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </View> */}
             </View>
           ) : (
             <React.Fragment />

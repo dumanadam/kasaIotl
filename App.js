@@ -237,6 +237,7 @@ const App: () => React$Node = () => {
                   // You can return any component that you like here!
                   return <Icon name={iconName} size={size} color={color} />;
                 },
+                headerShown: false,
               })}
               initialParams={{title: 'assssdasd'}}
               initialRouteName="AdjustStack"
@@ -260,22 +261,22 @@ const App: () => React$Node = () => {
                   marginTop: 7,
                 },
               }}>
-              <TabStack.Screen
+              {/*    <TabStack.Screen
                 name="PresetStack"
                 component={PresetStack}
                 initialParams={{...headerStyle}}
-              />
+              /> */}
               <TabStack.Screen
                 name="AdjustStack"
                 component={AdjustStack}
                 initialParams={{title: 'Adjust your Light'}}
                 options={{title: 'Adjust', headerTitleAlign: 'center'}}
               />
-              <TabStack.Screen
+              {/*       <TabStack.Screen
                 name="TimerStack"
                 component={TimerStack}
                 options={{title: 'Timer'}}
-              />
+              /> */}
               <TabStack.Screen
                 name="SettingsStack"
                 component={SettingsStack}

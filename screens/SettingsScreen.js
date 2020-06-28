@@ -1,8 +1,18 @@
 import * as React from 'react';
-import {Text, View, StyleSheet, Button, Switch} from 'react-native';
-import {AuthContext} from '../api/context';
+import {
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+  StatusBar,
+  Vibration,
+} from 'react-native';
+import {Button, CheckBox, Input} from 'react-native-elements';
 import KasaControl from '../api/KasaControl';
 import {Secrets} from '../api/Secrets';
+import {IotlStrings, Colours, AuthContext, Errors} from '../api/context';
 
 const SettingsScreen = ({navigation}) => {
   const {
@@ -45,7 +55,7 @@ const SettingsScreen = ({navigation}) => {
       brightness: 80,
     };
 
-    await kasa.login(Secrets.demoUserName, Secrets.demoPassword);
+    await kasa.login('kasademo@talha.me', 'appliedproject2');
     setkasaresult(kasa);
     devices = await kasa.getDevices();
     setkasadevices(devices);
@@ -59,9 +69,33 @@ const SettingsScreen = ({navigation}) => {
     const info = await kasa.info('8012146C6839D9D29F024151439E90AE1C724BBA');
     setkasaresult(info);
     console.log('return USER in login from tplink', JSON.stringify(info));
+
+    //    console.log(power);
+
+    //send(authObj.auth);
+    //  const st = await allinone.hello();
+    //console.log(JSON.stringify(authObj));
+    //    const asd = new Chandu();
+
+    /*  const asd = new Chandu();
+    await asd.login('kasademo@talha.me', 'appliedproject2');
+    console.log(JSON.stringify(asd));
+    const ww = await asd
+      .send(JSON.stringify(authObj.kasaObj), {
+        'smartlife.iot.smartbulb.lightingservice': {
+          transition_light_state: {
+            on_off: 0,
+            transition_period: 0,
+          },
+        },
+      })
+      .then(response => {
+        console.log(response);
+      })
+      .catch(e => console.error(e)); */
   };
 
-  const sethue = async (theobject) => {
+  const sethue = async theobject => {
     const kasa = new KasaControl();
     let kasaSettings = {
       hue: 110,
@@ -70,7 +104,7 @@ const SettingsScreen = ({navigation}) => {
       color_temp: 0,
     };
 
-    await kasa.login(Secrets.demoUserName, Secrets.demoPassword);
+    await kasa.login('kasademo@talha.me', 'appliedproject2');
     setkasaresult(kasa);
     // devices = await kasa.getDevices();
 
@@ -84,6 +118,31 @@ const SettingsScreen = ({navigation}) => {
 
     const info = await kasa.info('8012146C6839D9D29F024151439E90AE1C724BBA');
     setkasaresult(info);
+    //console.log('return USER in login from tplink', JSON.stringify(info));
+
+    //    console.log(power);
+
+    //send(authObj.auth);
+    //  const st = await allinone.hello();
+    //console.log(JSON.stringify(authObj));
+    //    const asd = new Chandu();
+
+    /*  const asd = new Chandu();
+    await asd.login('kasademo@talha.me', 'appliedproject2');
+    console.log(JSON.stringify(asd));
+    const ww = await asd
+      .send(JSON.stringify(authObj.kasaObj), {
+        'smartlife.iot.smartbulb.lightingservice': {
+          transition_light_state: {
+            on_off: 0,
+            transition_period: 0,
+          },
+        },
+      })
+      .then(response => {
+        console.log(response);
+      })
+      .catch(e => console.error(e)); */
   };
 
   const logOutSequence = () => {
@@ -95,62 +154,117 @@ const SettingsScreen = ({navigation}) => {
   };
 
   return (
-    <View>
-      <Text style={{fontSize: 9, color: 'red'}}>"Forget all credentials?"</Text>
-      <Text style={{fontSize: 9, color: 'red'}}>
-        "Send Colour update instantly?"
-      </Text>
-      <Text style={{fontSize: 9, color: 'red'}}>
-        "Send Temperature update instantly?"
-      </Text>
-      <Text style={{fontSize: 9, color: 'red'}}>
-        "toggle or power for colour screen wheel button?"
-      </Text>
-      <Text style={{fontSize: 9, color: 'red'}}>"hide icons"</Text>
-      <Text style={{fontSize: 9, color: 'red'}}>
-        "Use custom background image?"
-      </Text>
-      <Text style={{fontSize: 9, color: 'red'}}>
-        "Update with latest Light info?"
-      </Text>
-      <Text style={{fontSize: 9, color: 'red'}}>
-        "Centercolor wheel send update"
-      </Text>
-      <Text style={{fontSize: 9, color: 'red'}}>"Poll updates and time "</Text>
-      <Text style={{fontSize: 9, color: 'red'}}>
-        {JSON.stringify(kasaresult.light_state)}
-      </Text>
+    <ImageBackground
+      source={require('../assets/images/lightBG3.jpg')}
+      /*       source={() =>
+      userObj.isEmailValid
+        ? require('../assets/images/light.gif')
+        : require('../assets/images/iotl.gif')
+    } */
+      style={styles.backgroundImage}>
+      <View style={styles.container}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={'transparent'}
+          translucent={true}
+        />
 
-      <Button
-        title="login kasacontrol"
-        onPress={() => {
-          updatepage();
-        }}
-      />
-
-      <Text style={{fontSize: 9, color: 'red'}}>
-        {JSON.stringify(kasadevices)}
-      </Text>
-      <Button
-        title="hue"
-        onPress={() => {
-          sethue();
-        }}
-      />
-      <Text style={{fontSize: 9, color: 'red'}}>
-        {JSON.stringify(kasapower)}
-      </Text>
-      <Button
-        title="Logout"
-        onPress={() => {
-          logOutSequence();
-        }}
-      />
-      <Text style={{fontSize: 9, color: 'red'}}>
-        {JSON.stringify(kasapower)}
-      </Text>
-    </View>
+        <View style={styles.topContainer} />
+        <Button
+          title="Logout"
+          onPress={() => {
+            logOutSequence();
+          }}
+        />
+      </View>
+    </ImageBackground>
   );
 };
+const styles = StyleSheet.create({
+  disabledInput: {
+    padding: 10,
+    color: Colours.myYellow,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  input: {
+    padding: 10,
 
+    color: Colours.myYellow,
+
+    fontSize: 15,
+    fontWeight: '600',
+    width: '100%',
+  },
+  inputDemo: {
+    padding: 10,
+
+    color: Colours.myWhite,
+
+    fontSize: 15,
+    fontWeight: '600',
+    width: '100%',
+  },
+  check: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },
+  checkText: {
+    color: Colours.myWhite,
+    flexDirection: 'row',
+    marginLeft: 5,
+    marginRight: 20,
+    fontSize: 12,
+    fontWeight: 'normal',
+  },
+  optionsContainer: {
+    flexDirection: 'column',
+  },
+  optionsText: {
+    color: Colours.myYellow,
+    fontSize: 10,
+  },
+  myAlert: {
+    zIndex: 10,
+  },
+
+  container: {
+    flex: 0,
+    alignItems: 'center',
+    marginTop: 150,
+  },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',
+  },
+  imgLogo: {
+    height: 100,
+    width: 100,
+    marginRight: 10,
+  },
+  logo: {alignItems: 'center', justifyContent: 'center'},
+  optionsButton: {
+    backgroundColor: 'transparent',
+
+    marginBottom: 30,
+    marginTop: 15,
+  },
+  topContainer: {
+    paddingHorizontal: 10,
+
+    borderRadius: 5,
+
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 240,
+  },
+  bottomContainer: {
+    flexDirection: 'row',
+
+    justifyContent: 'center',
+  },
+  firstLineContainer: {
+    flexDirection: 'row',
+  },
+});
 export default SettingsScreen;

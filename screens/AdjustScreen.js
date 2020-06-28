@@ -8,7 +8,7 @@ import {
   myErrors,
 } from '../api/context';
 import {useState} from 'react';
-import {Header, Slider, Button, Text} from 'react-native-elements';
+import {Header, Slider, Button, Text, Overlay} from 'react-native-elements';
 import {ColorPicker} from 'react-native-color-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import colorsys from 'colorsys';
@@ -19,6 +19,7 @@ import HeaderLeft from '../components/HeaderLeft';
 import getLatestLightState from '../api/getLatestLightState';
 import getDeviceList from '../api/getDeviceList';
 import sendLatestLightKasa from '../api/sendLatestLightKasa';
+import SettingsOverlay from '../api/SettingsOverlay';
 
 //import {ColorWheel} from 'react-native-color-wheel';
 
@@ -47,7 +48,7 @@ const AdjustScreen = props => {
   );
 
   const [userObj, setuserObj] = React.useState({
-    showbg: require('../assets/images/light_dc.jpg'),
+    showbg: require('../assets/images/lightBG3.jpg'),
     toState: 1,
     transTime: 0,
     saveUserObj: false,
@@ -72,7 +73,7 @@ const AdjustScreen = props => {
     satHex: '#ffffff',
     briHex: '#ffffff',
     showAlertW: false,
-    showbg: require('../assets/images/light_dc.jpg'),
+    showbg: require('../assets/images/lightBG3.jpg'),
     showProgressW: true,
     showConfirmW: false,
     closeOutW: false,
@@ -80,6 +81,8 @@ const AdjustScreen = props => {
     showCancelW: false,
     errorTitleW: IotlStrings.is_loadingT,
     errorMessageW: IotlStrings.is_loadingM,
+    isOverlayOpen: false,
+    showTemp: false,
   });
 
   const _alertBulbStatus = switchTo => {
@@ -88,7 +91,7 @@ const AdjustScreen = props => {
       setuserObj({
         ...userObj,
         showAlert: false,
-        showbg: require('../assets/images/light_lcr.jpg'),
+        showbg: require('../assets/images/lightBG6.jpg'),
         showProgress: false,
         showConfirm: true,
         closeOut: true,
@@ -110,17 +113,16 @@ const AdjustScreen = props => {
     } else {
     }
   };
-
   React.useEffect(() => {
     console.log('----------Colour ----------');
-    /*    console.log(
+    console.log(
       '--------- AUTHOBJ.noDevicesKasa INITIAL LOAD >>',
       authObj.noDevicesKasa,
-    ); */
+    );
     setuserObj({
       ...userObj,
       showAlert: true,
-      showbg: require('../assets/images/light_dc.jpg'),
+      showbg: require('../assets/images/lightBG3.jpg'),
       showProgress: true,
       showConfirm: false,
       closeOut: false,
@@ -141,13 +143,8 @@ const AdjustScreen = props => {
   }, [authObj]);
 
   React.useEffect(() => {
-    /*   console.log(
-      '??????????????????????????????????? CHECK kasasettings',
-      JSON.stringify(kasaSettings),
-    );
- */
     //  console.log('kasasettings UPDATED', JSON.stringify(kasaSettings));
-  }, [kasaSettings]);
+  }, [userObj.isOverlayOpen]);
 
   /* if(authObj.isPolling) {
   console.log("polling", authObj.kasaObj.kasa)
@@ -175,7 +172,7 @@ const AdjustScreen = props => {
       setuserObj({
         ...userObj,
         showAlert: true,
-        showbg: require('../assets/images/light_dc.jpg'),
+        showbg: require('../assets/images/lightBG3.jpg'),
         showProgress: false,
         showConfirm: true,
         closeOut: true,
@@ -202,6 +199,15 @@ const AdjustScreen = props => {
       'sending Colour Changed -------------------------------------------',
       {...kasaSettings, h: cPV, s: slidSC, v: slidBC},
     );
+    let bgAmount;
+    if (slidBC <= 25) bgAmount = require('../assets/images/lightBG3.jpg');
+    if ((slidBC > 25) & (slidBC <= 50))
+      bgAmount = require('../assets/images/lightBG4.jpg');
+    if ((slidBC > 50) & (slidBC <= 75))
+      bgAmount = require('../assets/images/lightBG5.jpg');
+    if ((slidBC > 75) & (slidBC <= 100))
+      bgAmount = require('../assets/images/lightBG6.jpg');
+
     setKasaSettings({
       ...kasaSettings,
       h: cPV,
@@ -214,6 +220,7 @@ const AdjustScreen = props => {
       slidSaturationT: slidSC,
       slidBrightnessT: slidBC,
       hueT: cPV,
+      showbg: bgAmount,
     });
 
     console.log('hslConverted', hslConverted);
@@ -227,7 +234,7 @@ const AdjustScreen = props => {
     setuserObj({
       ...userObj,
       showAlert: true,
-      showbg: require('../assets/images/light_dc.jpg'),
+      showbg: require('../assets/images/lightBG3.jpg'),
       showProgress: true,
       showConfirm: false,
       closeOut: false,
@@ -245,7 +252,7 @@ const AdjustScreen = props => {
       setuserObj({
         ...userObj,
         showAlert: true,
-        showbg: require('../assets/images/light_dc.jpg'),
+        showbg: require('../assets/images/lightBG3.jpg'),
         showProgress: false,
         showConfirm: true,
         closeOut: true,
@@ -261,11 +268,17 @@ const AdjustScreen = props => {
         noDevicesKasa: true,
       });
     } else {
-      const latestHSV = {
-        h: latestBulbSettings.light_state.hue,
-        s: latestBulbSettings.light_state.saturation,
-        v: latestBulbSettings.light_state.brightness,
-      };
+      latestBulbSettings.light_state.dft_on_state
+        ? (latestHSV = {
+            h: latestBulbSettings.light_state.dft_on_state.hue,
+            s: latestBulbSettings.light_state.dft_on_state.saturation,
+            v: latestBulbSettings.light_state.dft_on_state.brightness,
+          })
+        : (latestHSV = {
+            h: latestBulbSettings.light_state.hue,
+            s: latestBulbSettings.light_state.saturation,
+            v: latestBulbSettings.light_state.brightness,
+          });
 
       var hslConverted = colorsys.hsv2Hex(latestHSV);
       console.log('hslconverted >>>> ', hslConverted);
@@ -284,7 +297,7 @@ const AdjustScreen = props => {
             hueT: latestHSV,
 
             showAlert: true,
-            showbg: require('../assets/images/light_lcr.jpg'),
+            showbg: require('../assets/images/lightBG6.jpg'),
             showProgress: false,
             showConfirm: true,
             closeOut: true,
@@ -300,7 +313,7 @@ const AdjustScreen = props => {
             hueT: latestHSV,
 
             showAlert: false,
-            showbg: require('../assets/images/light_lcr.jpg'),
+            showbg: require('../assets/images/lightBG6.jpg'),
           });
       setKasaSettings({
         h: latestHSV.h,
@@ -310,19 +323,22 @@ const AdjustScreen = props => {
         rssi: latestBulbSettings.rssi,
         oldHex: hslConverted,
         newHex: hslConverted,
-        power: latestBulbSettings.light_state.on_off,
+        power: latestBulbSettings.light_state.dft_on_state
+          ? latestBulbSettings.light_state.dft_on_state.on_off
+          : latestBulbSettings.light_state.on_off,
       });
     }
   };
 
   const sendBulbState = async sentBulbOptions => {
+    console.log('sentbulb ==', sentBulbOptions);
     let latestBulbSettings = {};
     let _sendingLightUpdateObj = {};
 
     setuserObj({
       ...userObj,
       showAlert: true,
-      showbg: require('../assets/images/light_dc.jpg'),
+      showbg: require('../assets/images/lightBG3.jpg'),
       showProgress: true,
       showConfirm: false,
       closeOut: false,
@@ -332,22 +348,15 @@ const AdjustScreen = props => {
       errorMessage: 'Hamster Wheel Running',
     });
 
+    try {
+    } catch (error) {}
     //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
-    if (sentBulbOptions == 'toggle') {
-      _sendingLightUpdateObj = {
-        authObj: authObj.kasaObj,
-        deviceId: authObj.authDeviceList[0].deviceId,
-        toState: !kasaSettings.power,
-        transTime: userObj.transTime,
-        lightSettings: {
-          mode: 'normal',
-          hue: kasaSettings.h,
-          saturation: kasaSettings.s,
-          color_temp: 0,
-          brightness: kasaSettings.v,
-        },
-      };
+    if (sentBulbOptions.lightSettings) {
+      console.log('hit power');
+
+      _sendingLightUpdateObj = sentBulbOptions;
     } else {
+      console.log('hit else');
       _sendingLightUpdateObj = {
         authObj: authObj.kasaObj,
         deviceId: authObj.authDeviceList[0].deviceId,
@@ -363,12 +372,12 @@ const AdjustScreen = props => {
       };
     }
 
-    console.log('----', authObj.authDeviceList[0].deviceId);
     try {
       latestBulbSettings = await sendLatestLightKasa(_sendingLightUpdateObj);
       console.log('latestBulbSettings >>>', latestBulbSettings);
     } catch (error) {
-      console.log(' POWEER CATCH ERROR >>>>>'.error);
+      console.log(' catch');
+      console.log(' POWEER CATCH ERROR >>>>>', error);
     }
 
     if (latestBulbSettings.errorMessage == 'Plug_Offline') {
@@ -379,7 +388,7 @@ const AdjustScreen = props => {
       setuserObj({
         ...userObj,
         showAlert: true,
-        showbg: require('../assets/images/light_dc.jpg'),
+        showbg: require('../assets/images/lightBG3.jpg'),
         showProgress: false,
         showConfirm: true,
         closeOut: true,
@@ -394,13 +403,70 @@ const AdjustScreen = props => {
         ...authObj,
         noDevicesKasa: true,
       });
-    } else {
-      console.log('online');
+    } else if (latestBulbSettings.dft_on_state != undefined) {
+      console.log('online Plug Off');
 
       setuserObj({
         ...userObj,
 
-        showbg: require('../assets/images/light_lcr.jpg'),
+        showbg: require('../assets/images/lightBG3.jpg'),
+
+        closeOut: true,
+        closeBack: true,
+        showCancel: false,
+        confText: 'OK',
+        confirmdft_on_stateColor: Colours.myGreenConf,
+        errorTitle: 'Plug Powered Off',
+        errorMessage: 'Plug Off',
+      });
+
+      let latestDeviceList = await getDeviceList(authObj.kasaObj);
+      console.log(
+        '???????????????????????????   latest device list ',
+        latestDeviceList,
+      );
+
+      const latestHSV = {
+        h: latestBulbSettings.dft_on_state.hue,
+        s: latestBulbSettings.dft_on_state.saturation,
+        v: latestBulbSettings.dft_on_state.brightness,
+      };
+
+      var hslConverted = colorsys.hsv2Hex(latestHSV);
+      console.log('hslconverted >>>> ', hslConverted);
+
+      setAuthObj({
+        ...authObj,
+        authDeviceList: latestDeviceList,
+        deviceInfo: latestBulbSettings,
+        noDevicesKasa: true,
+        saveAuthObj: true,
+      });
+
+      setKasaSettings({
+        ...kasaSettings,
+        h: latestHSV.h,
+        s: latestHSV.s,
+        v: latestHSV.v,
+        color_temp: latestBulbSettings.color_temp,
+        oldHex: hslConverted,
+        newHex: hslConverted,
+        power: false,
+      });
+      setuserObj({
+        ...userObj,
+        slidSaturationT: latestHSV.s,
+        slidBrightnessT: latestHSV.v,
+        hueT: latestHSV,
+        showAlert: false,
+      });
+    } else {
+      console.log('online - Plug On', latestBulbSettings);
+
+      setuserObj({
+        ...userObj,
+
+        showbg: require('../assets/images/lightBG6.jpg'),
 
         closeOut: true,
         closeBack: true,
@@ -454,7 +520,29 @@ const AdjustScreen = props => {
   };
 
   const toggleBulbPower = () => {
-    power(deviceId, powerState, transition, options);
+    let latestBulbSettings = {};
+
+    //tranition 0 - 10000 muilliseconds temp 0 - 7000 h 0 - 360 v 0 - 100
+    latestBulbSettings = {
+      authObj: authObj.kasaObj,
+      deviceId: authObj.authDeviceList[0].deviceId,
+      toState: !kasaSettings.power,
+      transTime: userObj.transTime,
+      lightSettings: {
+        mode: 'normal',
+        hue: kasaSettings.h,
+        saturation: kasaSettings.s,
+        color_temp: 0,
+        brightness: kasaSettings.v,
+      },
+    };
+    setKasaSettings({
+      ...kasaSettings,
+      power: !kasaSettings.power,
+    });
+    console.log(latestBulbSettings);
+
+    sendBulbState(latestBulbSettings);
   };
 
   const wheelPressed = async () => {
@@ -478,7 +566,6 @@ const AdjustScreen = props => {
       );
     }
   };
-
   const headerSelect = selection => {
     if (selection == 'left') {
       return (
@@ -490,6 +577,9 @@ const AdjustScreen = props => {
       return (
         <View style={{justifyContent: 'flex-start'}}>
           <Icon
+            onPress={() => {
+              setuserObj({...userObj, isOverlayOpen: !userObj.isOverlayOpen});
+            }}
             style={styles.settingsIcon}
             name={'settings'}
             size={25}
@@ -526,7 +616,7 @@ const AdjustScreen = props => {
           leftContainerStyle={{
             flex: 1,
           }}
-          rightComponent={() => headerSelect('right')}
+          // rightComponent={() => headerSelect('right')}
           leftComponent={() => headerSelect('left')}
         />
 
@@ -534,60 +624,97 @@ const AdjustScreen = props => {
           <View style={styles.bottomHSBContainer}>
             <View style={styles.pickerContainer}>
               <ColorPicker
-                //  onColorSelected={color => alert(`Color selected: ${color}`)}
+                //  onColorSelected={() => sendBulbState('wheel')}
                 oldColor={kasaSettings.oldHex}
                 defaultColor={kasaSettings.oldHex}
                 SliderProps={{value: 0.3}}
                 style={{flex: 1}}
                 onColorChange={value => colourChanged(value)}
                 sliderComponent={Slider}
+
                 //  onColorSelected={() => wheelPressed()}
               />
             </View>
+            {userObj.showTemp ? (
+              <View style={styles.textRowtitlesCT}>
+                <Text style={styles.rgbTextCT}>Temp</Text>
+                <Text style={styles.rgbTextCTB}>Brightness</Text>
+              </View>
+            ) : (
+              <View style={styles.textRowtitles}>
+                <Text style={styles.rgbTextH}>Hue</Text>
+                <Text style={styles.rgbTextS}>Saturation</Text>
+                <Text style={styles.rgbTextB}>Brightness</Text>
+              </View>
+            )}
 
-            <View style={styles.textRowtitles}>
-              <Text style={styles.rgbTextH}>Hue</Text>
-              <Text style={styles.rgbTextS}>Saturation</Text>
-              <Text style={styles.rgbTextB}>Brightness</Text>
-            </View>
-            <View style={styles.hsvNumRowContainer}>
-              <Text
-                style={
-                  !authObj.noDevicesKasa
-                    ? [styles.rgbNumH, {color: kasaSettings.newHex}]
-                    : styles.rgbNumDis
-                }>
-                {kasaSettings.h}
-              </Text>
-              <Text
-                style={
-                  !authObj.noDevicesKasa
-                    ? [
-                        styles.rgbNumS,
-                        {
-                          color: Colours.myYellow,
-                          opacity: kasaSettings.s * 0.01,
-                        },
-                      ]
-                    : styles.rgbNumDis
-                }>
-                {kasaSettings.s}
-              </Text>
-              <Text
-                style={
-                  !authObj.noDevicesKasa
-                    ? [
-                        styles.rgbNumB,
-                        {
-                          color: Colours.myWhite,
-                          opacity: kasaSettings.v * 0.01,
-                        },
-                      ]
-                    : styles.rgbNumDis
-                }>
-                {kasaSettings.v}
-              </Text>
-            </View>
+            {userObj.showTemp ? (
+              <View style={styles.hsvNumRowContainer}>
+                <Text
+                  style={
+                    !authObj.noDevicesKasa
+                      ? [
+                          styles.rgbNumCT /* , {color: kasaSettings.color_temp }*/,
+                        ]
+                      : styles.rgbNumDis
+                  }>
+                  asdasdasd
+                </Text>
+                <Text
+                  style={
+                    !authObj.noDevicesKasa
+                      ? [
+                          styles.rgbNumCTB,
+                          {
+                            color: Colours.myWhite,
+                            opacity: kasaSettings.v * 0.01,
+                          },
+                        ]
+                      : styles.rgbNumDis
+                  }>
+                  {kasaSettings.v}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.hsvNumRowContainer}>
+                <Text
+                  style={
+                    !authObj.noDevicesKasa
+                      ? [styles.rgbNumH, {color: kasaSettings.newHex}]
+                      : styles.rgbNumDis
+                  }>
+                  {kasaSettings.h}
+                </Text>
+                <Text
+                  style={
+                    !authObj.noDevicesKasa
+                      ? [
+                          styles.rgbNumS,
+                          {
+                            color: Colours.myYellow,
+                            opacity: kasaSettings.s * 0.01,
+                          },
+                        ]
+                      : styles.rgbNumDis
+                  }>
+                  {kasaSettings.s}
+                </Text>
+                <Text
+                  style={
+                    !authObj.noDevicesKasa
+                      ? [
+                          styles.rgbNumB,
+                          {
+                            color: Colours.myWhite,
+                            opacity: kasaSettings.v * 0.01,
+                          },
+                        ]
+                      : styles.rgbNumDis
+                  }>
+                  {kasaSettings.v}
+                </Text>
+              </View>
+            )}
           </View>
           <View style={styles.butContainer}>
             <Button
@@ -613,7 +740,7 @@ const AdjustScreen = props => {
               }
               loading={userObj.isloading}
               onPress={() =>
-                authObj.noDevicesKasa ? getBulbState() : sendBulbState()
+                authObj.noDevicesKasa ? getBulbState() : sendBulbState('latest')
               }
             />
           </View>
@@ -627,7 +754,7 @@ const AdjustScreen = props => {
                   ? styles.resetIconCon
                   : styles.resetIconDis
               }
-              onPress={() => sendBulbState('toggle')}
+              onPress={() => toggleBulbPower()}
             />
           </View>
           <View style={styles.resetIconContainer}>
@@ -642,8 +769,20 @@ const AdjustScreen = props => {
               }
             />
           </View>
+          {/*   <View>
+            {userObj.isOverlayOpen ? (
+              <Overlay
+                isVisible={userObj.isOverlayOpen}
+                userObj={userObj}
+                style={styles.settingsOverlay}>
+                <Text>Hello from Overlay!</Text>
+              </Overlay>
+            ) : (
+              <Text>adasdadad</Text>
+            )}
+          </View> */}
 
-          {/*  <AwesomeAlert
+          <AwesomeAlert
             show={userObj.showAlert}
             title={userObj.errorTitle}
             message={userObj.errorMessage}
@@ -662,7 +801,7 @@ const AdjustScreen = props => {
             onConfirmPressed={() => {
               showError();
             }}
-          /> */}
+          />
         </View>
       </ImageBackground>
     </View>
@@ -681,6 +820,7 @@ const styles = StyleSheet.create({
     height: 38,
     padding: 0,
     margin: 0,
+    marginTop: 25,
 
     borderBottomWidth: 0,
   },
@@ -698,6 +838,9 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     flex: 1,
     paddingBottom: 85,
+  },
+  settingsOverlay: {
+    zIndex: 200,
   },
 
   alertCont: {
@@ -773,6 +916,7 @@ const styles = StyleSheet.create({
     color: Colours.myWhite,
     marginBottom: 35,
     marginLeft: 15,
+    zIndex: 500,
   },
   buttonDis: {
     borderColor: Colours.myRedConf,
@@ -811,6 +955,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 0,
   },
+  textRowtitlesCT: {
+    justifyContent: 'space-around',
+    marginTop: 8,
+    flexDirection: 'row',
+    flex: 0,
+  },
   rgbTextDis: {
     fontSize: 15,
     flex: 0,
@@ -822,6 +972,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     flex: 0,
     paddingLeft: 45,
+
+    color: Colours.myWhite,
+  },
+  rgbTextCT: {
+    fontSize: 15,
+    flex: 0,
+
+    color: Colours.myWhite,
+  },
+  rgbTextCTB: {
+    fontSize: 15,
+    flex: 0,
 
     color: Colours.myWhite,
   },
@@ -851,6 +1013,28 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     textDecorationLine: 'line-through',
     color: Colours.myRedConf,
+  },
+  rgbNumCT: {
+    color: Colours.myWhite,
+    fontSize: 25,
+    flex: 1,
+    flexDirection: 'row',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    marginBottom: 10,
+    width: 100,
+    textTransform: 'uppercase',
+  },
+  rgbNumCTB: {
+    color: Colours.myWhite,
+    fontSize: 25,
+    flex: 1,
+    flexDirection: 'row',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    marginBottom: 10,
+    width: 100,
+    textTransform: 'uppercase',
   },
   rgbNumH: {
     color: Colours.myWhite,
